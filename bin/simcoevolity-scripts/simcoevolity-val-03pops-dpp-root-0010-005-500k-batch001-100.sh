@@ -14,10 +14,10 @@ then
     module load gcc/5.3.0
 fi
 
-simname="03pops-dpp-root-0010-010-500k"
+simname="03pops-dpp-root-0010-005-500k"
 cfgpath="../../configs/config-${simname}.yml"
 outputdir="../../simulations/validation/${simname}/batch001"
-rngseed=338208560
+rngseed=213849983
 nreps=500
 
 mkdir -p "$outputdir"
