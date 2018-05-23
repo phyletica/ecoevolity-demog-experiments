@@ -31,7 +31,7 @@ global_comparison_settings:
             prior:
                 gamma_distribution:
                     shape: 10.0
-                    scale: 0.05
+                    scale: 0.2
                     offset: 0.0
         freq_1:
             value: 0.5
