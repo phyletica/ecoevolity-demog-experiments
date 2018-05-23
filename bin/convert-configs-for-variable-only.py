@@ -62,7 +62,7 @@ def main_cli(argv = sys.argv):
 
         config = get_yaml_config(config_path)
         config = convert_for_variable_sites_only(config)
-        config = update_time_size_rate_scalers(config)
+        # config = update_time_size_rate_scalers(config)
 
         assert(not os.path.exists(new_config_path))
         with open(new_config_path, 'w') as stream:
