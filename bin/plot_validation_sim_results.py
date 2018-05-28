@@ -1977,25 +1977,25 @@ def generate_specific_model_plots(
                 verticalalignment = "bottom",
                 transform = ax.transAxes)
     if include_prop_correct:
-        ax.text(0.02, 0.98,
+        ax.text(0.02, 0.90,
                 "$p(\\hat{{k}} = k) = {0:.3f}$".format(
                         p_correct),
                 horizontalalignment = "left",
                 verticalalignment = "bottom",
                 transform = ax.transAxes)
     if include_median:
-        ax.text(0.98, 0.98,
+        ax.text(0.98, 0.90,
                 "$\\widetilde{{p(k|\\mathbf{{D}})}} = {0:.3f}$".format(
                         median_true_nevents_prob),
                 horizontalalignment = "right",
                 verticalalignment = "bottom",
                 transform = ax.transAxes)
     if include_x_label:
-        ax.set_xlabel("True number of events ($k$)",
+        ax.set_xlabel("True \\# of events ($k$)",
                 # labelpad = 8.0,
                 fontsize = xy_label_size)
     if include_y_label:
-        ax.set_ylabel("Estimated number of events ($\\hat{{k}}$)",
+        ax.set_ylabel("Estimated \\# of events ($\\hat{{k}}$)",
                 labelpad = 8.0,
                 fontsize = xy_label_size)
     root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
@@ -2003,6 +2003,18 @@ def generate_specific_model_plots(
         col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
         ax.set_title(col_header,
                 fontsize = title_size)
+
+    # Make sure ticks correspond only with number of events
+    ax.xaxis.set_ticks(range(number_of_comparisons))
+    ax.yaxis.set_ticks(range(number_of_comparisons))
+    xtick_labels = [item for item in ax.get_xticklabels()]
+    for i in range(len(xtick_labels)):
+        xtick_labels[i].set_text(str(i + 1))
+    ytick_labels = [item for item in ax.get_yticklabels()]
+    for i in range(len(ytick_labels)):
+        ytick_labels[i].set_text(str(i + 1))
+    ax.set_xticklabels(xtick_labels)
+    ax.set_yticklabels(ytick_labels)
 
     gs.update(
             left = pad_left,
@@ -2096,7 +2108,7 @@ def main_cli(argv = sys.argv):
                     ],
             parameter_label = "event time",
             parameter_symbol = "t",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_rmse = False,
@@ -2109,7 +2121,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "event-time-0010-005-500k-y",
+            plot_file_prefix = "event-time-0010-005-500k-xy",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
@@ -2144,7 +2156,7 @@ def main_cli(argv = sys.argv):
                     ],
             parameter_label = "event time",
             parameter_symbol = "t",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_rmse = False,
@@ -2157,7 +2169,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "event-time-0010-020-500k",
+            plot_file_prefix = "event-time-0010-020-500k-x",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
@@ -2168,7 +2180,7 @@ def main_cli(argv = sys.argv):
                     ],
             parameter_label = "event time",
             parameter_symbol = "t",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_rmse = False,
@@ -2181,7 +2193,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "event-time-0010-010-500k-y",
+            plot_file_prefix = "event-time-0010-010-500k-xy",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
@@ -2216,7 +2228,7 @@ def main_cli(argv = sys.argv):
                     ],
             parameter_label = "event time",
             parameter_symbol = "t",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_rmse = False,
@@ -2229,7 +2241,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "event-time-1000-0001-500k",
+            plot_file_prefix = "event-time-1000-0001-500k-x",
             variable_only = False)
 
 
@@ -2239,7 +2251,7 @@ def main_cli(argv = sys.argv):
                     "pop_size_root_c2sp1",
                     "pop_size_root_c3sp1",
                     ],
-            parameter_label = "root population size",
+            parameter_label = "root size",
             parameter_symbol = "N_e\\mu",
             plot_width = 1.9,
             plot_height = 1.8,
@@ -2257,9 +2269,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_root_c2sp1",
                     "pop_size_root_c3sp1",
                     ],
-            parameter_label = "root population size",
+            parameter_label = "root size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_rmse = False,
@@ -2272,7 +2284,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0010-005-500k-y",
+            plot_file_prefix = "root-pop-size-0010-005-500k-xy",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
@@ -2281,7 +2293,7 @@ def main_cli(argv = sys.argv):
                     "pop_size_root_c2sp1",
                     "pop_size_root_c3sp1",
                     ],
-            parameter_label = "root population size",
+            parameter_label = "root size",
             parameter_symbol = "N_e\\mu",
             include_x_label = True,
             include_y_label = False,
@@ -2305,9 +2317,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_root_c2sp1",
                     "pop_size_root_c3sp1",
                     ],
-            parameter_label = "root population size",
+            parameter_label = "root size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_rmse = False,
@@ -2320,7 +2332,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0010-020-500k",
+            plot_file_prefix = "root-pop-size-0010-020-500k-x",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
@@ -2329,9 +2341,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_root_c2sp1",
                     "pop_size_root_c3sp1",
                     ],
-            parameter_label = "root population size",
+            parameter_label = "root size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_rmse = False,
@@ -2344,7 +2356,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0010-010-500k-y",
+            plot_file_prefix = "root-pop-size-0010-010-500k-xy",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
@@ -2353,7 +2365,7 @@ def main_cli(argv = sys.argv):
                     "pop_size_root_c2sp1",
                     "pop_size_root_c3sp1",
                     ],
-            parameter_label = "root population size",
+            parameter_label = "root size",
             parameter_symbol = "N_e\\mu",
             include_x_label = True,
             include_y_label = False,
@@ -2377,9 +2389,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_root_c2sp1",
                     "pop_size_root_c3sp1",
                     ],
-            parameter_label = "root population size",
+            parameter_label = "root size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_rmse = False,
@@ -2392,7 +2404,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-1000-0001-500k",
+            plot_file_prefix = "root-pop-size-1000-0001-500k-x",
             variable_only = False)
 
 
@@ -2402,7 +2414,7 @@ def main_cli(argv = sys.argv):
                     "pop_size_c2sp1",
                     "pop_size_c3sp1",
                     ],
-            parameter_label = "leaf population size",
+            parameter_label = "leaf size",
             parameter_symbol = "N_e\\mu",
             plot_width = 1.9,
             plot_height = 1.8,
@@ -2420,9 +2432,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_c2sp1",
                     "pop_size_c3sp1",
                     ],
-            parameter_label = "leaf population size",
+            parameter_label = "leaf size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_rmse = False,
@@ -2435,7 +2447,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0010-005-500k-y",
+            plot_file_prefix = "leaf-pop-size-0010-005-500k-xy",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
@@ -2444,7 +2456,7 @@ def main_cli(argv = sys.argv):
                     "pop_size_c2sp1",
                     "pop_size_c3sp1",
                     ],
-            parameter_label = "leaf population size",
+            parameter_label = "leaf size",
             parameter_symbol = "N_e\\mu",
             include_x_label = True,
             include_y_label = False,
@@ -2468,9 +2480,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_c2sp1",
                     "pop_size_c3sp1",
                     ],
-            parameter_label = "leaf population size",
+            parameter_label = "leaf size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_rmse = False,
@@ -2483,7 +2495,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0010-020-500k",
+            plot_file_prefix = "leaf-pop-size-0010-020-500k-x",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
@@ -2492,9 +2504,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_c2sp1",
                     "pop_size_c3sp1",
                     ],
-            parameter_label = "leaf population size",
+            parameter_label = "leaf size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_rmse = False,
@@ -2507,7 +2519,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0010-010-500k-y",
+            plot_file_prefix = "leaf-pop-size-0010-010-500k-xy",
             variable_only = False)
     generate_specific_scatter_plot(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
@@ -2516,7 +2528,7 @@ def main_cli(argv = sys.argv):
                     "pop_size_c2sp1",
                     "pop_size_c3sp1",
                     ],
-            parameter_label = "leaf population size",
+            parameter_label = "leaf size",
             parameter_symbol = "N_e\\mu",
             include_x_label = True,
             include_y_label = False,
@@ -2540,9 +2552,9 @@ def main_cli(argv = sys.argv):
                     "pop_size_c2sp1",
                     "pop_size_c3sp1",
                     ],
-            parameter_label = "leaf population size",
+            parameter_label = "leaf size",
             parameter_symbol = "N_e\\mu",
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_rmse = False,
@@ -2555,7 +2567,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-1000-0001-500k",
+            plot_file_prefix = "leaf-pop-size-1000-0001-500k-x",
             variable_only = False)
 
 
@@ -2572,7 +2584,7 @@ def main_cli(argv = sys.argv):
     generate_specific_model_plots(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-005-500k"),
             number_of_comparisons = 3,
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_median = True,
@@ -2586,7 +2598,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "nevents-0010-005-500k-y",
+            plot_file_prefix = "nevents-0010-005-500k-xy",
             variable_only = False)
     generate_specific_model_plots(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
@@ -2610,7 +2622,7 @@ def main_cli(argv = sys.argv):
     generate_specific_model_plots(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-020-500k"),
             number_of_comparisons = 3,
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_median = True,
@@ -2624,12 +2636,12 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "nevents-0010-020-500k",
+            plot_file_prefix = "nevents-0010-020-500k-x",
             variable_only = False)
     generate_specific_model_plots(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
             number_of_comparisons = 3,
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = True,
             include_title = True,
             include_median = True,
@@ -2643,7 +2655,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "nevents-0010-010-500k-y",
+            plot_file_prefix = "nevents-0010-010-500k-xy",
             variable_only = False)
     generate_specific_model_plots(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
@@ -2667,7 +2679,7 @@ def main_cli(argv = sys.argv):
     generate_specific_model_plots(
             sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-1000-0001-500k"),
             number_of_comparisons = 3,
-            include_x_label = False,
+            include_x_label = True,
             include_y_label = False,
             include_title = True,
             include_median = True,
@@ -2681,7 +2693,7 @@ def main_cli(argv = sys.argv):
             pad_right = 0.99,
             pad_bottom = 0.18,
             pad_top = 0.9,
-            plot_file_prefix = "nevents-1000-0001-500k",
+            plot_file_prefix = "nevents-1000-0001-500k-x",
             variable_only = False)
 
 
