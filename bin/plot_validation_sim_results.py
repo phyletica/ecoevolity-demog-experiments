@@ -31,6 +31,79 @@ mpl.rcParams.update(tex_font_settings)
 
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+import scipy.stats
+import numpy
+
+
+def plot_gamma(shape = 1.0,
+        scale = 1.0,
+        x_min = 0.0,
+        x_max = None,
+        number_of_points = 1000,
+        x_label = "Relative root size",
+        include_x_label = True,
+        include_y_label = True,
+        include_title = True,
+        plot_width = 3.5,
+        plot_height = 3.0,
+        xy_label_size = 16.0,
+        title_size = 16.0,
+        pad_left = 0.2,
+        pad_right = 0.99,
+        pad_bottom = 0.18,
+        pad_top = 0.9,
+        plot_file_prefix = None):
+    if x_max is None:
+        x_max = scipy.stats.gamma.ppf(0.999, shape, scale = scale)
+    x = numpy.linspace(x_min, x_max, number_of_points)
+    d = scipy.stats.gamma.pdf(x, shape, scale = scale)
+
+    plt.close('all')
+    fig = plt.figure(figsize = (plot_width, plot_height))
+    gs = gridspec.GridSpec(1, 1,
+            wspace = 0.0,
+            hspace = 0.0)
+    ax = plt.subplot(gs[0, 0])
+    line = ax.plot(x, d)
+    ax.set_xlim(x_min, x_max)
+    plt.setp(line,
+            color = '0.45',
+            linestyle = '-',
+            linewidth = 1.5,
+            marker = '',
+            zorder = 100)
+    ax.axvline(x = 1.0,
+            color = '0.7',
+            linestyle = '--',
+            linewidth = 1.0,
+            marker = '',
+            zorder = 0)
+    if include_x_label:
+        ax.set_xlabel(
+                "{0}".format(x_label),
+                fontsize = xy_label_size)
+    if include_y_label:
+        ax.set_ylabel(
+                "Density",
+                fontsize = xy_label_size)
+    if include_title:
+        col_header = "$\\textrm{{\\sffamily Gamma}}({0:.0f}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(shape, shape * scale)
+        ax.set_title(col_header,
+                fontsize = title_size)
+
+    gs.update(
+            left = pad_left,
+            right = pad_right,
+            bottom = pad_bottom,
+            top = pad_top)
+
+    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
+    if not os.path.exists(plot_dir):
+        os.mkdir(plot_dir)
+    plot_path = os.path.join(plot_dir,
+            "{0}-gamma.pdf".format(plot_file_prefix))
+    plt.savefig(plot_path)
+    _LOG.info("Plot written to {0!r}\n".format(plot_path))
 
 def get_nevents_probs(
         sim_dir,
@@ -1883,6 +1956,8 @@ def generate_specific_model_plots(
         pad_right = 0.99,
         pad_bottom = 0.18,
         pad_top = 0.9,
+        lower_annotation_y = 0.02,
+        upper_annotation_y = 0.92,
         plot_file_prefix = None,
         variable_only = False):
     _LOG.info("Generating model plots...")
@@ -1970,21 +2045,21 @@ def generate_specific_model_plots(
                     horizontalalignment = "center",
                     verticalalignment = "center")
     if include_cs:
-        ax.text(0.98, 0.02,
+        ax.text(0.98, lower_annotation_y,
                 "$p(k \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
                         p_nevents_within_95_cred),
                 horizontalalignment = "right",
                 verticalalignment = "bottom",
                 transform = ax.transAxes)
     if include_prop_correct:
-        ax.text(0.02, 0.90,
+        ax.text(0.02, upper_annotation_y,
                 "$p(\\hat{{k}} = k) = {0:.3f}$".format(
                         p_correct),
                 horizontalalignment = "left",
                 verticalalignment = "bottom",
                 transform = ax.transAxes)
     if include_median:
-        ax.text(0.98, 0.90,
+        ax.text(0.98, upper_annotation_y,
                 "$\\widetilde{{p(k|\\mathbf{{D}})}} = {0:.3f}$".format(
                         median_true_nevents_prob),
                 horizontalalignment = "right",
@@ -2032,6 +2107,42 @@ def generate_specific_model_plots(
 
 
 def main_cli(argv = sys.argv):
+    # Plot relative root priors
+    root_gamma_parameters = (
+            (10.0, 0.05),
+            (10.0, 0.1),
+            (10.0, 0.2),
+            )
+    x_max = float("-inf")
+    for shape, scale in root_gamma_parameters:
+        q = scipy.stats.gamma.ppf(0.999, shape, scale = scale)
+        if q > x_max:
+            x_max = q
+    for i, (shape, scale) in enumerate(root_gamma_parameters):
+        plot_file_prefix = "relative-root-prior-{0:.0f}-{1:.2f}".format(shape, scale)
+        include_y_label = False
+        if i == 0:
+            include_y_label = True
+        plot_gamma(shape = shape,
+                scale = scale,
+                x_min = 0.0,
+                x_max = x_max,
+                number_of_points = 10000,
+                x_label = "Relative root size",
+                include_x_label = True,
+                include_y_label = include_y_label,
+                include_title = True,
+                plot_width = 3.5,
+                plot_height = 3.0,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = 0.16,
+                pad_right = 0.99,
+                pad_bottom = 0.17,
+                pad_top = 0.91,
+                plot_file_prefix = plot_file_prefix)
+
+
     generate_scatter_plots(
             parameters = [
                     "root_height_c1sp1",
@@ -2118,7 +2229,7 @@ def main_cli(argv = sys.argv):
             xy_label_size = 16.0,
             title_size = 16.0,
             pad_left = 0.2,
-            pad_right = 0.99,
+            pad_right = 0.965,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "event-time-0010-005-500k-xy",
@@ -2142,7 +2253,7 @@ def main_cli(argv = sys.argv):
             xy_label_size = 16.0,
             title_size = 16.0,
             pad_left = 0.2,
-            pad_right = 0.99,
+            pad_right = 0.965,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "event-time-0010-010-500k-x",
@@ -2166,7 +2277,7 @@ def main_cli(argv = sys.argv):
             xy_label_size = 16.0,
             title_size = 16.0,
             pad_left = 0.2,
-            pad_right = 0.99,
+            pad_right = 0.965,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "event-time-0010-020-500k-x",
@@ -2190,7 +2301,7 @@ def main_cli(argv = sys.argv):
             xy_label_size = 16.0,
             title_size = 16.0,
             pad_left = 0.2,
-            pad_right = 0.99,
+            pad_right = 0.965,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "event-time-0010-010-500k-xy",
@@ -2214,7 +2325,7 @@ def main_cli(argv = sys.argv):
             xy_label_size = 16.0,
             title_size = 16.0,
             pad_left = 0.2,
-            pad_right = 0.99,
+            pad_right = 0.965,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "event-time-0100-001-500k-x",
@@ -2238,7 +2349,7 @@ def main_cli(argv = sys.argv):
             xy_label_size = 16.0,
             title_size = 16.0,
             pad_left = 0.2,
-            pad_right = 0.99,
+            pad_right = 0.965,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "event-time-1000-0001-500k-x",
@@ -2276,12 +2387,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "root-pop-size-0010-005-500k-xy",
@@ -2300,12 +2411,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "root-pop-size-0010-010-500k-x",
@@ -2324,12 +2435,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "root-pop-size-0010-020-500k-x",
@@ -2348,12 +2459,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "root-pop-size-0010-010-500k-xy",
@@ -2372,12 +2483,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "root-pop-size-0100-001-500k-x",
@@ -2396,12 +2507,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "root-pop-size-1000-0001-500k-x",
@@ -2439,12 +2550,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "leaf-pop-size-0010-005-500k-xy",
@@ -2463,12 +2574,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "leaf-pop-size-0010-010-500k-x",
@@ -2487,12 +2598,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "leaf-pop-size-0010-020-500k-x",
@@ -2511,12 +2622,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "leaf-pop-size-0010-010-500k-xy",
@@ -2535,12 +2646,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "leaf-pop-size-0100-001-500k-x",
@@ -2559,12 +2670,12 @@ def main_cli(argv = sys.argv):
             include_title = True,
             include_rmse = False,
             include_ci = True,
-            plot_width = 3.5,
+            plot_width = 3.6,
             plot_height = 3.0,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.99,
+            pad_left = 0.215,
+            pad_right = 0.955,
             pad_bottom = 0.18,
             pad_top = 0.9,
             plot_file_prefix = "leaf-pop-size-1000-0001-500k-x",
@@ -2591,13 +2702,15 @@ def main_cli(argv = sys.argv):
             include_cs = True,
             include_prop_correct = True,
             plot_width = 3.5,
-            plot_height = 3.0,
+            plot_height = 3.3,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
+            pad_left = 0.16,
             pad_right = 0.99,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
+            pad_bottom = 0.165,
+            pad_top = 0.915,
+            lower_annotation_y = 0.01,
+            upper_annotation_y = 0.915,
             plot_file_prefix = "nevents-0010-005-500k-xy",
             variable_only = False)
     generate_specific_model_plots(
@@ -2610,13 +2723,15 @@ def main_cli(argv = sys.argv):
             include_cs = True,
             include_prop_correct = True,
             plot_width = 3.5,
-            plot_height = 3.0,
+            plot_height = 3.3,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
+            pad_left = 0.16,
             pad_right = 0.99,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
+            pad_bottom = 0.165,
+            pad_top = 0.915,
+            lower_annotation_y = 0.01,
+            upper_annotation_y = 0.915,
             plot_file_prefix = "nevents-0010-010-500k-x",
             variable_only = False)
     generate_specific_model_plots(
@@ -2629,13 +2744,15 @@ def main_cli(argv = sys.argv):
             include_cs = True,
             include_prop_correct = True,
             plot_width = 3.5,
-            plot_height = 3.0,
+            plot_height = 3.3,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
+            pad_left = 0.16,
             pad_right = 0.99,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
+            pad_bottom = 0.165,
+            pad_top = 0.915,
+            lower_annotation_y = 0.01,
+            upper_annotation_y = 0.915,
             plot_file_prefix = "nevents-0010-020-500k-x",
             variable_only = False)
     generate_specific_model_plots(
@@ -2648,13 +2765,15 @@ def main_cli(argv = sys.argv):
             include_cs = True,
             include_prop_correct = True,
             plot_width = 3.5,
-            plot_height = 3.0,
+            plot_height = 3.3,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
+            pad_left = 0.16,
             pad_right = 0.99,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
+            pad_bottom = 0.165,
+            pad_top = 0.915,
+            lower_annotation_y = 0.01,
+            upper_annotation_y = 0.915,
             plot_file_prefix = "nevents-0010-010-500k-xy",
             variable_only = False)
     generate_specific_model_plots(
@@ -2667,13 +2786,15 @@ def main_cli(argv = sys.argv):
             include_cs = True,
             include_prop_correct = True,
             plot_width = 3.5,
-            plot_height = 3.0,
+            plot_height = 3.3,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
+            pad_left = 0.16,
             pad_right = 0.99,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
+            pad_bottom = 0.165,
+            pad_top = 0.915,
+            lower_annotation_y = 0.01,
+            upper_annotation_y = 0.915,
             plot_file_prefix = "nevents-0100-001-500k-x",
             variable_only = False)
     generate_specific_model_plots(
@@ -2686,13 +2807,15 @@ def main_cli(argv = sys.argv):
             include_cs = True,
             include_prop_correct = True,
             plot_width = 3.5,
-            plot_height = 3.0,
+            plot_height = 3.3,
             xy_label_size = 16.0,
             title_size = 16.0,
-            pad_left = 0.2,
+            pad_left = 0.16,
             pad_right = 0.99,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
+            pad_bottom = 0.165,
+            pad_top = 0.915,
+            lower_annotation_y = 0.01,
+            upper_annotation_y = 0.915,
             plot_file_prefix = "nevents-1000-0001-500k-x",
             variable_only = False)
 
