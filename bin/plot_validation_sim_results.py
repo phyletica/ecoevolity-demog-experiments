@@ -67,13 +67,13 @@ def plot_gamma(shape = 1.0,
     line = ax.plot(x, d)
     ax.set_xlim(x_min, x_max)
     plt.setp(line,
-            color = '0.45',
+            color = (57 / 255.0, 115 / 255.0, 124 / 255.0),
             linestyle = '-',
             linewidth = 1.5,
             marker = '',
             zorder = 100)
     ax.axvline(x = 1.0,
-            color = '0.7',
+            color = (184 / 255.0, 90 / 255.0, 13 / 255.0),
             linestyle = '--',
             linewidth = 1.0,
             marker = '',
@@ -2119,7 +2119,9 @@ def main_cli(argv = sys.argv):
         if q > x_max:
             x_max = q
     for i, (shape, scale) in enumerate(root_gamma_parameters):
-        plot_file_prefix = "relative-root-prior-{0:.0f}-{1:.2f}".format(shape, scale)
+        scale_str = "{0:.2f}".format(scale)
+        scale_str = scale_str.replace(".", "")
+        plot_file_prefix = "relative-root-prior-{0:.0f}-{1}".format(shape, scale_str)
         include_y_label = False
         if i == 0:
             include_y_label = True
