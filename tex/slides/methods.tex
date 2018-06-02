@@ -1,14 +1,14 @@
 \begin{frame}[t]
 \centerline{
-    \onslide<3->{\includegraphics[width=0.34\linewidth]{../../simulations/validation/plots/relative-root-prior-10-005-gamma.pdf}}
+    \onslide<2->{\includegraphics[width=0.34\linewidth]{../../simulations/validation/plots/relative-root-prior-10-005-gamma.pdf}}
     \hspace{-2.5mm}
-    \onslide<3->{\includegraphics[width=0.34\linewidth]{../../simulations/validation/plots/relative-root-prior-10-010-gamma.pdf}}
+    \onslide<2->{\includegraphics[width=0.34\linewidth]{../../simulations/validation/plots/relative-root-prior-10-010-gamma.pdf}}
     \hspace{-2.5mm}
-    \onslide<3->{\includegraphics[width=0.34\linewidth]{../../simulations/validation/plots/relative-root-prior-10-020-gamma.pdf}}
+    \onslide<2->{\includegraphics[width=0.34\linewidth]{../../simulations/validation/plots/relative-root-prior-10-020-gamma.pdf}}
 }
 \vspace{-4mm}
 \centerline{
-    \onslide<3->{Relative size of ancestral population}
+    \onslide<2->{Relative size of ancestral population}
 }
 
 \onslide<1->{
@@ -20,9 +20,14 @@
 \end{center}
 }
 
-\onslide<2->{
+\onslide<1->{
 \begin{itemize}
-    \item Some methods here?
+    \item Simulate datasets with 500k characters
+    \item Use Bayesian model averaging with full
+        likelihood\footnote[1]{\tiny\shortfullcite{Oaks2018ecoevolity}}$^,$\footnote[2]{\tiny\shortfullcite{Bryant2012}}
+    \item No model misspecification
+    \item $\textrm{\sffamily Time of change} \sim \textrm{\sffamily
+            Exponential(\textrm{\sffamily mean} = 0.01)}$
 \end{itemize}
 }
 
