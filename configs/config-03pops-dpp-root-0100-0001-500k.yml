@@ -30,8 +30,8 @@ global_comparison_settings:
             estimate: true
             prior:
                 gamma_distribution:
-                    shape: 10.0
-                    scale: 0.05
+                    shape: 100.0
+                    scale: 0.001
                     offset: 0.0
         freq_1:
             value: 0.5
@@ -72,7 +72,7 @@ event_model_prior:
 event_time_prior:
     gamma_distribution:
         shape: 1.0
-        scale: 0.01
+        scale: 0.001
         offset: 0.0
 
 mcmc_settings:
