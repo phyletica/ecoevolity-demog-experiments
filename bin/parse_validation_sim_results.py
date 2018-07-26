@@ -198,13 +198,9 @@ def parse_simulation_results(
         burnin = 401):
     batch_number_pattern = re.compile(r'batch(?P<batch_number>\d+)')
     sim_number_pattern = re.compile(r'-sim-(?P<sim_number>\d+)-')
-    run_number_pattern = re.compile(r'-run-(?P<sim_number>\d+)\.log')
-    dpp_pattern = re.compile(r'-dpp-')
     val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '0*'))
     for val_sim_dir in sorted(val_sim_dirs):
-        dpp = False
-        if dpp_pattern.search(val_sim_dir):
-            dpp = True
+        dpp = True
         sim_name = os.path.basename(val_sim_dir)
         number_of_comparisons = int(sim_name[0:2])
         parameter_names = get_parameter_names(number_of_comparisons, dpp = dpp)
@@ -221,7 +217,7 @@ def parse_simulation_results(
             var_only_results_path = os.path.join(batch_dir, "var-only-results.csv")
             var_only_present = False
             var_only_path = glob.glob(os.path.join(val_sim_dir, "batch*",
-                    "var-only-simcoevolity-sim-00*-config-state-run*log*"))
+                    "run-*-var-only-simcoevolity-sim-00*-config-state-run-1.log*"))
             if (len(var_only_path) > 0):
                 var_only_present = True
             if (os.path.exists(var_only_results_path) or 
@@ -241,7 +237,7 @@ def parse_simulation_results(
             var_only_results = get_empty_results_dict(number_of_comparisons, dpp = dpp)
 
             posterior_paths = glob.glob(os.path.join(batch_dir,
-                    "simcoevolity-sim-*-config-state-run-1.log*"))
+                    "run-1-simcoevolity-sim-*-config-state-run-1.log*"))
             for posterior_path in sorted(posterior_paths):
                 sim_number_matches = sim_number_pattern.findall(posterior_path)
                 assert(len(sim_number_matches) == 1)
@@ -252,7 +248,7 @@ def parse_simulation_results(
                         batch_number_str,
                         sim_number_str))
                 post_paths = glob.glob(os.path.join(batch_dir,
-                        "simcoevolity-sim-{0}-config-state-run-*.log*".format(
+                        "run-*-simcoevolity-sim-{0}-config-state-run-1.log*".format(
                                 sim_number_str)))
                 assert (len(post_paths) == expected_number_of_runs), (
                         "Found {0} state logs for {1}".format(
@@ -264,7 +260,7 @@ def parse_simulation_results(
                 true_path = true_paths[0]
                 assert(os.path.exists(true_path))
                 stdout_paths = glob.glob(os.path.join(batch_dir,
-                        "simcoevolity-sim-{0}-config.yml-run-*.out*".format(
+                        "run-*-simcoevolity-sim-{0}-config.yml.out*".format(
                                 sim_number_str)))
                 assert(len(stdout_paths) == expected_number_of_runs)
                 if not skipping_sim:
@@ -282,11 +278,11 @@ def parse_simulation_results(
                         results[k].append(v)
                 if var_only_present:
                     var_only_post_paths = glob.glob(os.path.join(batch_dir,
-                            "var-only-simcoevolity-sim-{0}-config-state-run-*.log*".format(
+                            "run-*-var-only-simcoevolity-sim-{0}-config-state-run-1.log*".format(
                                     sim_number_str)))
                     assert(len(var_only_post_paths) == expected_number_of_runs)
                     vo_so_pattern = os.path.join(batch_dir,
-                            "var-only-simcoevolity-sim-{0}-config.yml-run-*.out*".format(
+                            "run-*-var-only-simcoevolity-sim-{0}-config.yml.out*".format(
                                     sim_number_str))
                     var_only_stdout_paths = glob.glob(vo_so_pattern)
                     assert (len(var_only_stdout_paths) == expected_number_of_runs), (
