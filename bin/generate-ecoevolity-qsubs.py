@@ -43,7 +43,7 @@ def write_qsub(config_path,
     if os.path.exists(qsub_path):
         return
     config_file = os.path.basename(config_path)
-    stdout_path = "{0}-run-{1}.out".format(config_file, run_number)
+    stdout_path = "run-{0}-{1}.out".format(run_number, config_file)
     seed = rng.randint(1, 999999999)
     assert(not os.path.exists(qsub_path))
     with open(qsub_path, 'w') as out:
@@ -52,13 +52,15 @@ def write_qsub(config_path,
         else:
             out.write(get_pbs_header())
         if relax_missing_sites:
-            out.write("ecoevolity --seed {0} --relax-constant-sites --relax-missing-sites {1} 1>{2} 2>&1\n".format(
+            out.write("ecoevolity --seed {0} --prefix run-{1}- --relax-constant-sites --relax-missing-sites {2} 1>{3} 2>&1\n".format(
                     seed,
+                    run_number,
                     config_file,
                     stdout_path))
         else:
-            out.write("ecoevolity --seed {0} --relax-constant-sites {1} 1>{2} 2>&1\n".format(
+            out.write("ecoevolity --seed {0} --prefix run-{1}- --relax-constant-sites {2} 1>{3} 2>&1\n".format(
                     seed,
+                    run_number,
                     config_file,
                     stdout_path))
 
