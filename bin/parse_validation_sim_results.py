@@ -217,7 +217,7 @@ def parse_simulation_results(
             var_only_results_path = os.path.join(batch_dir, "var-only-results.csv")
             var_only_present = False
             var_only_path = glob.glob(os.path.join(val_sim_dir, "batch*",
-                    "run-*-var-only-simcoevolity-sim-00*-config-state-run-1.log*"))
+                    "run-?-var-only-simcoevolity-sim-00*-config-state-run-1.log*"))
             if (len(var_only_path) > 0):
                 var_only_present = True
             if (os.path.exists(var_only_results_path) or 
@@ -248,7 +248,7 @@ def parse_simulation_results(
                         batch_number_str,
                         sim_number_str))
                 post_paths = glob.glob(os.path.join(batch_dir,
-                        "run-*-simcoevolity-sim-{0}-config-state-run-1.log*".format(
+                        "run-?-simcoevolity-sim-{0}-config-state-run-1.log*".format(
                                 sim_number_str)))
                 assert (len(post_paths) == expected_number_of_runs), (
                         "Found {0} state logs for {1}".format(
@@ -260,7 +260,7 @@ def parse_simulation_results(
                 true_path = true_paths[0]
                 assert(os.path.exists(true_path))
                 stdout_paths = glob.glob(os.path.join(batch_dir,
-                        "run-*-simcoevolity-sim-{0}-config.yml.out*".format(
+                        "run-?-simcoevolity-sim-{0}-config.yml.out*".format(
                                 sim_number_str)))
                 assert(len(stdout_paths) == expected_number_of_runs)
                 if not skipping_sim:
@@ -278,11 +278,11 @@ def parse_simulation_results(
                         results[k].append(v)
                 if var_only_present:
                     var_only_post_paths = glob.glob(os.path.join(batch_dir,
-                            "run-*-var-only-simcoevolity-sim-{0}-config-state-run-1.log*".format(
+                            "run-?-var-only-simcoevolity-sim-{0}-config-state-run-1.log*".format(
                                     sim_number_str)))
                     assert(len(var_only_post_paths) == expected_number_of_runs)
                     vo_so_pattern = os.path.join(batch_dir,
-                            "run-*-var-only-simcoevolity-sim-{0}-config.yml.out*".format(
+                            "run-?-var-only-simcoevolity-sim-{0}-config.yml.out*".format(
                                     sim_number_str))
                     var_only_stdout_paths = glob.glob(vo_so_pattern)
                     assert (len(var_only_stdout_paths) == expected_number_of_runs), (
