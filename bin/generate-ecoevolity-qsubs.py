@@ -75,8 +75,8 @@ def main_cli(argv = sys.argv):
     parser.add_argument('--number-of-runs',
             action = 'store',
             type = int,
-            default = 3,
-            help = 'Number of qsubs to generate per config (Default: 3).')
+            default = 4,
+            help = 'Number of qsubs to generate per config (Default: 4).')
     parser.add_argument('--relax-missing-sites',
             action = 'store_true',
             help = 'Add relax-missing-sites option to scripts. Default: False')
