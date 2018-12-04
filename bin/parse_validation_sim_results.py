@@ -33,6 +33,7 @@ def get_parameter_names(number_of_comparisons, dpp = True):
     for i in range(number_of_comparisons):
         p.append("ln_likelihood_c{0}sp1".format(i + 1))
         p.append("root_height_c{0}sp1".format(i + 1))
+        p.append("coal_root_height_c{0}sp1".format(i + 1))
         p.append("mutation_rate_c{0}sp1".format(i + 1))
         p.append("freq_1_c{0}sp1".format(i + 1))
         p.append("pop_size_c{0}sp1".format(i + 1))
@@ -103,9 +104,11 @@ def get_results_from_sim_rep(
     results = {}
     post_sample = pycoevolity.posterior.PosteriorSample(
             posterior_paths,
-            burnin = burnin)
+            burnin = burnin,
+            include_time_in_coal_units = True)
     nsamples_per_chain = expected_number_of_samples - burnin
     assert(post_sample.number_of_samples == nchains * nsamples_per_chain)
+    assert(post_sample.number_of_comparisons == number_of_comparisons)
 
     true_values = pycoevolity.parsing.get_dict_from_spreadsheets(
             [true_path],
@@ -113,6 +116,14 @@ def get_results_from_sim_rep(
             header = None)
     for v in true_values.values():
         assert(len(v) == 1)
+    for label in post_sample.height_labels:
+        ht_key = "root_height_{0}".format(label)
+        sz_key = "pop_size_{0}".format(label)
+        t = float(true_values[ht_key][0])
+        n = float(true_values[sz_key][0])
+        t_coal = t / (2.0 * n)
+        coal_key = "coal_root_height_{0}".format(label)
+        true_values[coal_key] = [t_coal]
 
     results["batch"] = batch_number
     results["sim"] = sim_number
@@ -193,12 +204,13 @@ def get_results_from_sim_rep(
     return results
 
 def parse_simulation_results(
+        val_sim_dirs,
         expected_number_of_runs = 2,
         expected_number_of_samples = 1501,
         burnin = 401):
     batch_number_pattern = re.compile(r'batch(?P<batch_number>\d+)')
     sim_number_pattern = re.compile(r'-sim-(?P<sim_number>\d+)-')
-    val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '0*'))
+    # val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '0*'))
     for val_sim_dir in sorted(val_sim_dirs):
         dpp = True
         sim_name = os.path.basename(val_sim_dir)
@@ -324,11 +336,11 @@ def parse_simulation_results(
 def main_cli(argv = sys.argv):
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-r', '--expected-number-of-runs',
-            action = 'store',
-            type = int,
-            default = 3,
-            help = 'Number of MCMC chains that were run for each sim rep.')
+    # parser.add_argument('-r', '--expected-number-of-runs',
+    #         action = 'store',
+    #         type = int,
+    #         default = 3,
+    #         help = 'Number of MCMC chains that were run for each sim rep.')
     parser.add_argument('-s', '--expected-number-of-samples',
             action = 'store',
             type = int,
@@ -338,7 +350,7 @@ def main_cli(argv = sys.argv):
     parser.add_argument('--burnin',
             action = 'store',
             type = int,
-            default = 401,
+            default = 501,
             help = ('Number of MCMC samples to be ignored as burnin from the '
                     'beginning of every chain.'))
 
@@ -347,8 +359,17 @@ def main_cli(argv = sys.argv):
     else:
         args = parser.parse_args(argv)
 
+    val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-dpp-root-*'))
+    four_run_val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-dpp-root-*-t0002-*'))
+    three_run_val_sim_dirs = [d for d in val_sim_dirs if d not in four_run_val_sim_dirs]
     parse_simulation_results(
-            expected_number_of_runs = args.expected_number_of_runs,
+            four_run_val_sim_dirs
+            expected_number_of_runs = 4,
+            expected_number_of_samples = args.expected_number_of_samples,
+            burnin = args.burnin)
+    parse_simulation_results(
+            three_run_val_sim_dirs
+            expected_number_of_runs = 3,
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin)
 
