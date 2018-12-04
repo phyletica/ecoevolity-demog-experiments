@@ -8,6 +8,8 @@ PROJECT_DIR = os.path.dirname(BIN_DIR)
 SIM_DIR = os.path.join(PROJECT_DIR, 'simulations')
 VAL_DIR = os.path.join(SIM_DIR, 'validation')
 CONFIG_DIR = os.path.join(PROJECT_DIR, 'configs')
+RESULTS_DIR = os.path.join(PROJECT_DIR, 'results')
+PLOT_DIR = os.path.join(RESULTS_DIR, 'plots')
 
 def main():
     sys.stdout.write("{0}\n".format(PROJECT_DIR))
