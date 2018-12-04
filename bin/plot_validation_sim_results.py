@@ -7,7 +7,7 @@ import math
 import glob
 import logging
 
-logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 _LOG = logging.getLogger(os.path.basename(__file__))
 
 import pycoevolity
@@ -35,8 +35,310 @@ import scipy.stats
 import numpy
 
 
+
+sim_dir_to_priors = {
+        "03pops-dpp-root-0005-004-t0002-500k":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-019-t0002-500k":
+            (
+                (5.0, 0.19, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-079-t0002-500k":
+            (
+                (5.0, 0.79, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0010-0025-500k":
+            (
+                (10.0, 0.025, 0.0),
+                (1.0, 0.01, 0.0)
+            ),
+        "03pops-dpp-root-0010-0025-t0001-500k":
+            (
+                (10.0, 0.025, 0.0),
+                (1.0, 0.001, 0.0)
+            ),
+        "03pops-dpp-root-0010-005-500k":
+            (
+                (10.0, 0.05, 0.0),
+                (1.0, 0.01, 0.0)
+            ),
+        "03pops-dpp-root-0010-005-t0001-500k":
+            (
+                (10.0, 0.05, 0.0),
+                (1.0, 0.001, 0.0)
+            ),
+        "03pops-dpp-root-0010-010-500k":
+            (
+                (10.0, 0.1, 0.0),
+                (1.0, 0.01, 0.0)
+            ),
+        "03pops-dpp-root-0010-020-500k":
+            (
+                (10.0, 0.2, 0.0),
+                (1.0, 0.01, 0.0)
+            ),
+        "03pops-dpp-root-0050-002-t0002-500k":
+            (
+                (50.0, 0.02, 0.0),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0100-001-500k":
+            (
+                (100.0, 0.01, 0.0),
+                (1.0, 0.01, 0.0)
+            ),
+        "03pops-dpp-root-0500-0002-t0002-500k":
+            (
+                (500.0, 0.002, 0.0),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-1000-0001-500k":
+            (
+                (1000.0, 0.001, 0.0),
+                (1.0, 0.01, 0.0)
+            ),
+}
+
+
+def get_prefix_from_sim_dir_name(sim_dir_name):
+    conc_prior, time_prior = sim_dir_to_priors[sim_dir_name]
+    s = "a-{a_shape}-{a_scale}-{a_offset}-t-{t_shape}-{t_scale}-{t_offset}".format(
+            a_shape = str(conc_prior[0]).replace(".", "_"),
+            a_scale = str(conc_prior[1]).replace(".", "_"),
+            a_offset = str(conc_prior[2]).replace(".", "_"),
+            t_shape = str(time_prior[0]).replace(".", "_"),
+            t_scale = str(time_prior[1]).replace(".", "_"),
+            t_offset = str(time_prior[2]).replace(".", "_"),
+            )
+    return s
+
+
+class HistogramData(object):
+    def __init__(self, x = []):
+        self._x = x
+
+    @classmethod
+    def init(cls, results, parameters, parameter_is_discrete):
+        d = cls()
+        d._x = []
+        for parameter_str in parameters:
+            if parameter_is_discrete:
+                d._x.extend(int(x) for x in results["{0}".format(parameter_str)])
+            else:
+                d._x.extend(float(x) for x in results["{0}".format(parameter_str)])
+        return d
+
+    def _get_x(self):
+        return self._x
+    x = property(_get_x)
+
+
+class ScatterData(object):
+    def __init__(self,
+            x = [],
+            y = [],
+            y_lower = [],
+            y_upper = [],
+            highlight_values = [],
+            highlight_threshold = None,
+            highlight_greater_than = True):
+        self._x = x
+        self._y = y
+        self._y_lower = y_lower
+        self._y_upper = y_upper
+        self._highlight_values = highlight_values
+        self._highlight_threshold = highlight_threshold
+        self._highlight_greater_than = highlight_greater_than
+        self._vet_data()
+        self._highlight_indices = []
+        self._populate_highlight_indices()
+        self.highlight_color = (184 / 255.0, 90 / 255.0, 13 / 255.0) # pauburn
+
+    @classmethod
+    def init(cls, results, parameters,
+            highlight_parameter_prefix = None,
+            highlight_threshold = None,
+            highlight_greater_than = True):
+        d = cls()
+        d._x = []
+        d._y = []
+        d._y_lower = []
+        d._y_upper = []
+        d._highlight_threshold = highlight_threshold
+        d._highlight_values = []
+        d._highlight_indices = []
+        for parameter_str in parameters:
+            d._x.extend(float(x) for x in results["true_{0}".format(parameter_str)])
+            d._y.extend(float(x) for x in results["mean_{0}".format(parameter_str)])
+            d._y_lower.extend(float(x) for x in results["eti_95_lower_{0}".format(parameter_str)])
+            d._y_upper.extend(float(x) for x in results["eti_95_upper_{0}".format(parameter_str)])
+            if highlight_parameter_prefix:
+                d._highlight_values.extend(float(x) for x in results["{0}_{1}".format(
+                        highlight_parameter_prefix,
+                        parameter_str)])
+        d._vet_data()
+        d._populate_highlight_indices()
+        return d
+
+    def _vet_data(self):
+        assert len(self._x) == len(self._y)
+        if self._y_lower:
+            assert len(self._x) == len(self._y_lower)
+        if self._y_upper:
+            assert len(self._x) == len(self._y_upper)
+        if self._highlight_values:
+            assert len(self._x) == len(self._highlight_values)
+
+    def _populate_highlight_indices(self):
+        if (self._highlight_values) and (self._highlight_threshold is not None):
+            for i in range(len(self._x)):
+                if self.highlight(i):
+                    self._highlight_indices.append(i)
+
+    def has_y_ci(self):
+        return bool(self.y_lower) and bool(self.y_upper)
+
+    def has_highlights(self):
+        return bool(self._highlight_indices)
+
+    def _get_x(self):
+        return self._x
+    x = property(_get_x)
+
+    def _get_y(self):
+        return self._y
+    y = property(_get_y)
+
+    def _get_y_lower(self):
+        return self._y_lower
+    y_lower = property(_get_y_lower)
+
+    def _get_y_upper(self):
+        return self._y_upper
+    y_upper = property(_get_y_upper)
+
+    def _get_highlight_indices(self):
+        return self._highlight_indices
+    highlight_indices = property(_get_highlight_indices)
+
+    def _get_highlight_x(self):
+        return [self._x[i] for i in self._highlight_indices]
+    highlight_x = property(_get_highlight_x)
+
+    def _get_highlight_y(self):
+        return [self._y[i] for i in self._highlight_indices]
+    highlight_y = property(_get_highlight_y)
+
+    def _get_highlight_y_lower(self):
+        return [self._y_lower[i] for i in self._highlight_indices]
+    highlight_y_lower = property(_get_highlight_y_lower)
+
+    def _get_highlight_y_upper(self):
+        return [self._y_upper[i] for i in self._highlight_indices]
+    highlight_y_upper = property(_get_highlight_y_upper)
+
+    def highlight(self, index):
+        if (not self._highlight_values) or (self._highlight_threshold is None):
+            return False
+
+        if self._highlight_greater_than:
+            if self._highlight_values[index] > self._highlight_threshold:
+                return True
+            else:
+                return False
+        else:
+            if self._highlight_values[index] < self._highlight_threshold:
+                return True
+            else:
+                return False
+        return False
+
+
+def get_abs_error(true, estimate):
+    return math.fabs(true - estimate)
+
+def get_relative_estimate(true, estimate):
+    return estimate / float(true)
+
+def get_relative_error(true, estimate):
+    return math.fabs(true - estimate) / true
+
+def get_coal_units_vs_error(results, height_parameters, size_parameters,
+        error_func = get_relative_error,
+        psrf_as_response = False):
+    assert len(height_parameters) == len(size_parameters)
+    x = []
+    y = []
+    psrf = []
+    for sp_index in range(len(height_parameters)):
+        # Ensure we are getting the height and size for the same population
+        assert height_parameters[sp_index].split("_")[-1] == size_parameters[sp_index].split("_")[-1]
+        true_height_key = "true_{0}".format(height_parameters[sp_index])
+        true_size_key = "true_{0}".format(size_parameters[sp_index])
+        mean_height_key = "mean_{0}".format(height_parameters[sp_index])
+        psrf_height_key = "psrf_{0}".format(height_parameters[sp_index])
+        psrf_size_key = "psrf_{0}".format(size_parameters[sp_index])
+        nsims = len(results[true_height_key])
+        assert nsims == len(results[true_size_key])
+        assert nsims == len(results[mean_height_key])
+        for sim_index in range(nsims):
+            t = float(results[true_height_key][sim_index])
+            t_mean = float(results[mean_height_key][sim_index])
+            err = error_func(t, t_mean)
+            N = float(results[true_size_key][sim_index])
+            coal_units = t / (2.0 * N)
+            x.append(coal_units)
+            y.append(err)
+            psrf_value = max(
+                    float(results[psrf_height_key][sim_index]), 
+                    float(results[psrf_size_key][sim_index])) 
+            psrf.append(psrf_value)
+    if psrf_as_response:
+        return x, psrf
+    return x, y, psrf
+
+def get_true_est_coal_units(results, height_parameters, size_parameters):
+    assert len(height_parameters) == len(size_parameters)
+    x = []
+    y = []
+    psrf = []
+    for sp_index in range(len(height_parameters)):
+        # Ensure we are getting the height and size for the same population
+        assert height_parameters[sp_index].split("_")[-1] == size_parameters[sp_index].split("_")[-1]
+        true_height_key = "true_{0}".format(height_parameters[sp_index])
+        true_size_key = "true_{0}".format(size_parameters[sp_index])
+        mean_height_key = "mean_{0}".format(height_parameters[sp_index])
+        mean_size_key = "mean_{0}".format(size_parameters[sp_index])
+        psrf_height_key = "psrf_{0}".format(height_parameters[sp_index])
+        psrf_size_key = "psrf_{0}".format(size_parameters[sp_index])
+        nsims = len(results[true_height_key])
+        assert nsims == len(results[true_size_key])
+        assert nsims == len(results[mean_height_key])
+        assert nsims == len(results[mean_size_key])
+        for sim_index in range(nsims):
+            t = float(results[true_height_key][sim_index])
+            t_mean = float(results[mean_height_key][sim_index])
+            N = float(results[true_size_key][sim_index])
+            N_mean = float(results[mean_size_key][sim_index])
+            coal_units = t / (2.0 * N)
+            est_coal_units = t_mean / (2.0 * N_mean)
+            x.append(coal_units)
+            y.append(est_coal_units)
+            psrf_value = max(
+                    float(results[psrf_height_key][sim_index]), 
+                    float(results[psrf_size_key][sim_index])) 
+            psrf.append(psrf_value)
+    return x, y, psrf
+
+
 def plot_gamma(shape = 1.0,
         scale = 1.0,
+        offset = 0.0,
         x_min = 0.0,
         x_max = None,
         number_of_points = 1000,
@@ -52,11 +354,18 @@ def plot_gamma(shape = 1.0,
         pad_right = 0.99,
         pad_bottom = 0.18,
         pad_top = 0.9,
-        plot_file_prefix = None):
+        plot_file_prefix = None,
+        plot_dir = project_util.PLOT_DIR,
+        ):
     if x_max is None:
         x_max = scipy.stats.gamma.ppf(0.999, shape, scale = scale)
+        x_max_plot = x_max + offset
+    else:
+        x_max_plot = x_max
     x = numpy.linspace(x_min, x_max, number_of_points)
     d = scipy.stats.gamma.pdf(x, shape, scale = scale)
+
+    x_plot = [v + offset for v in x]
 
     plt.close('all')
     fig = plt.figure(figsize = (plot_width, plot_height))
@@ -64,8 +373,8 @@ def plot_gamma(shape = 1.0,
             wspace = 0.0,
             hspace = 0.0)
     ax = plt.subplot(gs[0, 0])
-    line = ax.plot(x, d)
-    ax.set_xlim(x_min, x_max)
+    line = ax.plot(x_plot, d)
+    ax.set_xlim(x_min, x_max_plot)
     plt.setp(line,
             color = (57 / 255.0, 115 / 255.0, 124 / 255.0),
             linestyle = '-',
@@ -87,7 +396,11 @@ def plot_gamma(shape = 1.0,
                 "Density",
                 fontsize = xy_label_size)
     if include_title:
-        col_header = "$\\textrm{{\\sffamily Gamma}}({0:.0f}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(shape, shape * scale)
+        # col_header = "$\\textrm{{\\sffamily Gamma}}({0:.0f}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(shape, (shape * scale) + offset)
+        if offset == 0.0:
+            col_header = "$\\textrm{{\\sffamily Gamma}}({0:.0f}, {1})$\n$\\textrm{{\\sffamily mean}} = {2}$".format(shape, scale, (shape * scale) + offset)
+        else:
+            col_header = "$\\textrm{{\\sffamily Gamma}}({0:.0f}, {1})$\n$\\textrm{{\\sffamily offset}} = {2}$ $\\textrm{{\\sffamily mean}} = {3}$".format(shape, scale, offset, (shape * scale) + offset)
         ax.set_title(col_header,
                 fontsize = title_size)
 
@@ -97,7 +410,6 @@ def plot_gamma(shape = 1.0,
             bottom = pad_bottom,
             top = pad_top)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
     plot_path = os.path.join(plot_dir,
@@ -106,18 +418,8 @@ def plot_gamma(shape = 1.0,
     _LOG.info("Plot written to {0!r}\n".format(plot_path))
 
 def get_nevents_probs(
-        sim_dir,
-        nevents = 1,
-        variable_only = False):
-    results_file_name = "results.csv.gz"
-    if variable_only:
-        results_file_name = "var-only-results.csv.gz"
-    results_paths = sorted(glob.glob(
-            os.path.join(project_util.VAL_DIR,
-                    sim_dir,
-                    "batch*",
-                    results_file_name)))
-    
+        results_paths,
+        nevents = 1):
     probs = []
     prob_key = "num_events_{0}_p".format(nevents)
     for d in pycoevolity.parsing.spreadsheet_iter(results_paths):
@@ -149,29 +451,20 @@ def bin_prob_correct_tuples(probability_correct_tuples, nbins = 20):
     assert len(bins) == nbins
     est_true_tups = []
     for i, b in enumerate(bins):
-        #######################################
-        # est = bin_upper_limits[i] - bin_width
         ests = [p for (p, t) in b]
         est = sum(ests) / float(len(ests))
-        #######################################
         correct = [t for (p, t) in b]
         true = sum(correct) / float(len(correct))
         est_true_tups.append((est, true))
     return bins, est_true_tups
 
 def get_nevents_estimated_true_probs(
-        sim_dir,
+        results_paths,
         nevents = 1,
-        variable_only = False,
         nbins = 20):
-    if variable_only:
-        _LOG.info("Parsing num_events results for {0} (variable only)".format(sim_dir))
-    else:
-        _LOG.info("Parsing num_events results for {0} (all sites)".format(sim_dir))
     nevent_probs = get_nevents_probs(
-            sim_dir = sim_dir,
-            nevents = nevents,
-            variable_only = variable_only)
+            results_paths = results_paths,
+            nevents = nevents)
     _LOG.info("\tparsed results for {0} simulations".format(len(nevent_probs)))
     bins, tups = bin_prob_correct_tuples(nevent_probs, nbins = nbins)
     _LOG.info("\tbin sample sizes: {0}".format(
@@ -180,35 +473,20 @@ def get_nevents_estimated_true_probs(
     return bins, tups
 
 def plot_nevents_estimated_vs_true_probs(
-        sim_dir,
+        results_paths,
         nevents = 1,
         nbins = 20,
         plot_file_prefix = "",
-        include_unlinked_only = False):
+        plot_dir = project_util.PLOT_DIR
+        ):
     bins, est_true_probs = get_nevents_estimated_true_probs(
-            sim_dir = sim_dir,
+            results_paths = results_paths,
             nevents = nevents,
-            variable_only = False,
             nbins = nbins)
-    vo_bins, vo_est_true_probs = get_nevents_estimated_true_probs(
-            sim_dir = sim_dir,
-            nevents = nevents,
-            variable_only = True,
-            nbins = nbins)
-    if include_unlinked_only:
-        uo_bins, uo_est_true_probs = get_nevents_estimated_true_probs(
-                sim_dir = sim_dir.replace("0l", "0ul"),
-                nevents = nevents,
-                variable_only = False,
-                nbins = nbins)
 
     plt.close('all')
-    if include_unlinked_only:
-        fig = plt.figure(figsize = (7.5, 2.5))
-        ncols = 3
-    else:
-        fig = plt.figure(figsize = (5.2, 2.5))
-        ncols = 2
+    fig = plt.figure(figsize = (4.0, 3.5))
+    ncols = 1
     nrows = 1
     gs = gridspec.GridSpec(nrows, ncols,
             wspace = 0.0,
@@ -255,20 +533,12 @@ def plot_nevents_estimated_vs_true_probs(
                     textcoords = "offset points",
                     horizontalalignment = "right",
                     verticalalignment = "bottom")
-    title_text = ax.set_title("All sites")
     ylabel_text = ax.set_ylabel("True probability", size = 14.0)
-    if include_unlinked_only:
-        ax.text(1.5, -0.14,
-                "Posterior probability of one event",
-                horizontalalignment = "center",
-                verticalalignment = "top",
-                size = 14.0)
-    else:
-        ax.text(1.0, -0.14,
-                "Posterior probability of one event",
-                horizontalalignment = "center",
-                verticalalignment = "top",
-                size = 14.0)
+    ax.text(0.5, -0.14,
+            "Posterior probability of one divergence",
+            horizontalalignment = "center",
+            verticalalignment = "top",
+            size = 14.0)
     identity_line, = ax.plot(
             [0.0, 1.0],
             [0.0, 1.0])
@@ -278,151 +548,9 @@ def plot_nevents_estimated_vs_true_probs(
             linewidth = 1.0,
             marker = '',
             zorder = 0)
-
-    ax = plt.subplot(gs[0, 1])
-    x = [e for (e, t) in vo_est_true_probs]
-    y = [t for (e, t) in vo_est_true_probs]
-    sample_sizes = [len(b) for b in vo_bins]
-    line, = ax.plot(x, y)
-    plt.setp(line,
-            marker = 'o',
-            markerfacecolor = 'none',
-            markeredgecolor = '0.35',
-            markeredgewidth = 0.7,
-            markersize = 3.5,
-            linestyle = '',
-            zorder = 100,
-            rasterized = False)
-    ax.set_xlim(0.0, 1.0)
-    ax.set_ylim(0.0, 1.0)
-    for i, (label, lx, ly) in enumerate(zip(sample_sizes, x, y)):
-        if i == 0:
-            ax.annotate(
-                    str(label),
-                    xy = (lx, ly),
-                    xytext = (1, 1),
-                    textcoords = "offset points",
-                    horizontalalignment = "left",
-                    verticalalignment = "bottom")
-        elif i == len(x) - 1:
-            ax.annotate(
-                    str(label),
-                    xy = (lx, ly),
-                    xytext = (-1, -1),
-                    textcoords = "offset points",
-                    horizontalalignment = "right",
-                    verticalalignment = "top")
-        else:
-            ax.annotate(
-                    str(label),
-                    xy = (lx, ly),
-                    xytext = (-1, 1),
-                    textcoords = "offset points",
-                    horizontalalignment = "right",
-                    verticalalignment = "bottom")
-    vo_title_text = ax.set_title("Variable only")
-    identity_line, = ax.plot(
-            [0.0, 1.0],
-            [0.0, 1.0])
-    plt.setp(identity_line,
-            color = '0.8',
-            linestyle = '-',
-            linewidth = 1.0,
-            marker = '',
-            zorder = 0)
-
-    if include_unlinked_only:
-        ax = plt.subplot(gs[0, 2])
-        x = [e for (e, t) in uo_est_true_probs]
-        y = [t for (e, t) in uo_est_true_probs]
-        sample_sizes = [len(b) for b in uo_bins]
-        line, = ax.plot(x, y)
-        plt.setp(line,
-                marker = 'o',
-                markerfacecolor = 'none',
-                markeredgecolor = '0.35',
-                markeredgewidth = 0.7,
-                markersize = 3.5,
-                linestyle = '',
-                zorder = 100,
-                rasterized = False)
-        ax.set_xlim(0.0, 1.0)
-        ax.set_ylim(0.0, 1.0)
-        for i, (label, lx, ly) in enumerate(zip(sample_sizes, x, y)):
-            if i == 0:
-                ax.annotate(
-                        str(label),
-                        xy = (lx, ly),
-                        xytext = (1, 1),
-                        textcoords = "offset points",
-                        horizontalalignment = "left",
-                        verticalalignment = "bottom")
-            elif i == len(x) - 1:
-                ax.annotate(
-                        str(label),
-                        xy = (lx, ly),
-                        xytext = (-1, -1),
-                        textcoords = "offset points",
-                        horizontalalignment = "right",
-                        verticalalignment = "top")
-            else:
-                ax.annotate(
-                        str(label),
-                        xy = (lx, ly),
-                        xytext = (-1, 1),
-                        textcoords = "offset points",
-                        horizontalalignment = "right",
-                        verticalalignment = "bottom")
-        uo_title_text = ax.set_title("Unlinked only")
-        identity_line, = ax.plot(
-                [0.0, 1.0],
-                [0.0, 1.0])
-        plt.setp(identity_line,
-                color = '0.8',
-                linestyle = '-',
-                linewidth = 1.0,
-                marker = '',
-                zorder = 0)
-
-    # show only the outside ticks
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        if not ax.is_last_row():
-            ax.set_xticks([])
-        if not ax.is_first_col():
-            ax.set_yticks([])
-
-    # show tick labels only for lower-left plot 
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        if ax.is_last_row() and ax.is_first_col():
-            continue
-        xtick_labels = ["" for item in ax.get_xticklabels()]
-        ytick_labels = ["" for item in ax.get_yticklabels()]
-        ax.set_xticklabels(xtick_labels)
-        ax.set_yticklabels(ytick_labels)
-
-    # avoid doubled spines
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        for sp in ax.spines.values():
-            sp.set_visible(False)
-            sp.set_linewidth(2)
-        if ax.is_first_row():
-            ax.spines['top'].set_visible(True)
-            ax.spines['bottom'].set_visible(True)
-        else:
-            ax.spines['bottom'].set_visible(True)
-        if ax.is_first_col():
-            ax.spines['left'].set_visible(True)
-            ax.spines['right'].set_visible(True)
-        else:
-            ax.spines['right'].set_visible(True)
-
 
     gs.update(left = 0.10, right = 0.995, bottom = 0.18, top = 0.91)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
     plot_file_name = "est-vs-true-prob-nevent-1.pdf"
@@ -453,252 +581,27 @@ def get_root_gamma_parameters(root_shape_string, root_scale_string):
     scale = float(root_scale_string) / denom
     return shape, scale
 
+root_gamma_pattern = re.compile(r'root-(?P<alpha_setting>\d+)-(?P<scale_setting>\d+)-')
+def get_root_gamma_label(sim_dir):
+    m = root_gamma_pattern.search(sim_dir)
+    root_shape, root_scale = get_root_gamma_parameters(
+            root_shape_string = m.group("alpha_setting"),
+            root_scale_string = m.group("scale_setting"))
+    mean_decimal_places = 1
+    gamma_mean = root_shape * root_scale
+    if gamma_mean < 0.49:
+        mean_decimal_places = 2
+    return "$\\textrm{{\\sffamily Gamma}}({shape}, \\textrm{{\\sffamily mean}} = {mean:.{mean_decimal_places}f})$".format(
+            shape = int(root_shape),
+            mean = gamma_mean,
+            mean_decimal_places = mean_decimal_places)
+
 def get_errors(values, lowers, uppers):
     n = len(values)
     assert(n == len(lowers))
     assert(n == len(uppers))
     return [[values[i] - lowers[i] for i in range(n)],
             [uppers[i] - values[i] for i in range(n)]]
-
-
-def get_results_paths(
-        validatition_sim_dir,
-        include_variable_only = True):
-    dpp_500k_sim_dirs = []
-    dpp_500k_sim_dirs.extend(sorted(glob.glob(os.path.join(
-            validatition_sim_dir,
-            "03pops-dpp-root-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9]*-500k"))))
-    dpp_500k_results_paths = []
-    vo_dpp_500k_results_paths = []
-    for sim_dir in dpp_500k_sim_dirs:
-        sim_name = os.path.basename(sim_dir)
-        dpp_500k_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "results.csv.gz")))
-                )
-        )
-        vo_dpp_500k_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "var-only-results.csv.gz")))
-                )
-        )
-
-    # dpp_100k_sim_dirs = []
-    # dpp_100k_sim_dirs.extend(sorted(glob.glob(os.path.join(
-    #         validatition_sim_dir,
-    #         "03pops-dpp-root-[0-9][0-9][0-9][0-9]-[0-9]+-100k"))))
-    # dpp_100k_results_paths = []
-    # vo_dpp_100k_results_paths = []
-    # for sim_dir in dpp_100k_sim_dirs:
-    #     sim_name = os.path.basename(sim_dir)
-    #     dpp_100k_results_paths.append(
-    #             (sim_name, sorted(glob.glob(os.path.join(
-    #                     sim_dir,
-    #                     "batch00[12345]",
-    #                     "results.csv.gz")))
-    #             )
-    #     )
-    #     vo_dpp_100k_results_paths.append(
-    #             (sim_name, sorted(glob.glob(os.path.join(
-    #                     sim_dir,
-    #                     "batch00[12345]",
-    #                     "var-only-results.csv.gz")))
-    #             )
-    #     )
-        
-    if not include_variable_only:
-        results_batches = {
-                "500k":                 dpp_500k_results_paths,
-                # "100k":                 dpp_100k_results_paths,
-                }
-        row_keys = [
-                "500k",
-                # "100k",
-                ]
-        return row_keys, results_batches
-
-    results_batches = {
-            "500k":                 dpp_500k_results_paths,
-            "500k variable only":   vo_dpp_500k_results_paths,
-            # "100k":                 dpp_100k_results_paths,
-            # "100k variable only":   vo_dpp_100k_results_paths,
-            }
-    row_keys = [
-            "500k",
-            "500k variable only",
-            # "100k",
-            # "100k variable only",
-            ]
-    return row_keys, results_batches
-
-def get_specific_results_paths(sim_dir,
-        variable_only = False):
-    sim_name = os.path.basename(sim_dir)
-    results_file_name = "results.csv.gz"
-    if variable_only:
-        results_file_name = "var-only-results.csv.gz"
-    results_paths = sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        results_file_name)))
-    return sim_name, results_paths
-
-def get_linked_loci_results_paths(
-        validatition_sim_dir,
-        data_set_size = "100k",
-        include_variable_only = True,
-        include_unlinked_only = True):
-    dpp_sim_dirs = []
-    dpp_sim_dirs.extend(sorted(glob.glob(os.path.join(
-            validatition_sim_dir,
-            "03pops-dpp-root-0100-{0}-*0l".format(data_set_size)))))
-    dpp_results_paths = []
-    vo_dpp_results_paths = []
-    for sim_dir in dpp_sim_dirs:
-        sim_name = os.path.basename(sim_dir)
-        dpp_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "results.csv.gz")))
-                )
-        )
-        vo_dpp_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "var-only-results.csv.gz")))
-                )
-        )
-    dpp_unlinked_sim_dirs = []
-    dpp_unlinked_sim_dirs.extend(sorted(glob.glob(os.path.join(
-            validatition_sim_dir,
-            "03pops-dpp-root-0100-{0}-*0ul".format(data_set_size)))))
-    uo_dpp_results_paths = []
-    for sim_dir in dpp_unlinked_sim_dirs:
-        sim_name = os.path.basename(sim_dir)
-        uo_dpp_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "results.csv.gz")))
-                )
-        )
-
-    s = data_set_size
-    results_batches = {
-            "{0}".format(s): dpp_results_paths,
-            }
-    row_keys = [
-            "{0}".format(s),
-            ]
-    if include_variable_only:
-        results_batches["{0} variable only".format(s)] = vo_dpp_results_paths
-        row_keys.append("{0} variable only".format(s))
-    if include_unlinked_only:
-        results_batches["{0} unlinked only".format(s)] = uo_dpp_results_paths
-        row_keys.append("{0} unlinked only".format(s))
-    return row_keys, results_batches
-
-def get_missing_data_results_paths(
-        validatition_sim_dir,
-        include_variable_only = True):
-    dpp_500k_sim_dirs = []
-    dpp_500k_sim_dirs.extend(sorted(glob.glob(os.path.join(
-            validatition_sim_dir,
-            "03pops-dpp-root-0100-500k*"))))
-    dirs_to_keep = [d for d in dpp_500k_sim_dirs if ((not d.endswith("l")) and (not d.endswith("singleton")))]
-    dpp_500k_sim_dirs = dirs_to_keep
-    dpp_500k_results_paths = []
-    vo_dpp_500k_results_paths = []
-    for sim_dir in dpp_500k_sim_dirs:
-        sim_name = os.path.basename(sim_dir)
-        dpp_500k_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "results.csv.gz")))
-                )
-        )
-        vo_dpp_500k_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "var-only-results.csv.gz")))
-                )
-        )
-
-    if not include_variable_only:
-        results_batches = {
-                "500k":                 dpp_500k_results_paths,
-                }
-        row_keys = [
-                "500k",
-                ]
-        return row_keys, results_batches
-
-    results_batches = {
-            "500k":                 dpp_500k_results_paths,
-            "500k variable only":   vo_dpp_500k_results_paths,
-            }
-    row_keys = [
-            "500k",
-            "500k variable only",
-            ]
-    return row_keys, results_batches
-
-def get_filtered_data_results_paths(
-        validatition_sim_dir,
-        include_variable_only = True):
-    dpp_500k_sim_dirs = []
-    dpp_500k_sim_dirs.extend(sorted(glob.glob(os.path.join(
-            validatition_sim_dir,
-            "03pops-dpp-root-0100-500k-*singleton"))))
-    
-    dirs_to_keep = sorted(dpp_500k_sim_dirs, reverse = True)
-    dirs_to_keep.insert(0, os.path.join(validatition_sim_dir, "03pops-dpp-root-0100-500k"))
-    dpp_500k_sim_dirs = dirs_to_keep
-    dpp_500k_results_paths = []
-    vo_dpp_500k_results_paths = []
-    for sim_dir in dpp_500k_sim_dirs:
-        sim_name = os.path.basename(sim_dir)
-        dpp_500k_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "results.csv.gz")))
-                )
-        )
-        vo_dpp_500k_results_paths.append(
-                (sim_name, sorted(glob.glob(os.path.join(
-                        sim_dir,
-                        "batch00[12345]",
-                        "var-only-results.csv.gz")))
-                )
-        )
-
-    if not include_variable_only:
-        results_batches = {
-                "500k":                 dpp_500k_results_paths,
-                }
-        row_keys = [
-                "500k",
-                ]
-        return row_keys, results_batches
-
-    results_batches = {
-            "500k":                 dpp_500k_results_paths,
-            "500k variable only":   vo_dpp_500k_results_paths,
-            }
-    row_keys = [
-            "500k",
-            "500k variable only",
-            ]
-    return row_keys, results_batches
 
 def ci_width_iter(results, parameter_str):
     n = len(results["eti_95_upper_{0}".format(parameter_str)])
@@ -717,19 +620,28 @@ def absolute_error_iter(results, parameter_str):
 
 def plot_ess_versus_error(
         parameters,
+        results_grid,
+        column_labels = None,
+        row_labels = None,
         parameter_label = "event time",
-        plot_file_prefix = None):
+        plot_file_prefix = None,
+        plot_dir = project_util.PLOT_DIR
+        ):
     _LOG.info("Generating ESS vs CI scatter plots for {0}...".format(parameter_label))
-    root_gamma_pattern = re.compile(r'root-(?P<alpha_setting>\S+)-(?P<scale_setting>\S+)-\d00k')
 
     assert(len(parameters) == len(set(parameters)))
+    if row_labels:
+        assert len(row_labels) ==  len(results_grid)
+    if column_labels:
+        assert len(column_labels) == len(results_grid[0])
+
+    nrows = len(results_grid)
+    ncols = len(results_grid[0])
+
     if not plot_file_prefix:
         plot_file_prefix = parameters[0] 
     plot_file_prefix_ci = plot_file_prefix + "-ess-vs-ci-width"
     plot_file_prefix_error = plot_file_prefix + "-ess-vs-error"
-
-    row_keys, results_batches = get_results_paths(project_util.VAL_DIR,
-            include_variable_only = True)
 
     # Very inefficient, but parsing all results to get min/max for parameter
     ess_min = float('inf')
@@ -738,12 +650,8 @@ def plot_ess_versus_error(
     ci_width_max = float('-inf')
     error_min = float('inf')
     error_max = float('-inf')
-    for key, results_batch in results_batches.items():
-        for sim_dir, results_paths in results_batch:
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
+    for row_index, results_grid_row in enumerate(results_grid):
+        for column_index, results in enumerate(results_grid_row):
             for parameter_str in parameters:
                 ci_widths = tuple(ci_width_iter(results, parameter_str))
                 errors = tuple(absolute_error_iter(results, parameter_str))
@@ -766,8 +674,6 @@ def plot_ess_versus_error(
     error_axis_max = error_max + error_axis_buffer
 
     plt.close('all')
-    nrows = len(results_batches)
-    ncols = len(results_batches.values()[0])
     w = 1.6
     h = 1.5
     fig_width = (ncols * w) + 1.0
@@ -777,20 +683,8 @@ def plot_ess_versus_error(
             wspace = 0.0,
             hspace = 0.0)
 
-    for row_idx, row_key in enumerate(row_keys):
-        results_batch = results_batches[row_key]
-        last_col_idx = len(results_batch) - 1
-        for col_idx, (sim_dir, results_paths) in enumerate(results_batch):
-            root_gamma_matches = root_gamma_pattern.findall(sim_dir)
-            assert(len(root_gamma_matches) == 1)
-            root_shape_setting, root_scale_setting = root_gamma_matches[0]
-
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
-            _LOG.info("row {0}, col {1} : {2} ({3} batches)".format(
-                    row_idx, col_idx, sim_dir, len(results_paths)))
+    for row_index, results_grid_row in enumerate(results_grid):
+        for column_index, results in enumerate(results_grid_row):
 
             x = []
             y = []
@@ -799,7 +693,7 @@ def plot_ess_versus_error(
                 y.extend(ci_width_iter(results, parameter_str))
 
             assert(len(x) == len(y))
-            ax = plt.subplot(gs[row_idx, col_idx])
+            ax = plt.subplot(gs[row_index, column_index])
             line, = ax.plot(x, y)
             plt.setp(line,
                     marker = 'o',
@@ -812,21 +706,22 @@ def plot_ess_versus_error(
                     rasterized = True)
             ax.set_xlim(ess_axis_min, ess_axis_max)
             ax.set_ylim(ci_width_axis_min, ci_width_axis_max)
-            if row_idx == 0:
-                root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
-                col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
+            if column_labels and (row_index == 0):
+                col_header = column_labels[column_index]
                 ax.text(0.5, 1.015,
                         col_header,
                         horizontalalignment = "center",
                         verticalalignment = "bottom",
                         transform = ax.transAxes)
-            if col_idx == last_col_idx:
+            if row_labels and (column_index == (ncols - 1)):
+                row_label = row_labels[row_index]
                 ax.text(1.015, 0.5,
-                        row_key,
+                        row_label,
                         horizontalalignment = "left",
                         verticalalignment = "center",
                         rotation = 270.0,
                         transform = ax.transAxes)
+
     # show only the outside ticks
     all_axes = fig.get_axes()
     for ax in all_axes:
@@ -876,7 +771,6 @@ def plot_ess_versus_error(
 
     gs.update(left = 0.08, right = 0.98, bottom = 0.08, top = 0.97)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
     plot_path = os.path.join(plot_dir,
@@ -887,8 +781,6 @@ def plot_ess_versus_error(
 
     _LOG.info("Generating ESS vs error scatter plots for {0}...".format(parameter_label))
     plt.close('all')
-    nrows = len(results_batches)
-    ncols = len(results_batches.values()[0])
     w = 1.6
     h = 1.5
     fig_width = (ncols * w) + 1.0
@@ -898,21 +790,8 @@ def plot_ess_versus_error(
             wspace = 0.0,
             hspace = 0.0)
 
-    for row_idx, row_key in enumerate(row_keys):
-        results_batch = results_batches[row_key]
-        last_col_idx = len(results_batch) - 1
-        for col_idx, (sim_dir, results_paths) in enumerate(results_batch):
-            root_gamma_matches = root_gamma_pattern.findall(sim_dir)
-            assert(len(root_gamma_matches) == 1)
-            root_shape_setting, root_scale_setting = root_gamma_matches[0]
-
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
-            _LOG.info("row {0}, col {1} : {2} ({3} batches)".format(
-                    row_idx, col_idx, sim_dir, len(results_paths)))
-
+    for row_index, results_grid_row in enumerate(results_grid):
+        for column_index, results in enumerate(results_grid_row):
             x = []
             y = []
             for parameter_str in parameters:
@@ -921,7 +800,7 @@ def plot_ess_versus_error(
                 
 
             assert(len(x) == len(y))
-            ax = plt.subplot(gs[row_idx, col_idx])
+            ax = plt.subplot(gs[row_index, column_index])
             line, = ax.plot(x, y)
             plt.setp(line,
                     marker = 'o',
@@ -934,21 +813,22 @@ def plot_ess_versus_error(
                     rasterized = True)
             ax.set_xlim(ess_axis_min, ess_axis_max)
             ax.set_ylim(error_axis_min, error_axis_max)
-            if row_idx == 0:
-                root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
-                col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
+            if column_labels and (row_index == 0):
+                col_header = column_labels[column_index]
                 ax.text(0.5, 1.015,
                         col_header,
                         horizontalalignment = "center",
                         verticalalignment = "bottom",
                         transform = ax.transAxes)
-            if col_idx == last_col_idx:
+            if row_labels and (column_index == (ncols - 1)):
+                row_label = row_labels[row_index]
                 ax.text(1.015, 0.5,
-                        row_key,
+                        row_label,
                         horizontalalignment = "left",
                         verticalalignment = "center",
                         rotation = 270.0,
                         transform = ax.transAxes)
+
     # show only the outside ticks
     all_axes = fig.get_axes()
     for ax in all_axes:
@@ -1004,270 +884,273 @@ def plot_ess_versus_error(
     _LOG.info("Plots written to {0!r}\n".format(plot_path))
 
 
-
 def generate_scatter_plots(
-        parameters,
-        parameter_label = "event time",
-        parameter_symbol = "\\tau",
+        data_grid,
+        plot_file_prefix,
+        parameter_symbol = "t",
+        column_labels = None,
+        row_labels = None,
         plot_width = 1.9,
         plot_height = 1.8,
         pad_left = 0.1,
         pad_right = 0.98,
         pad_bottom = 0.12,
         pad_top = 0.92,
-        plot_file_prefix = None,
-        include_variable_only = True,
-        linked_loci = None,
-        missing_data = False,
-        filtered_data = False,
-        column_indices = None):
-    if int(bool(linked_loci)) + int(missing_data) + int(filtered_data) > 1:
-        raise Exception("Can only specify linked_loci, missing_data, or filtered_data")
-    _LOG.info("Generating scatter plots for {0}...".format(parameter_label))
-    root_gamma_pattern = re.compile(r'root-(?P<alpha_setting>\S+)-(?P<scale_setting>\S+)-\d00k')
-    locus_size_pattern = re.compile(r'root-\d+-\d00k-(?P<locus_size>\d+)u?l')
-    missing_data_pattern = re.compile(r'root-\d+-\d00k-0(?P<p_missing>\d+)missing')
-    filtered_data_pattern = re.compile(r'root-\d+-\d00k-0(?P<p_singleton>\d+)singleton')
+        x_label = None,
+        x_label_size = 18.0,
+        y_label = None,
+        y_label_size = 18.0,
+        force_shared_x_range = True,
+        force_shared_y_range = True,
+        force_shared_xy_ranges = True,
+        force_shared_spines = True,
+        include_coverage = True,
+        include_rmse = True,
+        include_identity_line = True,
+        include_error_bars = True,
+        plot_dir = project_util.PLOT_DIR
+        ):
+    if force_shared_spines or force_shared_xy_ranges:
+        force_shared_x_range = True
+        force_shared_y_range = True
 
-    assert(len(parameters) == len(set(parameters)))
-    if not plot_file_prefix:
-        plot_file_prefix = parameters[0] 
+    if row_labels:
+        assert len(row_labels) ==  len(data_grid)
+    if column_labels:
+        assert len(column_labels) == len(data_grid[0])
 
-    row_keys, results_batches = get_results_paths(project_util.VAL_DIR,
-            include_variable_only = include_variable_only)
+    nrows = len(data_grid)
+    ncols = len(data_grid[0])
 
-    if linked_loci:
-        row_keys, results_batches = get_linked_loci_results_paths(
-                project_util.VAL_DIR,
-                data_set_size = linked_loci,
-                include_variable_only = include_variable_only,
-                include_unlinked_only = True)
-    if missing_data:
-        row_keys, results_batches = get_missing_data_results_paths(
-                project_util.VAL_DIR,
-                include_variable_only = include_variable_only)
-    if filtered_data:
-        row_keys, results_batches = get_filtered_data_results_paths(
-                project_util.VAL_DIR,
-                include_variable_only = include_variable_only)
+    x_min = float('inf')
+    x_max = float('-inf')
+    y_min = float('inf')
+    y_max = float('-inf')
+    for row_index, data_grid_row in enumerate(data_grid):
+        for column_index, data in enumerate(data_grid_row):
+            x_min = min(x_min, min(data.x))
+            x_max = max(x_max, max(data.x))
+            y_min = min(y_min, min(data.y))
+            y_max = max(y_max, max(data.y))
+    if force_shared_xy_ranges:
+        mn = min(x_min, y_min)
+        mx = max(x_max, y_max)
+        x_min = mn
+        y_min = mn
+        x_max = mx
+        y_max = mx
+    x_buffer = math.fabs(x_max - x_min) * 0.05
+    x_axis_min = x_min - x_buffer
+    x_axis_max = x_max + x_buffer
+    y_buffer = math.fabs(y_max - y_min) * 0.05
+    y_axis_min = y_min - y_buffer
+    y_axis_max = y_max + y_buffer
 
-    if column_indices:
-        for k in row_keys:
-            results = results_batches[k]
-            reduced_results = [x for i, x in enumerate(results) if i in column_indices]
-            results_batches[k] = reduced_results
-
-    # Very inefficient, but parsing all results to get min/max for parameter
-    parameter_min = float('inf')
-    parameter_max = float('-inf')
-    for key, results_batch in results_batches.items():
-        for sim_dir, results_paths in results_batch:
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
-            for parameter_str in parameters:
-                parameter_min = min(parameter_min,
-                        min(float(x) for x in results["true_{0}".format(parameter_str)]))
-                parameter_max = max(parameter_max,
-                        max(float(x) for x in results["true_{0}".format(parameter_str)]))
-                parameter_min = min(parameter_min,
-                        min(float(x) for x in results["mean_{0}".format(parameter_str)]))
-                parameter_max = max(parameter_max,
-                        max(float(x) for x in results["mean_{0}".format(parameter_str)]))
-    axis_buffer = math.fabs(parameter_max - parameter_min) * 0.05
-    axis_min = parameter_min - axis_buffer
-    axis_max = parameter_max + axis_buffer
 
     plt.close('all')
-    nrows = len(results_batches)
-    ncols = len(results_batches.values()[0])
     w = plot_width
     h = plot_height
     fig_width = (ncols * w)
     fig_height = (nrows * h)
     fig = plt.figure(figsize = (fig_width, fig_height))
-    gs = gridspec.GridSpec(nrows, ncols,
-            wspace = 0.0,
-            hspace = 0.0)
+    if force_shared_spines:
+        gs = gridspec.GridSpec(nrows, ncols,
+                wspace = 0.0,
+                hspace = 0.0)
+    else:
+        gs = gridspec.GridSpec(nrows, ncols)
 
-    for row_idx, row_key in enumerate(row_keys):
-        results_batch = results_batches[row_key]
-        last_col_idx = len(results_batch) - 1
-        for col_idx, (sim_dir, results_paths) in enumerate(results_batch):
-            root_gamma_matches = root_gamma_pattern.findall(sim_dir)
-            assert(len(root_gamma_matches) == 1)
-            root_shape_setting, root_scale_setting = root_gamma_matches[0]
-
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
-            _LOG.info("row {0}, col {1} : {2} ({3} batches)".format(
-                    row_idx, col_idx, sim_dir, len(results_paths)))
-
-            x = []
-            y = []
-            y_upper = []
-            y_lower = []
-            for parameter_str in parameters:
-                x.extend(float(x) for x in results["true_{0}".format(parameter_str)])
-                y.extend(float(x) for x in results["mean_{0}".format(parameter_str)])
-                y_lower.extend(float(x) for x in results["eti_95_lower_{0}".format(parameter_str)])
-                y_upper.extend(float(x) for x in results["eti_95_upper_{0}".format(parameter_str)])
-
-            assert(len(x) == len(y))
-            assert(len(x) == len(y_lower))
-            assert(len(x) == len(y_upper))
-            proportion_within_ci = pycoevolity.stats.get_proportion_of_values_within_intervals(
-                    x,
-                    y_lower,
-                    y_upper)
-            rmse = pycoevolity.stats.root_mean_square_error(x, y)
-            _LOG.info("p(within CI) = {0:.4f}".format(proportion_within_ci))
-            _LOG.info("RMSE = {0:.2e}".format(rmse))
-            ax = plt.subplot(gs[row_idx, col_idx])
-            line = ax.errorbar(
-                    x = x,
-                    y = y,
-                    yerr = get_errors(y, y_lower, y_upper),
-                    ecolor = '0.65',
-                    elinewidth = 0.5,
-                    capsize = 0.8,
-                    barsabove = False,
-                    marker = 'o',
-                    linestyle = '',
-                    markerfacecolor = 'none',
-                    markeredgecolor = '0.35',
-                    markeredgewidth = 0.7,
-                    markersize = 2.5,
-                    zorder = 100,
-                    rasterized = True)
-            ax.set_xlim(axis_min, axis_max)
-            ax.set_ylim(axis_min, axis_max)
-            identity_line, = ax.plot(
-                    [axis_min, axis_max],
-                    [axis_min, axis_max])
-            plt.setp(identity_line,
-                    color = '0.7',
-                    linestyle = '-',
-                    linewidth = 1.0,
-                    marker = '',
-                    zorder = 0)
-            ax.text(0.02, 0.97,
-                    "\\scriptsize\\noindent$p({0:s} \\in \\textrm{{\\sffamily CI}}) = {1:.3f}$".format(
-                            parameter_symbol,
-                            proportion_within_ci),
-                    horizontalalignment = "left",
-                    verticalalignment = "top",
-                    transform = ax.transAxes,
-                    size = 6.0,
-                    zorder = 200)
-            ax.text(0.02, 0.87,
-                    # "\\scriptsize\\noindent$\\textrm{{\\sffamily RMSE}} = {0:.2e}$".format(
-                    "\\scriptsize\\noindent RMSE = {0:.2e}".format(
-                            rmse),
-                    horizontalalignment = "left",
-                    verticalalignment = "top",
-                    transform = ax.transAxes,
-                    size = 6.0,
-                    zorder = 200)
-            if row_idx == 0:
-                if linked_loci:
-                    # locus_size = 1
-                    locus_size_matches = locus_size_pattern.findall(sim_dir)
-                    # if locus_size_matches:
-                    assert len(locus_size_matches) == 1
-                    locus_size = int(locus_size_matches[0])
-                    col_header = "$\\textrm{{\\sffamily Locus length}} = {0}$".format(locus_size)
-                elif missing_data:
-                    percent_missing = 0.0
-                    missing_matches = missing_data_pattern.findall(sim_dir)
-                    if missing_matches:
-                        assert len(missing_matches) == 1
-                        percent_missing = float("." + missing_matches[0]) * 100.0
-                    col_header = "{0:.0f}\\% missing data".format(percent_missing)
-                elif filtered_data:
-                    percent_sampled = 100.0
-                    filtered_matches = filtered_data_pattern.findall(sim_dir)
-                    if filtered_matches:
-                        assert len(filtered_matches) == 1
-                        percent_sampled = float("." + filtered_matches[0]) * 100.0
-                    col_header = "{0:.0f}\\% singleton patterns".format(percent_sampled)
-
-                else:
-                    root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
-                    col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
+    for row_index, data_grid_row in enumerate(data_grid):
+        for column_index, data in enumerate(data_grid_row):
+            proportion_within_ci = 0.0
+            if include_coverage and data.has_y_ci():
+                proportion_within_ci = pycoevolity.stats.get_proportion_of_values_within_intervals(
+                        data.x,
+                        data.y_lower,
+                        data.y_upper)
+            rmse = 0.0
+            if include_rmse:
+                rmse = pycoevolity.stats.root_mean_square_error(data.x, data.y)
+            ax = plt.subplot(gs[row_index, column_index])
+            if include_error_bars and data.has_y_ci():
+                line = ax.errorbar(
+                        x = data.x,
+                        y = data.y,
+                        yerr = get_errors(data.y, data.y_lower, data.y_upper),
+                        ecolor = '0.65',
+                        elinewidth = 0.5,
+                        capsize = 0.8,
+                        barsabove = False,
+                        marker = 'o',
+                        linestyle = '',
+                        markerfacecolor = 'none',
+                        markeredgecolor = '0.35',
+                        markeredgewidth = 0.7,
+                        markersize = 2.5,
+                        zorder = 100,
+                        rasterized = True)
+                if data.has_highlights():
+                    # line = ax.errorbar(
+                    #         x = data.highlight_x,
+                    #         y = data.highlight_y,
+                    #         yerr = get_errors(data.highlight_y,
+                    #                 data.highlight_y_lower,
+                    #                 data.highlight_y_upper),
+                    #         ecolor = data.highlight_color,
+                    #         elinewidth = 0.5,
+                    #         capsize = 0.8,
+                    #         barsabove = False,
+                    #         marker = 'o',
+                    #         linestyle = '',
+                    #         markerfacecolor = 'none',
+                    #         markeredgecolor = data.highlight_color,
+                    #         markeredgewidth = 0.7,
+                    #         markersize = 2.5,
+                    #         zorder = 200,
+                    #         rasterized = True)
+                    line, = ax.plot(data.highlight_x, data.highlight_y)
+                    plt.setp(line,
+                            marker = 'o',
+                            linestyle = '',
+                            markerfacecolor = 'none',
+                            markeredgecolor = data.highlight_color,
+                            markeredgewidth = 0.7,
+                            markersize = 2.5,
+                            zorder = 200,
+                            rasterized = True)
+            else:
+                line, = ax.plot(data.x, data.y)
+                plt.setp(line,
+                        marker = 'o',
+                        linestyle = '',
+                        markerfacecolor = 'none',
+                        markeredgecolor = '0.35',
+                        markeredgewidth = 0.7,
+                        markersize = 2.5,
+                        zorder = 100,
+                        rasterized = True)
+                if data.has_highlights():
+                    line, = ax.plot(data.highlight_x, data.highlight_y)
+                    plt.setp(line,
+                            marker = 'o',
+                            linestyle = '',
+                            markerfacecolor = 'none',
+                            markeredgecolor = data.highlight_color,
+                            markeredgewidth = 0.7,
+                            markersize = 2.5,
+                            zorder = 200,
+                            rasterized = True)
+            if force_shared_x_range:
+                ax.set_xlim(x_axis_min, x_axis_max)
+            else:
+                ax.set_xlim(min(data.x), max(data.x))
+            if force_shared_y_range:
+                ax.set_ylim(y_axis_min, y_axis_max)
+            else:
+                ax.set_ylim(min(data.y), max(data.y))
+            if include_identity_line:
+                identity_line, = ax.plot(
+                        [x_axis_min, x_axis_max],
+                        [y_axis_min, y_axis_max])
+                plt.setp(identity_line,
+                        color = '0.7',
+                        linestyle = '-',
+                        linewidth = 1.0,
+                        marker = '',
+                        zorder = 0)
+            if include_coverage:
+                ax.text(0.02, 0.97,
+                        "\\scriptsize\\noindent$p({0:s} \\in \\textrm{{\\sffamily CI}}) = {1:.3f}$".format(
+                                parameter_symbol,
+                                proportion_within_ci),
+                        horizontalalignment = "left",
+                        verticalalignment = "top",
+                        transform = ax.transAxes,
+                        size = 6.0,
+                        zorder = 300)
+            if include_rmse:
+                text_y = 0.97
+                if include_coverage:
+                    text_y = 0.87
+                ax.text(0.02, text_y,
+                        "\\scriptsize\\noindent RMSE = {0:.2e}".format(
+                                rmse),
+                        horizontalalignment = "left",
+                        verticalalignment = "top",
+                        transform = ax.transAxes,
+                        size = 6.0,
+                        zorder = 300)
+            if column_labels and (row_index == 0):
+                col_header = column_labels[column_index]
                 ax.text(0.5, 1.015,
                         col_header,
                         horizontalalignment = "center",
                         verticalalignment = "bottom",
                         transform = ax.transAxes)
-            if col_idx == last_col_idx:
-                if nrows > 1:
-                    ax.text(1.015, 0.5,
-                            row_key,
-                            horizontalalignment = "left",
-                            verticalalignment = "center",
-                            rotation = 270.0,
-                            transform = ax.transAxes)
+            if row_labels and (column_index == (ncols - 1)):
+                row_label = row_labels[row_index]
+                ax.text(1.015, 0.5,
+                        row_label,
+                        horizontalalignment = "left",
+                        verticalalignment = "center",
+                        rotation = 270.0,
+                        transform = ax.transAxes)
 
-    # show only the outside ticks
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        if not ax.is_last_row():
-            ax.set_xticks([])
-        if not ax.is_first_col():
-            ax.set_yticks([])
+    if force_shared_spines:
+        # show only the outside ticks
+        all_axes = fig.get_axes()
+        for ax in all_axes:
+            if not ax.is_last_row():
+                ax.set_xticks([])
+            if not ax.is_first_col():
+                ax.set_yticks([])
 
-    # show tick labels only for lower-left plot 
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        if ax.is_last_row() and ax.is_first_col():
-            continue
-        xtick_labels = ["" for item in ax.get_xticklabels()]
-        ytick_labels = ["" for item in ax.get_yticklabels()]
-        ax.set_xticklabels(xtick_labels)
-        ax.set_yticklabels(ytick_labels)
+        # show tick labels only for lower-left plot 
+        all_axes = fig.get_axes()
+        for ax in all_axes:
+            if ax.is_last_row() and ax.is_first_col():
+                continue
+            xtick_labels = ["" for item in ax.get_xticklabels()]
+            ytick_labels = ["" for item in ax.get_yticklabels()]
+            ax.set_xticklabels(xtick_labels)
+            ax.set_yticklabels(ytick_labels)
 
-    # avoid doubled spines
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        for sp in ax.spines.values():
-            sp.set_visible(False)
-            sp.set_linewidth(2)
-        if ax.is_first_row():
-            ax.spines['top'].set_visible(True)
-            ax.spines['bottom'].set_visible(True)
-        else:
-            ax.spines['bottom'].set_visible(True)
-        if ax.is_first_col():
-            ax.spines['left'].set_visible(True)
-            ax.spines['right'].set_visible(True)
-        else:
-            ax.spines['right'].set_visible(True)
+        # avoid doubled spines
+        all_axes = fig.get_axes()
+        for ax in all_axes:
+            for sp in ax.spines.values():
+                sp.set_visible(False)
+                sp.set_linewidth(2)
+            if ax.is_first_row():
+                ax.spines['top'].set_visible(True)
+                ax.spines['bottom'].set_visible(True)
+            else:
+                ax.spines['bottom'].set_visible(True)
+            if ax.is_first_col():
+                ax.spines['left'].set_visible(True)
+                ax.spines['right'].set_visible(True)
+            else:
+                ax.spines['right'].set_visible(True)
 
-    fig.text(0.5, 0.001,
-            "True {0} (${1}$)".format(parameter_label, parameter_symbol),
-            horizontalalignment = "center",
-            verticalalignment = "bottom",
-            size = 18.0)
-    ylabel_size = 18.0
-    if nrows < 2:
-        ylabel_size = 15.0
-    fig.text(0.005, 0.5,
-            "Estimated {0} ($\\hat{{{1}}}$)".format(parameter_label, parameter_symbol),
-            horizontalalignment = "left",
-            verticalalignment = "center",
-            rotation = "vertical",
-            size = ylabel_size)
+    if x_label:
+        fig.text(0.5, 0.001,
+                x_label,
+                horizontalalignment = "center",
+                verticalalignment = "bottom",
+                size = x_label_size)
+    if y_label:
+        fig.text(0.005, 0.5,
+                y_label,
+                horizontalalignment = "left",
+                verticalalignment = "center",
+                rotation = "vertical",
+                size = y_label_size)
 
     gs.update(left = pad_left,
             right = pad_right,
             bottom = pad_bottom,
             top = pad_top)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
     plot_path = os.path.join(plot_dir,
@@ -1276,55 +1159,49 @@ def generate_scatter_plots(
     _LOG.info("Plots written to {0!r}\n".format(plot_path))
 
 def generate_specific_scatter_plot(
-        sim_dir,
-        parameters,
-        parameter_label = "event time",
-        parameter_symbol = "\\tau",
-        include_x_label = True,
-        include_y_label = True,
-        include_title = True,
-        include_rmse = True,
-        include_ci = True,
+        data,
+        plot_file_prefix,
+        parameter_symbol = "t",
+        title = None,
+        title_size = 16.0,
+        x_label = None,
+        x_label_size = 16.0,
+        y_label = None,
+        y_label_size = 16.0,
         plot_width = 3.5,
         plot_height = 3.0,
-        xy_label_size = 16.0,
-        title_size = 16.0,
         pad_left = 0.2,
         pad_right = 0.99,
         pad_bottom = 0.18,
         pad_top = 0.9,
-        plot_file_prefix = None,
-        variable_only = False):
-    _LOG.info("Generating scatter plots for {0}...".format(parameter_label))
-    root_gamma_pattern = re.compile(r'root-(?P<alpha_setting>\S+)-(?P<scale_setting>\S+)-\d00k')
+        force_shared_xy_ranges = True,
+        xy_limits = None,
+        include_coverage = True,
+        include_rmse = True,
+        include_identity_line = True,
+        include_error_bars = True,
+        plot_dir = project_util.PLOT_DIR):
 
-    assert(len(parameters) == len(set(parameters)))
-    if not plot_file_prefix:
-        plot_file_prefix = parameters[0] 
-
-    sim_name, results_paths = get_specific_results_paths(
-            sim_dir = sim_dir,
-            variable_only = variable_only)
-
-    # Very inefficient, but parsing all results to get min/max for parameter
-    parameter_min = float('inf')
-    parameter_max = float('-inf')
-    results = pycoevolity.parsing.get_dict_from_spreadsheets(
-            results_paths,
-            sep = "\t",
-            offset = 0)
-    for parameter_str in parameters:
-        parameter_min = min(parameter_min,
-                min(float(x) for x in results["true_{0}".format(parameter_str)]))
-        parameter_max = max(parameter_max,
-                max(float(x) for x in results["true_{0}".format(parameter_str)]))
-        parameter_min = min(parameter_min,
-                min(float(x) for x in results["mean_{0}".format(parameter_str)]))
-        parameter_max = max(parameter_max,
-                max(float(x) for x in results["mean_{0}".format(parameter_str)]))
-    axis_buffer = math.fabs(parameter_max - parameter_min) * 0.05
-    axis_min = parameter_min - axis_buffer
-    axis_max = parameter_max + axis_buffer
+    if xy_limits:
+        x_axis_min, x_axis_max, y_axis_min, y_axis_max = xy_limits
+    else:
+        x_min = min(data.x)
+        x_max = max(data.x)
+        y_min = min(data.y)
+        y_max = max(data.y)
+        if force_shared_xy_ranges:
+            mn = min(x_min, y_min)
+            mx = max(x_max, y_max)
+            x_min = mn
+            y_min = mn
+            x_max = mx
+            y_max = mx
+        x_buffer = math.fabs(x_max - x_min) * 0.05
+        x_axis_min = x_min - x_buffer
+        x_axis_max = x_max + x_buffer
+        y_buffer = math.fabs(y_max - y_min) * 0.05
+        y_axis_min = y_min - y_buffer
+        y_axis_max = y_max + y_buffer
 
     plt.close('all')
     fig = plt.figure(figsize = (plot_width, plot_height))
@@ -1332,62 +1209,97 @@ def generate_specific_scatter_plot(
             wspace = 0.0,
             hspace = 0.0)
 
-    root_gamma_matches = root_gamma_pattern.findall(sim_name)
-    assert(len(root_gamma_matches) == 1)
-    root_shape_setting, root_scale_setting = root_gamma_matches[0]
-
-    results = pycoevolity.parsing.get_dict_from_spreadsheets(
-            results_paths,
-            sep = "\t",
-            offset = 0)
-
-    x = []
-    y = []
-    y_upper = []
-    y_lower = []
-    for parameter_str in parameters:
-        x.extend(float(x) for x in results["true_{0}".format(parameter_str)])
-        y.extend(float(x) for x in results["mean_{0}".format(parameter_str)])
-        y_lower.extend(float(x) for x in results["eti_95_lower_{0}".format(parameter_str)])
-        y_upper.extend(float(x) for x in results["eti_95_upper_{0}".format(parameter_str)])
-
-    assert(len(x) == len(y))
-    assert(len(x) == len(y_lower))
-    assert(len(x) == len(y_upper))
-    proportion_within_ci = pycoevolity.stats.get_proportion_of_values_within_intervals(
-            x,
-            y_lower,
-            y_upper)
-    rmse = pycoevolity.stats.root_mean_square_error(x, y)
+    proportion_within_ci = 0.0
+    if include_coverage and data.has_y_ci():
+        proportion_within_ci = pycoevolity.stats.get_proportion_of_values_within_intervals(
+                data.x,
+                data.y_lower,
+                data.y_upper)
+    rmse = 0.0
+    if include_rmse:
+        rmse = pycoevolity.stats.root_mean_square_error(data.x, data.y)
     ax = plt.subplot(gs[0, 0])
-    line = ax.errorbar(
-            x = x,
-            y = y,
-            yerr = get_errors(y, y_lower, y_upper),
-            ecolor = '0.65',
-            elinewidth = 0.5,
-            capsize = 0.8,
-            barsabove = False,
-            marker = 'o',
-            linestyle = '',
-            markerfacecolor = 'none',
-            markeredgecolor = '0.35',
-            markeredgewidth = 0.7,
-            markersize = 2.5,
-            zorder = 100,
-            rasterized = True)
-    ax.set_xlim(axis_min, axis_max)
-    ax.set_ylim(axis_min, axis_max)
-    identity_line, = ax.plot(
-            [axis_min, axis_max],
-            [axis_min, axis_max])
-    plt.setp(identity_line,
-            color = '0.7',
-            linestyle = '-',
-            linewidth = 1.0,
-            marker = '',
-            zorder = 0)
-    if include_ci:
+    if include_error_bars and data.has_y_ci():
+        line = ax.errorbar(
+                x = data.x,
+                y = data.y,
+                yerr = get_errors(data.y, data.y_lower, data.y_upper),
+                ecolor = '0.65',
+                elinewidth = 0.5,
+                capsize = 0.8,
+                barsabove = False,
+                marker = 'o',
+                linestyle = '',
+                markerfacecolor = 'none',
+                markeredgecolor = '0.35',
+                markeredgewidth = 0.7,
+                markersize = 2.5,
+                zorder = 100,
+                rasterized = True)
+        if data.has_highlights():
+            # line = ax.errorbar(
+            #         x = data.highlight_x,
+            #         y = data.highlight_y,
+            #         yerr = get_errors(data.highlight_y,
+            #                 data.highlight_y_lower,
+            #                 data.highlight_y_upper),
+            #         ecolor = data.highlight_color,
+            #         elinewidth = 0.5,
+            #         capsize = 0.8,
+            #         barsabove = False,
+            #         marker = 'o',
+            #         linestyle = '',
+            #         markerfacecolor = 'none',
+            #         markeredgecolor = data.highlight_color,
+            #         markeredgewidth = 0.7,
+            #         markersize = 2.5,
+            #         zorder = 200,
+            #         rasterized = True)
+            line, = ax.plot(data.highlight_x, data.highlight_y)
+            plt.setp(line,
+                    marker = 'o',
+                    linestyle = '',
+                    markerfacecolor = 'none',
+                    markeredgecolor = data.highlight_color,
+                    markeredgewidth = 0.7,
+                    markersize = 2.5,
+                    zorder = 200,
+                    rasterized = True)
+    else:
+        line, = ax.plot(data.x, data.y)
+        plt.setp(line,
+                marker = 'o',
+                linestyle = '',
+                markerfacecolor = 'none',
+                markeredgecolor = '0.35',
+                markeredgewidth = 0.7,
+                markersize = 2.5,
+                zorder = 100,
+                rasterized = True)
+        if data.has_highlights():
+            line, = ax.plot(x = data.highlight_x, y = data.highlight_y)
+            plt.setp(line,
+                    marker = 'o',
+                    linestyle = '',
+                    markerfacecolor = 'none',
+                    markeredgecolor = data.highlight_color,
+                    markeredgewidth = 0.7,
+                    markersize = 2.5,
+                    zorder = 200,
+                    rasterized = True)
+    ax.set_xlim(x_axis_min, x_axis_max)
+    ax.set_ylim(y_axis_min, y_axis_max)
+    if include_identity_line:
+        identity_line, = ax.plot(
+                [x_axis_min, x_axis_max],
+                [y_axis_min, y_axis_max])
+        plt.setp(identity_line,
+                color = '0.7',
+                linestyle = '-',
+                linewidth = 1.0,
+                marker = '',
+                zorder = 0)
+    if include_coverage:
         ax.text(0.02, 0.97,
                 "\\normalsize\\noindent$p({0:s} \\in \\textrm{{\\sffamily CI}}) = {1:.3f}$".format(
                         parameter_symbol,
@@ -1396,28 +1308,29 @@ def generate_specific_scatter_plot(
                 verticalalignment = "top",
                 transform = ax.transAxes,
                 size = 8.0,
-                zorder = 200)
+                zorder = 300)
     if include_rmse:
-        ax.text(0.02, 0.87,
+        text_y = 0.97
+        if include_coverage:
+            text_y = 0.87
+        ax.text(0.02, text_y,
                 "\\normalsize\\noindent RMSE = {0:.2e}".format(
                         rmse),
                 horizontalalignment = "left",
                 verticalalignment = "top",
                 transform = ax.transAxes,
                 size = 8.0,
-                zorder = 200)
-    if include_x_label:
+                zorder = 300)
+    if x_label is not None:
         ax.set_xlabel(
-                "True {0} (${1}$)".format(parameter_label, parameter_symbol),
-                fontsize = xy_label_size)
-    if include_y_label:
+                x_label,
+                fontsize = x_label_size)
+    if y_label is not None:
         ax.set_ylabel(
-                "Estimated {0} ($\\hat{{{1}}}$)".format(parameter_label, parameter_symbol),
-                fontsize = xy_label_size)
-    root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
-    if include_title:
-        col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
-        ax.set_title(col_header,
+                y_label,
+                fontsize = y_label_size)
+    if title is not None:
+        ax.set_title(plot_title,
                 fontsize = title_size)
 
     gs.update(
@@ -1426,7 +1339,6 @@ def generate_specific_scatter_plot(
             bottom = pad_bottom,
             top = pad_top)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
     plot_path = os.path.join(plot_dir,
@@ -1436,10 +1348,11 @@ def generate_specific_scatter_plot(
 
 
 def generate_histograms(
-        parameters,
+        data_grid,
+        plot_file_prefix,
+        column_labels = None,
+        row_labels = None,
         parameter_label = "Number of variable sites",
-        plot_file_prefix = None,
-        parameter_discrete = True,
         range_key = "range",
         number_of_digits = 0,
         plot_width = 1.9,
@@ -1448,96 +1361,62 @@ def generate_histograms(
         pad_right = 0.98,
         pad_bottom = 0.12,
         pad_top = 0.92,
-        include_variable_only = True,
-        linked_loci = None,
-        row_indices = None):
-    _LOG.info("Generating histograms for {0}...".format(parameter_label))
-    assert(len(parameters) == len(set(parameters)))
-    if not plot_file_prefix:
-        plot_file_prefix = parameters[0] 
-    root_gamma_pattern = re.compile(r'root-(?P<alpha_setting>\S+)-(?P<scale_setting>\S+)-\d00k')
-    locus_size_pattern = re.compile(r'root-\d+-\d00k-(?P<locus_size>\d+)u?l')
+        force_shared_x_range = True,
+        force_shared_bins = True,
+        force_shared_y_range = True,
+        force_shared_spines = True,
+        plot_dir = project_util.PLOT_DIR
+        ):
+    if force_shared_spines:
+        force_shared_x_range = True
+        force_shared_y_range = True
 
-    row_keys, results_batches = get_results_paths(project_util.VAL_DIR,
-            include_variable_only = include_variable_only)
-    if linked_loci:
-        row_keys, results_batches = get_linked_loci_results_paths(
-                project_util.VAL_DIR,
-                data_set_size = linked_loci,
-                include_variable_only = include_variable_only,
-                include_unlinked_only = True)
-    if not row_indices:
-        row_indices = list(range(len(row_keys)))
+    if row_labels:
+        assert len(row_labels) ==  len(data_grid)
+    if column_labels:
+        assert len(column_labels) == len(data_grid[0])
 
-    # Very inefficient, but parsing all results to get min/max for parameter
-    parameter_min = float('inf')
-    parameter_max = float('-inf')
-    for row_idx in row_indices:
-        key = row_keys[row_idx]
-        results_batch = results_batches[key]
-        for sim_dir, results_paths in results_batch:
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
-            for parameter_str in parameters:
-                parameter_min = min(parameter_min,
-                        min(float(x) for x in results["{0}".format(parameter_str)]))
-                parameter_max = max(parameter_max,
-                        max(float(x) for x in results["{0}".format(parameter_str)]))
+    nrows = len(data_grid)
+    ncols = len(data_grid[0])
 
-    axis_buffer = math.fabs(parameter_max - parameter_min) * 0.05
-    axis_min = parameter_min - axis_buffer
-    axis_max = parameter_max + axis_buffer
+    x_min = float('inf')
+    x_max = float('-inf')
+    for row_index, data_grid_row in enumerate(data_grid):
+        for column_index, data in enumerate(data_grid_row):
+            x_min = min(x_min, min(data.x))
+            x_max = max(x_max, max(data.x))
+
+    axis_buffer = math.fabs(x_max - x_min) * 0.05
+    axis_min = x_min - axis_buffer
+    axis_max = x_max + axis_buffer
 
     plt.close('all')
-    nrows = len(row_indices)
-    ncols = len(results_batches.values()[0])
     w = plot_width
     h = plot_height
     fig_width = (ncols * w)
     fig_height = (nrows * h)
     fig = plt.figure(figsize = (fig_width, fig_height))
-    gs = gridspec.GridSpec(nrows, ncols,
-            wspace = 0.0,
-            hspace = 0.0)
+    if force_shared_spines:
+        gs = gridspec.GridSpec(nrows, ncols,
+                wspace = 0.0,
+                hspace = 0.0)
+    else:
+        gs = gridspec.GridSpec(nrows, ncols)
 
     hist_bins = None
-    for fig_row_idx, row_idx in enumerate(row_indices):
-        row_key = row_keys[row_idx]
-        results_batch = results_batches[row_key]
-        last_col_idx = len(results_batch) - 1
-        for col_idx, (sim_dir, results_paths) in enumerate(results_batch):
-            root_gamma_matches = root_gamma_pattern.findall(sim_dir)
-            assert(len(root_gamma_matches) == 1)
-            root_shape_setting, root_scale_setting = root_gamma_matches[0]
-
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
-            _LOG.info("row {0}, col {1} : {2} ({3} batches)".format(
-                    fig_row_idx, col_idx, sim_dir, len(results_paths)))
-
-            x = []
-            for parameter_str in parameters:
-                if parameter_discrete:
-                    x.extend(int(x) for x in results["{0}".format(parameter_str)])
-                else:
-                    x.extend(float(x) for x in results["{0}".format(parameter_str)])
-
-            summary = pycoevolity.stats.get_summary(x)
+    x_range = None
+    if force_shared_x_range:
+        x_range = (x_min, x_max)
+    for row_index, data_grid_row in enumerate(data_grid):
+        for column_index, data in enumerate(data_grid_row):
+            summary = pycoevolity.stats.get_summary(data.x)
             _LOG.info("0.025, 0.975 quantiles: {0:.2f}, {1:.2f}".format(
                     summary["qi_95"][0],
                     summary["qi_95"][1]))
 
-            x_range = (parameter_min, parameter_max)
-            if parameter_discrete:
-                x_range = (int(parameter_min), int(parameter_max))
-            ax = plt.subplot(gs[fig_row_idx, col_idx])
-            n, bins, patches = ax.hist(x,
-                    # normed = True,
-                    weights = [1.0 / float(len(x))] * len(x),
+            ax = plt.subplot(gs[row_index, column_index])
+            n, bins, patches = ax.hist(data.x,
+                    weights = [1.0 / float(len(data.x))] * len(data.x),
                     bins = hist_bins,
                     range = x_range,
                     cumulative = False,
@@ -1556,13 +1435,10 @@ def generate_histograms(
                     linewidth = None,
                     zorder = 10,
                     )
-            if hist_bins is None:
+            if (hist_bins is None) and force_shared_bins:
                 hist_bins = bins
             ax.text(0.98, 0.98,
                     "\\scriptsize {mean:,.{ndigits}f} ({lower:,.{ndigits}f}--{upper:,.{ndigits}f})".format(
-                            # int(round(summary["mean"])),
-                            # int(round(summary[range_key][0])),
-                            # int(round(summary[range_key][1]))),
                             mean = summary["mean"],
                             lower = summary[range_key][0],
                             upper = summary[range_key][1],
@@ -1572,73 +1448,66 @@ def generate_histograms(
                     transform = ax.transAxes,
                     zorder = 200)
 
-            if fig_row_idx == 0:
-                if linked_loci:
-                    # locus_size = 1
-                    locus_size_matches = locus_size_pattern.findall(sim_dir)
-                    # if locus_size_matches:
-                    assert len(locus_size_matches) == 1
-                    locus_size = int(locus_size_matches[0])
-                    col_header = "$\\textrm{{\\sffamily Locus length}} = {0}$".format(locus_size)
-                else:
-                    root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
-                    col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
+            if column_labels and (row_index == 0):
+                col_header = column_labels[column_index]
                 ax.text(0.5, 1.015,
                         col_header,
                         horizontalalignment = "center",
                         verticalalignment = "bottom",
                         transform = ax.transAxes)
-            if (col_idx == last_col_idx) and (nrows > 1):
+            if row_labels and (column_index == (ncols - 1)):
+                row_label = row_labels[row_index]
                 ax.text(1.015, 0.5,
-                        row_key,
+                        row_label,
                         horizontalalignment = "left",
                         verticalalignment = "center",
                         rotation = 270.0,
                         transform = ax.transAxes)
 
-    # make sure y-axis is the same
-    y_max = float('-inf')
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        ymn, ymx = ax.get_ylim()
-        y_max = max(y_max, ymx)
-    for ax in all_axes:
-        ax.set_ylim(0.0, y_max)
+    if force_shared_y_range:
+        all_axes = fig.get_axes()
+        # y_max = float('-inf')
+        # for ax in all_axes:
+        #     ymn, ymx = ax.get_ylim()
+        #     y_max = max(y_max, ymx)
+        for ax in all_axes:
+            ax.set_ylim(0.0, 1.0)
 
-    # show only the outside ticks
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        if not ax.is_last_row():
-            ax.set_xticks([])
-        if not ax.is_first_col():
-            ax.set_yticks([])
+    if force_shared_spines:
+        # show only the outside ticks
+        all_axes = fig.get_axes()
+        for ax in all_axes:
+            if not ax.is_last_row():
+                ax.set_xticks([])
+            if not ax.is_first_col():
+                ax.set_yticks([])
 
-    # show tick labels only for lower-left plot 
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        if ax.is_last_row() and ax.is_first_col():
-            continue
-        xtick_labels = ["" for item in ax.get_xticklabels()]
-        ytick_labels = ["" for item in ax.get_yticklabels()]
-        ax.set_xticklabels(xtick_labels)
-        ax.set_yticklabels(ytick_labels)
+        # show tick labels only for lower-left plot 
+        all_axes = fig.get_axes()
+        for ax in all_axes:
+            if ax.is_last_row() and ax.is_first_col():
+                continue
+            xtick_labels = ["" for item in ax.get_xticklabels()]
+            ytick_labels = ["" for item in ax.get_yticklabels()]
+            ax.set_xticklabels(xtick_labels)
+            ax.set_yticklabels(ytick_labels)
 
-    # avoid doubled spines
-    all_axes = fig.get_axes()
-    for ax in all_axes:
-        for sp in ax.spines.values():
-            sp.set_visible(False)
-            sp.set_linewidth(2)
-        if ax.is_first_row():
-            ax.spines['top'].set_visible(True)
-            ax.spines['bottom'].set_visible(True)
-        else:
-            ax.spines['bottom'].set_visible(True)
-        if ax.is_first_col():
-            ax.spines['left'].set_visible(True)
-            ax.spines['right'].set_visible(True)
-        else:
-            ax.spines['right'].set_visible(True)
+        # avoid doubled spines
+        all_axes = fig.get_axes()
+        for ax in all_axes:
+            for sp in ax.spines.values():
+                sp.set_visible(False)
+                sp.set_linewidth(2)
+            if ax.is_first_row():
+                ax.spines['top'].set_visible(True)
+                ax.spines['bottom'].set_visible(True)
+            else:
+                ax.spines['bottom'].set_visible(True)
+            if ax.is_first_col():
+                ax.spines['left'].set_visible(True)
+                ax.spines['right'].set_visible(True)
+            else:
+                ax.spines['right'].set_visible(True)
 
     fig.text(0.5, 0.001,
             parameter_label,
@@ -1658,7 +1527,6 @@ def generate_histograms(
             bottom = pad_bottom,
             top = pad_top)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
     plot_path = os.path.join(plot_dir,
@@ -1667,7 +1535,102 @@ def generate_histograms(
     _LOG.info("Plots written to {0!r}\n".format(plot_path))
 
 
+def generate_specific_histogram(
+        data,
+        plot_file_prefix,
+        title = None,
+        title_size = 16.0,
+        x_label = None,
+        x_label_size = 16.0,
+        y_label = None,
+        y_label_size = 16.0,
+        plot_width = 3.5,
+        plot_height = 3.0,
+        pad_left = 0.2,
+        pad_right = 0.99,
+        pad_bottom = 0.18,
+        pad_top = 0.9,
+        bins = None,
+        x_range = None,
+        range_key = "range",
+        number_of_digits = 0,
+        plot_dir = project_util.PLOT_DIR
+        ):
+
+    plt.close('all')
+    fig = plt.figure(figsize = (plot_width, plot_height))
+    gs = gridspec.GridSpec(1, 1,
+            wspace = 0.0,
+            hspace = 0.0)
+
+    summary = pycoevolity.stats.get_summary(data.x)
+    _LOG.info("0.025, 0.975 quantiles: {0:.2f}, {1:.2f}".format(
+            summary["qi_95"][0],
+            summary["qi_95"][1]))
+
+    ax = plt.subplot(gs[0, 0])
+    n, b, patches = ax.hist(data.x,
+            weights = [1.0 / float(len(data.x))] * len(data.x),
+            bins = bins,
+            range = x_range,
+            cumulative = False,
+            histtype = 'bar',
+            align = 'mid',
+            orientation = 'vertical',
+            rwidth = None,
+            log = False,
+            color = None,
+            edgecolor = '0.5',
+            facecolor = '0.5',
+            fill = True,
+            hatch = None,
+            label = None,
+            linestyle = None,
+            linewidth = None,
+            zorder = 10,
+            )
+
+    ax.text(0.98, 0.98,
+            "\\scriptsize {mean:,.{ndigits}f} ({lower:,.{ndigits}f}--{upper:,.{ndigits}f})".format(
+                    mean = summary["mean"],
+                    lower = summary[range_key][0],
+                    upper = summary[range_key][1],
+                    ndigits = number_of_digits),
+            horizontalalignment = "right",
+            verticalalignment = "top",
+            transform = ax.transAxes,
+            zorder = 200)
+
+
+    if x_label is not None:
+        ax.set_xlabel(
+                x_label,
+                fontsize = x_label_size)
+    if y_label is not None:
+        ax.set_ylabel(
+                y_label,
+                fontsize = y_label_size)
+    if title is not None:
+        ax.set_title(plot_title,
+                fontsize = title_size)
+
+    gs.update(
+            left = pad_left,
+            right = pad_right,
+            bottom = pad_bottom,
+            top = pad_top)
+
+    if not os.path.exists(plot_dir):
+        os.mkdir(plot_dir)
+    plot_path = os.path.join(plot_dir,
+            "{0}-histogram.pdf".format(plot_file_prefix))
+    _LOG.info("Plots written to {0!r}\n".format(plot_path))
+
+
 def generate_model_plots(
+        results_grid,
+        column_labels = None,
+        row_labels = None,
         number_of_comparisons = 3,
         plot_width = 1.6,
         plot_height = 1.5,
@@ -1675,50 +1638,25 @@ def generate_model_plots(
         pad_right = 0.98,
         pad_bottom = 0.12,
         pad_top = 0.92,
-        include_variable_only = True,
-        linked_loci = None,
-        missing_data = False,
-        filtered_data = False,
-        column_indices = None):
-    if int(bool(linked_loci)) + int(missing_data) + int(filtered_data) > 1:
-        raise Exception("Can only specify linked_loci, missing_data, or filtered_data")
+        y_label_size = 18.0,
+        y_label = None,
+        number_font_size = 12.0,
+        plot_file_prefix = None,
+        plot_dir = project_util.PLOT_DIR
+        ):
     _LOG.info("Generating model plots...")
-    root_gamma_pattern = re.compile(r'root-(?P<alpha_setting>\S+)-(?P<scale_setting>\S+)-\d00k')
-    locus_size_pattern = re.compile(r'root-\d+-\d00k-(?P<locus_size>\d+)l')
-    missing_data_pattern = re.compile(r'root-\d+-\d00k-0(?P<p_missing>\d+)missing')
-    filtered_data_pattern = re.compile(r'root-\d+-\d00k-0(?P<p_singleton>\d+)singleton')
-    dpp_pattern = re.compile(r'-dpp-')
-    rj_pattern = re.compile(r'-rj-')
-    var_only_pattern = re.compile(r'var-only-')
 
     cmap = truncate_color_map(plt.cm.binary, 0.0, 0.65, 100)
 
-    row_keys, results_batches = get_results_paths(project_util.VAL_DIR,
-            include_variable_only = include_variable_only)
-    if linked_loci:
-        row_keys, results_batches = get_linked_loci_results_paths(
-                project_util.VAL_DIR,
-                data_set_size = linked_loci,
-                include_variable_only = include_variable_only,
-                include_unlinked_only = True)
-    if missing_data:
-        row_keys, results_batches = get_missing_data_results_paths(
-                project_util.VAL_DIR,
-                include_variable_only = include_variable_only)
-    if filtered_data:
-        row_keys, results_batches = get_filtered_data_results_paths(
-                project_util.VAL_DIR,
-                include_variable_only = include_variable_only)
+    if row_labels:
+        assert len(row_labels) ==  len(results_grid)
+    if column_labels:
+        assert len(column_labels) == len(results_grid[0])
 
-    if column_indices:
-        for k in row_keys:
-            results = results_batches[k]
-            reduced_results = [x for i, x in enumerate(results) if i in column_indices]
-            results_batches[k] = reduced_results
+    nrows = len(results_grid)
+    ncols = len(results_grid[0])
 
     plt.close('all')
-    nrows = len(results_batches)
-    ncols = len(results_batches.values()[0])
     w = plot_width
     h = plot_height
     fig_width = (ncols * w)
@@ -1728,21 +1666,8 @@ def generate_model_plots(
             wspace = 0.0,
             hspace = 0.0)
 
-    for row_idx, row_key in enumerate(row_keys):
-        results_batch = results_batches[row_key]
-        last_col_idx = len(results_batch) - 1
-        for col_idx, (sim_dir, results_paths) in enumerate(results_batch):
-            root_gamma_matches = root_gamma_pattern.findall(sim_dir)
-            assert(len(root_gamma_matches) == 1)
-            root_shape_setting, root_scale_setting = root_gamma_matches[0]
-
-            results = pycoevolity.parsing.get_dict_from_spreadsheets(
-                    results_paths,
-                    sep = "\t",
-                    offset = 0)
-            _LOG.info("row {0}, col {1} : {2} ({3} batches)".format(
-                    row_idx, col_idx, sim_dir, len(results_paths)))
-
+    for row_index, results_grid_row in enumerate(results_grid):
+        for column_index, results in enumerate(results_grid_row):
             true_map_nevents = []
             true_map_nevents_probs = []
             for i in range(number_of_comparisons):
@@ -1751,10 +1676,10 @@ def generate_model_plots(
             true_nevents = tuple(int(x) for x in results["true_num_events"])
             map_nevents = tuple(int(x) for x in results["map_num_events"])
             true_nevents_cred_levels = tuple(float(x) for x in results["true_num_events_cred_level"])
-            true_model_cred_levels = tuple(float(x) for x in results["true_model_cred_level"])
+            # true_model_cred_levels = tuple(float(x) for x in results["true_model_cred_level"])
             assert(len(true_nevents) == len(map_nevents))
             assert(len(true_nevents) == len(true_nevents_cred_levels))
-            assert(len(true_nevents) == len(true_model_cred_levels))
+            # assert(len(true_nevents) == len(true_model_cred_levels))
 
             true_nevents_probs = []
             map_nevents_probs = []
@@ -1770,24 +1695,24 @@ def generate_model_plots(
             median_true_nevents_prob = pycoevolity.stats.median(true_nevents_probs)
 
             nevents_within_95_cred = 0
-            model_within_95_cred = 0
+            # model_within_95_cred = 0
             ncorrect = 0
             for i in range(len(true_nevents)):
                 true_map_nevents[map_nevents[i] - 1][true_nevents[i] - 1] += 1
                 true_map_nevents_probs[map_nevents[i] - 1][true_nevents[i] - 1].append(map_nevents_probs[i])
                 if true_nevents_cred_levels[i] <= 0.95:
                     nevents_within_95_cred += 1
-                if true_model_cred_levels[i] <= 0.95:
-                    model_within_95_cred += 1
+                # if true_model_cred_levels[i] <= 0.95:
+                #     model_within_95_cred += 1
                 if true_nevents[i] == map_nevents[i]:
                     ncorrect += 1
             p_nevents_within_95_cred = nevents_within_95_cred / float(len(true_nevents))
-            p_model_within_95_cred = model_within_95_cred / float(len(true_nevents))
+            # p_model_within_95_cred = model_within_95_cred / float(len(true_nevents))
             p_correct = ncorrect / float(len(true_nevents))
 
             _LOG.info("p(nevents within CS) = {0:.4f}".format(p_nevents_within_95_cred))
-            _LOG.info("p(model within CS) = {0:.4f}".format(p_model_within_95_cred))
-            ax = plt.subplot(gs[row_idx, col_idx])
+            # _LOG.info("p(model within CS) = {0:.4f}".format(p_model_within_95_cred))
+            ax = plt.subplot(gs[row_index, column_index])
 
             ax.imshow(true_map_nevents,
                     origin = 'lower',
@@ -1801,7 +1726,8 @@ def generate_model_plots(
                     ax.text(j, i,
                             str(num_events),
                             horizontalalignment = "center",
-                            verticalalignment = "center")
+                            verticalalignment = "center",
+                            size = number_font_size)
             ax.text(0.98, 0.02,
                     "\\scriptsize$p(k \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
                             p_nevents_within_95_cred),
@@ -1820,39 +1746,17 @@ def generate_model_plots(
                     horizontalalignment = "right",
                     verticalalignment = "top",
                     transform = ax.transAxes)
-            if row_idx == 0:
-                if linked_loci:
-                    # locus_size = 1
-                    locus_size_matches = locus_size_pattern.findall(sim_dir)
-                    # if locus_size_matches:
-                    assert len(locus_size_matches) == 1
-                    locus_size = int(locus_size_matches[0])
-                    col_header = "$\\textrm{{\\sffamily Locus length}} = {0}$".format(locus_size)
-                elif missing_data:
-                    percent_missing = 0.0
-                    missing_matches = missing_data_pattern.findall(sim_dir)
-                    if missing_matches:
-                        assert len(missing_matches) == 1
-                        percent_missing = float("." + missing_matches[0]) * 100.0
-                    col_header = "{0:.0f}\\% missing data".format(percent_missing)
-                elif filtered_data:
-                    percent_sampled = 100.0
-                    filtered_matches = filtered_data_pattern.findall(sim_dir)
-                    if filtered_matches:
-                        assert len(filtered_matches) == 1
-                        percent_sampled = float("." + filtered_matches[0]) * 100.0
-                    col_header = "{0:.0f}\\% singleton patterns".format(percent_sampled)
-                else:
-                    root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
-                    col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
+            if column_labels and (row_index == 0):
+                col_header = column_labels[column_index]
                 ax.text(0.5, 1.015,
                         col_header,
                         horizontalalignment = "center",
                         verticalalignment = "bottom",
                         transform = ax.transAxes)
-            if col_idx == last_col_idx:
+            if row_labels and (column_index == (ncols - 1)):
+                row_label = row_labels[row_index]
                 ax.text(1.015, 0.5,
-                        row_key,
+                        row_label,
                         horizontalalignment = "left",
                         verticalalignment = "center",
                         rotation = 270.0,
@@ -1909,8 +1813,10 @@ def generate_model_plots(
             horizontalalignment = "center",
             verticalalignment = "bottom",
             size = 18.0)
+    if y_label is None:
+        y_label = "Estimated number of events ($\\hat{{k}}$)"
     fig.text(0.005, 0.5,
-            "Estimated number of events ($\\hat{{k}}$)",
+            y_label,
             horizontalalignment = "left",
             verticalalignment = "center",
             rotation = "vertical",
@@ -1921,18 +1827,11 @@ def generate_model_plots(
             bottom = pad_bottom,
             top = pad_top)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
-    if linked_loci:
+    if plot_file_prefix:
         plot_path = os.path.join(plot_dir,
-                "linkage-{0}-nevents.pdf".format(linked_loci))
-    elif missing_data:
-        plot_path = os.path.join(plot_dir,
-                "missing-data-nevents.pdf")
-    elif filtered_data:
-        plot_path = os.path.join(plot_dir,
-                "filtered-data-nevents.pdf")
+                "{0}-nevents.pdf".format(plot_file_prefix))
     else:
         plot_path = os.path.join(plot_dir,
                 "nevents.pdf")
@@ -1940,11 +1839,12 @@ def generate_model_plots(
     _LOG.info("Plots written to {0!r}\n".format(plot_path))
 
 def generate_specific_model_plots(
-        sim_dir,
+        results,
         number_of_comparisons = 3,
+        show_all_models = False,
+        plot_title = None,
         include_x_label = True,
         include_y_label = True,
-        include_title = True,
         include_median = True,
         include_cs = True,
         include_prop_correct = True,
@@ -1959,17 +1859,24 @@ def generate_specific_model_plots(
         lower_annotation_y = 0.02,
         upper_annotation_y = 0.92,
         plot_file_prefix = None,
-        variable_only = False):
+        plot_dir = project_util.PLOT_DIR,
+        ):
+    if show_all_models and (number_of_comparisons != 3):
+        raise Exception("show all models only supported for 3 comparisons")
     _LOG.info("Generating model plots...")
-    root_gamma_pattern = re.compile(r'root-(?P<alpha_setting>\S+)-(?P<scale_setting>\S+)-\d00k')
-    dpp_pattern = re.compile(r'-dpp-')
-    rj_pattern = re.compile(r'-rj-')
 
     cmap = truncate_color_map(plt.cm.binary, 0.0, 0.65, 100)
 
-    sim_name, results_paths = get_specific_results_paths(
-            sim_dir = sim_dir,
-            variable_only = variable_only)
+    model_to_index = {
+            "000": 0,
+            "001": 1,
+            "010": 2,
+            "011": 3,
+            "012": 4,
+            }
+    index_to_model = {}
+    for k, v in model_to_index.items():
+        index_to_model[v] = k
 
     plt.close('all')
     fig = plt.figure(figsize = (plot_width, plot_height))
@@ -1977,27 +1884,26 @@ def generate_specific_model_plots(
             wspace = 0.0,
             hspace = 0.0)
 
-    root_gamma_matches = root_gamma_pattern.findall(sim_name)
-    assert(len(root_gamma_matches) == 1)
-    root_shape_setting, root_scale_setting = root_gamma_matches[0]
-
-    results = pycoevolity.parsing.get_dict_from_spreadsheets(
-            results_paths,
-            sep = "\t",
-            offset = 0)
-
     true_map_nevents = []
+    true_map_model = []
     true_map_nevents_probs = []
     for i in range(number_of_comparisons):
         true_map_nevents.append([0 for i in range(number_of_comparisons)])
         true_map_nevents_probs.append([[] for i in range(number_of_comparisons)])
+    for i in range(5):
+        true_map_model.append([0 for i in range(5)])
+        true_map_nevents_probs.append([[] for i in range(5)])
     true_nevents = tuple(int(x) for x in results["true_num_events"])
     map_nevents = tuple(int(x) for x in results["map_num_events"])
+    true_model = tuple(x for x in results["true_model"])
+    map_model = tuple(x for x in results["map_model"])
     true_nevents_cred_levels = tuple(float(x) for x in results["true_num_events_cred_level"])
     true_model_cred_levels = tuple(float(x) for x in results["true_model_cred_level"])
     assert(len(true_nevents) == len(map_nevents))
     assert(len(true_nevents) == len(true_nevents_cred_levels))
     assert(len(true_nevents) == len(true_model_cred_levels))
+    assert(len(true_nevents) == len(true_model))
+    assert(len(true_nevents) == len(map_model))
 
     true_nevents_probs = []
     map_nevents_probs = []
@@ -2012,84 +1918,168 @@ def generate_specific_model_plots(
     mean_true_nevents_prob = sum(true_nevents_probs) / len(true_nevents_probs)
     median_true_nevents_prob = pycoevolity.stats.median(true_nevents_probs)
 
+    true_model_probs = tuple(float(x) for x in results["true_model_p"])
+    assert(len(true_nevents) == len(true_model_probs))
+
+    mean_true_model_prob = sum(true_model_probs) / len(true_model_probs)
+    median_true_model_prob = pycoevolity.stats.median(true_model_probs)
+
     nevents_within_95_cred = 0
     model_within_95_cred = 0
     ncorrect = 0
+    model_ncorrect = 0
     for i in range(len(true_nevents)):
         true_map_nevents[map_nevents[i] - 1][true_nevents[i] - 1] += 1
         true_map_nevents_probs[map_nevents[i] - 1][true_nevents[i] - 1].append(map_nevents_probs[i])
+        if show_all_models:
+            true_map_model[model_to_index[map_model[i]]][model_to_index[true_model[i]]] += 1
         if true_nevents_cred_levels[i] <= 0.95:
             nevents_within_95_cred += 1
         if true_model_cred_levels[i] <= 0.95:
             model_within_95_cred += 1
         if true_nevents[i] == map_nevents[i]:
             ncorrect += 1
+        if true_model[i] == map_model[i]:
+            model_ncorrect += 1
     p_nevents_within_95_cred = nevents_within_95_cred / float(len(true_nevents))
     p_model_within_95_cred = model_within_95_cred / float(len(true_nevents))
     p_correct = ncorrect / float(len(true_nevents))
+    p_model_correct = model_ncorrect /  float(len(true_nevents))
 
     _LOG.info("p(nevents within CS) = {0:.4f}".format(p_nevents_within_95_cred))
     _LOG.info("p(model within CS) = {0:.4f}".format(p_model_within_95_cred))
     ax = plt.subplot(gs[0, 0])
 
-    ax.imshow(true_map_nevents,
-            origin = 'lower',
-            cmap = cmap,
-            interpolation = 'none',
-            aspect = 'auto'
-            )
-    for i, row_list in enumerate(true_map_nevents):
-        for j, num_events in enumerate(row_list):
-            ax.text(j, i,
-                    str(num_events),
-                    horizontalalignment = "center",
-                    verticalalignment = "center")
+    if show_all_models:
+        ax.imshow(true_map_model,
+                origin = 'lower',
+                cmap = cmap,
+                interpolation = 'none',
+                aspect = 'auto'
+                )
+        for i, row_list in enumerate(true_map_model):
+            for j, n in enumerate(row_list):
+                ax.text(j, i,
+                        str(n),
+                        horizontalalignment = "center",
+                        verticalalignment = "center",
+                        fontsize = 6)
+    else:
+        ax.imshow(true_map_nevents,
+                origin = 'lower',
+                cmap = cmap,
+                interpolation = 'none',
+                aspect = 'auto'
+                )
+        for i, row_list in enumerate(true_map_nevents):
+            for j, num_events in enumerate(row_list):
+                ax.text(j, i,
+                        str(num_events),
+                        horizontalalignment = "center",
+                        verticalalignment = "center")
+
     if include_cs:
-        ax.text(0.98, lower_annotation_y,
-                "$p(k \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
-                        p_nevents_within_95_cred),
-                horizontalalignment = "right",
-                verticalalignment = "bottom",
-                transform = ax.transAxes)
+        if show_all_models:
+            ax.text(0.98, lower_annotation_y,
+                    "\\tiny$p(\\mathcal{{T}} \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
+                            p_model_within_95_cred),
+                    horizontalalignment = "right",
+                    verticalalignment = "bottom",
+                    transform = ax.transAxes)
+        else:
+            ax.text(0.98, lower_annotation_y,
+                    "$p(k \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
+                            p_nevents_within_95_cred),
+                    horizontalalignment = "right",
+                    verticalalignment = "bottom",
+                    transform = ax.transAxes)
     if include_prop_correct:
-        ax.text(0.02, upper_annotation_y,
-                "$p(\\hat{{k}} = k) = {0:.3f}$".format(
-                        p_correct),
-                horizontalalignment = "left",
-                verticalalignment = "bottom",
-                transform = ax.transAxes)
+        if show_all_models:
+            ax.text(0.02, upper_annotation_y,
+                    "\\tiny$p(\\hat{{\\mathcal{{T}}}} = \\mathcal{{T}}) = {0:.3f}$".format(
+                            p_model_correct),
+                    horizontalalignment = "left",
+                    verticalalignment = "top",
+                    transform = ax.transAxes)
+        else:
+            ax.text(0.02, upper_annotation_y,
+                    "$p(\\hat{{k}} = k) = {0:.3f}$".format(
+                            p_correct),
+                    horizontalalignment = "left",
+                    verticalalignment = "bottom",
+                    transform = ax.transAxes)
     if include_median:
-        ax.text(0.98, upper_annotation_y,
-                "$\\widetilde{{p(k|\\mathbf{{D}})}} = {0:.3f}$".format(
-                        median_true_nevents_prob),
-                horizontalalignment = "right",
-                verticalalignment = "bottom",
-                transform = ax.transAxes)
+        if show_all_models:
+            ax.text(0.98, upper_annotation_y,
+                    "\\tiny$\\widetilde{{p(\\mathcal{{T}}|\\mathbf{{D}})}} = {0:.3f}$".format(
+                            median_true_model_prob),
+                    horizontalalignment = "right",
+                    verticalalignment = "top",
+                    transform = ax.transAxes)
+        else:
+            ax.text(0.98, upper_annotation_y,
+                    "$\\widetilde{{p(k|\\mathbf{{D}})}} = {0:.3f}$".format(
+                            median_true_nevents_prob),
+                    horizontalalignment = "right",
+                    verticalalignment = "bottom",
+                    transform = ax.transAxes)
     if include_x_label:
-        ax.set_xlabel("True \\# of events ($k$)",
-                # labelpad = 8.0,
-                fontsize = xy_label_size)
+        if show_all_models:
+            ax.set_xlabel("True model ($\\mathcal{{T}}$)",
+                    # labelpad = 8.0,
+                    fontsize = xy_label_size)
+        else:
+            ax.set_xlabel("True \\# of events ($k$)",
+                    # labelpad = 8.0,
+                    fontsize = xy_label_size)
     if include_y_label:
-        ax.set_ylabel("Estimated \\# of events ($\\hat{{k}}$)",
-                labelpad = 8.0,
-                fontsize = xy_label_size)
-    root_shape, root_scale = get_root_gamma_parameters(root_shape_setting, root_scale_setting)
-    if include_title:
-        col_header = "$\\textrm{{\\sffamily Gamma}}({0}, \\textrm{{\\sffamily mean}} = {1:.1f})$".format(int(root_shape), root_shape * root_scale)
-        ax.set_title(col_header,
+        if show_all_models:
+            ax.set_ylabel("MAP model ($\\hat{{\\mathcal{{T}}}}$)",
+                    labelpad = 8.0,
+                    fontsize = xy_label_size)
+        else:
+            ax.set_ylabel("MAP \\# of events ($\\hat{{k}}$)",
+                    labelpad = 8.0,
+                    fontsize = xy_label_size)
+    if plot_title:
+        ax.set_title(plot_title,
                 fontsize = title_size)
 
     # Make sure ticks correspond only with number of events
-    ax.xaxis.set_ticks(range(number_of_comparisons))
-    ax.yaxis.set_ticks(range(number_of_comparisons))
+    # ax.xaxis.set_ticks(range(number_of_comparisons))
+    # ax.yaxis.set_ticks(range(number_of_comparisons))
+    # xtick_labels = [item for item in ax.get_xticklabels()]
+    # for i in range(len(xtick_labels)):
+    #     xtick_labels[i].set_text(str(i + 1))
+    # ytick_labels = [item for item in ax.get_yticklabels()]
+    # for i in range(len(ytick_labels)):
+    #     ytick_labels[i].set_text(str(i + 1))
+    # ax.set_xticklabels(xtick_labels)
+    # ax.set_yticklabels(ytick_labels)
+
+    # Make sure ticks correspond only with number of events or model
+    if not show_all_models:
+        ax.xaxis.set_ticks(range(number_of_comparisons))
+        ax.yaxis.set_ticks(range(number_of_comparisons))
+    else:
+        ax.xaxis.set_ticks(range(5))
+        ax.yaxis.set_ticks(range(5))
     xtick_labels = [item for item in ax.get_xticklabels()]
     for i in range(len(xtick_labels)):
-        xtick_labels[i].set_text(str(i + 1))
+        if show_all_models:
+            xtick_labels[i].set_text(index_to_model[i])
+        else:
+            xtick_labels[i].set_text(str(i + 1))
     ytick_labels = [item for item in ax.get_yticklabels()]
     for i in range(len(ytick_labels)):
-        ytick_labels[i].set_text(str(i + 1))
+        if show_all_models:
+            ytick_labels[i].set_text(index_to_model[i])
+        else:
+            ytick_labels[i].set_text(str(i + 1))
     ax.set_xticklabels(xtick_labels)
     ax.set_yticklabels(ytick_labels)
+
+
 
     gs.update(
             left = pad_left,
@@ -2097,7 +2087,6 @@ def generate_specific_model_plots(
             bottom = pad_bottom,
             top = pad_top)
 
-    plot_dir = os.path.join(project_util.VAL_DIR, "plots")
     if not os.path.exists(plot_dir):
         os.mkdir(plot_dir)
     plot_path = os.path.join(plot_dir,
@@ -2106,835 +2095,1470 @@ def generate_specific_model_plots(
     _LOG.info("Plots written to {0!r}\n".format(plot_path))
 
 
+def parse_results(paths):
+    return pycoevolity.parsing.get_dict_from_spreadsheets(
+            paths,
+            sep = "\t",
+            offset = 0)
+
+
 def main_cli(argv = sys.argv):
     # Plot relative root priors
+    if not os.path.exists(project_util.RESULTS_DIR):
+        os.mkdir(project_util.RESULTS_DIR)
+    if not os.path.exists(project_util.PLOT_DIR):
+        os.mkdir(project_util.PLOT_DIR)
+
+    pad_left = 0.16
+    pad_right = 0.94
+    pad_bottom = 0.12
+    pad_top = 0.965
+    plot_width = 2.8
+    plot_height = 2.2
+
     root_gamma_parameters = (
-            (10.0, 0.05),
-            (10.0, 0.1),
-            (10.0, 0.2),
+            (5.0, 0.04, 0.05),
+            (5.0, 0.19, 0.05),
+            (5.0, 0.79, 0.05),
+            (50.0, 0.02, 0.0),
+            (500.0, 0.002, 0.0),
+            (10.0, 0.025, 0.0),
+            (10.0, 0.05, 0.0),
+            (10.0, 0.1, 0.0),
+            (10.0, 0.2, 0.0),
+            (100.0, 0.01, 0.0),
+            (1000.0, 0.001, 0.0),
             )
     x_max = float("-inf")
-    for shape, scale in root_gamma_parameters:
-        q = scipy.stats.gamma.ppf(0.999, shape, scale = scale)
+    for shape, scale, offset in root_gamma_parameters:
+        q = scipy.stats.gamma.ppf(0.975, shape, scale = scale)
+        q += offset
         if q > x_max:
             x_max = q
-    for i, (shape, scale) in enumerate(root_gamma_parameters):
-        scale_str = "{0:.2f}".format(scale)
-        scale_str = scale_str.replace(".", "")
-        plot_file_prefix = "relative-root-prior-{0:.0f}-{1}".format(shape, scale_str)
+    for i, (shape, scale, offset) in enumerate(root_gamma_parameters):
+        shape_str = str(shape).replace(".", "_")
+        scale_str = str(scale).replace(".", "_")
+        offset_str = str(offset).replace(".", "_")
+        plot_file_prefix = "prior-relative-root-{0}-{1}-{2}".format(shape_str, scale_str, offset_str)
         include_y_label = False
         if i == 0:
             include_y_label = True
         plot_gamma(shape = shape,
                 scale = scale,
+                offset = offset,
                 x_min = 0.0,
                 x_max = x_max,
                 number_of_points = 10000,
                 x_label = "Relative root size",
                 include_x_label = False, # Going to add x-axis in slides
-                include_y_label = include_y_label,
-                include_title = True,
-                plot_width = 3.5,
-                plot_height = 3.0,
+                include_y_label = False,
+                include_title = False,
+                plot_width = plot_width,
+                plot_height = plot_height,
                 xy_label_size = 16.0,
                 title_size = 16.0,
-                pad_left = 0.16,
-                pad_right = 0.99,
-                pad_bottom = 0.17,
-                pad_top = 0.91,
+                pad_left = pad_left,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                plot_file_prefix = plot_file_prefix)
+
+    time_gamma_parameters = (
+            (4.0, 0.000475, 0.0001),
+            (1.0, 0.01, 0.0),
+            (1.0, 0.001, 0.0),
+            )
+    x_max = float("-inf")
+    for shape, scale, offset in time_gamma_parameters:
+        q = scipy.stats.gamma.ppf(0.975, shape, scale = scale)
+        if q > x_max:
+            x_max = q
+    for i, (shape, scale, offset) in enumerate(time_gamma_parameters):
+        shape_str = str(shape).replace(".", "_")
+        scale_str = str(scale).replace(".", "_")
+        offset_str = str(offset).replace(".", "_")
+        plot_file_prefix = "prior-time-{0}-{1}-{2}".format(shape_str, scale_str, offset_str)
+        plot_gamma(shape = shape,
+                scale = scale,
+                offset = offset,
+                x_min = 0.0,
+                x_max = x_max,
+                number_of_points = 10000,
+                x_label = "Time",
+                include_x_label = False, # Going to add x-axis in slides
+                include_y_label = False,
+                include_title = False,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
                 plot_file_prefix = plot_file_prefix)
 
 
+    # sim_dirs = [
+    #         "03pops-dpp-root-0010-0025-500k",
+    #         "03pops-dpp-root-0010-005-500k",
+    #         "03pops-dpp-root-0010-010-500k",
+    #         "03pops-dpp-root-0010-020-500k",
+    # ]
+    # sim_dirs_recent = [
+    #         "03pops-dpp-root-0010-0025-t0001-500k",
+    #         "03pops-dpp-root-0010-005-t0001-500k",
+    # ]
+    # sim_dirs_centered = [
+    #         "03pops-dpp-root-0010-010-500k",
+    #         "03pops-dpp-root-0100-001-500k",
+    #         "03pops-dpp-root-1000-0001-500k",
+    # ]
+    sim_dirs_opt = [
+            "03pops-dpp-root-0005-004-t0002-500k",
+            "03pops-dpp-root-0005-019-t0002-500k",
+            "03pops-dpp-root-0005-079-t0002-500k",
+    ]
+    sim_dirs_opt_centered = [
+            "03pops-dpp-root-0005-019-t0002-500k",
+            "03pops-dpp-root-0050-002-t0002-500k",
+            "03pops-dpp-root-0500-0002-t0002-500k",
+    ]
+    sim_dirs_opt_all = [
+            "03pops-dpp-root-0005-004-t0002-500k",
+            "03pops-dpp-root-0005-079-t0002-500k",
+            "03pops-dpp-root-0005-019-t0002-500k",
+            "03pops-dpp-root-0050-002-t0002-500k",
+            "03pops-dpp-root-0500-0002-t0002-500k",
+    ]
+
+    # root_gamma_labels = []
+    # for sim_dir in sim_dirs:
+    #     root_gamma_labels.append(get_root_gamma_label(sim_dir))
+
+    # root_gamma_labels_recent = []
+    # for sim_dir in sim_dirs_recent:
+    #     root_gamma_labels_recent.append(get_root_gamma_label(sim_dir))
+
+    # root_gamma_labels_centered = []
+    # for sim_dir in sim_dirs_centered:
+    #     root_gamma_labels_centered.append(get_root_gamma_label(sim_dir))
+
+    root_gamma_labels_opt = []
+    for sim_dir in sim_dirs_opt:
+        root_gamma_labels_opt.append(get_root_gamma_label(sim_dir))
+
+    root_gamma_labels_opt_centered = []
+    for sim_dir in sim_dirs_opt_centered:
+        root_gamma_labels_opt_centered.append(get_root_gamma_label(sim_dir))
+
+    root_gamma_labels_opt_all = []
+    for sim_dir in sim_dirs_opt_all:
+        root_gamma_labels_opt_all.append(get_root_gamma_label(sim_dir))
+
+
+    # results = []
+    # for sim_dir in sim_dirs:
+    #     results.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "results.csv.gz")))
+    #             )
+
+    # var_only_results = []
+    # for sim_dir in sim_dirs:
+    #     var_only_results.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "var-only-results.csv.gz")))
+    #             )
+
+    # results_recent = []
+    # for sim_dir in sim_dirs_recent:
+    #     results_recent.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "results.csv.gz")))
+    #             )
+
+    # var_only_results_recent = []
+    # for sim_dir in sim_dirs_recent:
+    #     var_only_results_recent.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "var-only-results.csv.gz")))
+    #             )
+
+    # results_centered = []
+    # for sim_dir in sim_dirs_centered:
+    #     results_centered.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "results.csv.gz")))
+    #             )
+
+    # var_only_results_centered = []
+    # for sim_dir in sim_dirs_centered:
+    #     var_only_results_centered.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "var-only-results.csv.gz")))
+    #             )
+
+    results_opt_all = []
+    for sim_dir in sim_dirs_opt_all:
+        results_opt_all.append(
+                parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+                        sim_dir,
+                        "batch00?",
+                        "results.csv.gz")))
+                )
+
+    var_only_results_opt_all = []
+    for sim_dir in sim_dirs_opt_all:
+        var_only_results_opt_all.append(
+                parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+                        sim_dir,
+                        "batch00?",
+                        "var-only-results.csv.gz")))
+                )
+
+    results_opt = [
+            results_opt_all[0],
+            results_opt_all[2],
+            results_opt_all[1],
+            ]
+    var_only_results_opt = [
+            var_only_results_opt_all[0],
+            var_only_results_opt_all[2],
+            var_only_results_opt_all[1],
+            ]
+    results_opt_centered = results_opt_all[2:]
+    var_only_results_opt_centered = var_only_results_opt_all[2:]
+
+    row_labels = [
+            "All sites",
+            "Variable-only sites",
+    ]
+
+
+    height_parameters = [
+            "root_height_c1sp1",
+            "root_height_c2sp1",
+            "root_height_c3sp1",
+    ]
+    root_size_parameters = [
+            "pop_size_root_c1sp1",
+            "pop_size_root_c2sp1",
+            "pop_size_root_c3sp1",
+    ]
+    leaf_size_parameters = [
+            "pop_size_c1sp1",
+            "pop_size_c2sp1",
+            "pop_size_c3sp1",
+    ]
+
+    coal_units_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y", "highlight_values", "highlight_threshold"),
+                    list(get_true_est_coal_units(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters)) + [1.1]
+                    ))
+            ) for r in results_opt_all]
+    var_only_coal_units_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y", "highlight_values", "highlight_threshold"),
+                    list(get_true_est_coal_units(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters)) + [1.1]
+                    ))
+            ) for r in var_only_results_opt_all]
+
+    t_vs_e_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y", "highlight_values", "highlight_threshold"),
+                    list(get_coal_units_vs_error(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters)) + [1.1]
+                    ))
+            ) for r in results_opt_all]
+    vo_t_vs_e_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y", "highlight_values", "highlight_threshold"),
+                    list(get_coal_units_vs_error(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters)) + [1.1]
+                    ))
+            ) for r in var_only_results_opt_all]
+
+    # t_vs_e = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in results]
+    # vo_t_vs_e = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in var_only_results]
+    # t_vs_e_recent = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in results_recent]
+    # vo_t_vs_e_recent = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in var_only_results_recent]
+    # t_vs_e_centered = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in results_centered]
+    # vo_t_vs_e_centered = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in var_only_results_centered]
+
+
+    t_vs_psrf_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y"),
+                    list(get_coal_units_vs_error(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters,
+                            psrf_as_response = True))
+                    ))
+            ) for r in results_opt_all]
+    vo_t_vs_psrf_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y"),
+                    list(get_coal_units_vs_error(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters,
+                            psrf_as_response = True))
+                    ))
+            ) for r in var_only_results_opt_all]
+
+    # t_vs_psrf = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in results]
+    # vo_t_vs_psrf = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in var_only_results]
+    # t_vs_psrf_recent = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in results_recent]
+    # vo_t_vs_psrf_recent = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in var_only_results_recent]
+    # t_vs_psrf_centered = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in results_centered]
+    # vo_t_vs_psrf_centered = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in var_only_results_centered]
+
     generate_scatter_plots(
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            parameter_symbol = "t",
+            data_grid = [t_vs_e_opt_all, vo_t_vs_e_opt_all],
+            plot_file_prefix = "opt-all-coal-units-vs-error",
+            column_labels = root_gamma_labels_opt_all,
+            row_labels = row_labels,
             plot_width = 1.9,
             plot_height = 1.8,
             pad_left = 0.08,
             pad_right = 0.98,
             pad_bottom = 0.14,
             pad_top = 0.94,
-            plot_file_prefix = "event-time")
+            x_label = "True event time in coalescent units",
+            x_label_size = 18.0,
+            y_label = "Relative error",
+            y_label_size = 18.0,
+            force_shared_x_range = False,
+            force_shared_y_range = False,
+            force_shared_xy_ranges = False,
+            force_shared_spines = False,
+            include_coverage = False,
+            include_rmse = False,
+            include_identity_line = False,
+            include_error_bars = False)
+
     # generate_scatter_plots(
+    #         data_grid = [t_vs_e, vo_t_vs_e],
+    #         plot_file_prefix = "coal-units-vs-error",
+    #         column_labels = root_gamma_labels,
+    #         row_labels = row_labels,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "Relative error",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
+
+    # generate_scatter_plots(
+    #         data_grid = [t_vs_e_recent, vo_t_vs_e_recent],
+    #         plot_file_prefix = "recent-coal-units-vs-error",
+    #         column_labels = root_gamma_labels_recent,
+    #         row_labels = row_labels,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "Relative error",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
+
+    # generate_scatter_plots(
+    #         data_grid = [t_vs_e_centered, vo_t_vs_e_centered],
+    #         plot_file_prefix = "centered-coal-units-vs-error",
+    #         column_labels = root_gamma_labels_centered,
+    #         row_labels = row_labels,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "Relative error",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
+
+    generate_scatter_plots(
+            data_grid = [t_vs_psrf_opt_all, vo_t_vs_psrf_opt_all],
+            plot_file_prefix = "opt-all-coal-units-vs-psrf",
+            column_labels = root_gamma_labels_opt_all,
+            row_labels = row_labels,
+            plot_width = 1.9,
+            plot_height = 1.8,
+            pad_left = 0.08,
+            pad_right = 0.98,
+            pad_bottom = 0.14,
+            pad_top = 0.94,
+            x_label = "True event time in coalescent units",
+            x_label_size = 18.0,
+            y_label = "PSRF",
+            y_label_size = 18.0,
+            force_shared_x_range = False,
+            force_shared_y_range = False,
+            force_shared_xy_ranges = False,
+            force_shared_spines = False,
+            include_coverage = False,
+            include_rmse = False,
+            include_identity_line = False,
+            include_error_bars = False)
+
+    # generate_scatter_plots(
+    #         data_grid = [t_vs_psrf, vo_t_vs_psrf],
+    #         plot_file_prefix = "coal-units-vs-psrf",
+    #         column_labels = root_gamma_labels,
+    #         row_labels = row_labels,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "PSRF",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
+
+    # generate_scatter_plots(
+    #         data_grid = [t_vs_psrf_recent, vo_t_vs_psrf_recent],
+    #         plot_file_prefix = "recent-coal-units-vs-psrf",
+    #         column_labels = root_gamma_labels_recent,
+    #         row_labels = row_labels,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "PSRF",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
+
+    # generate_scatter_plots(
+    #         data_grid = [t_vs_psrf_centered, vo_t_vs_psrf_centered],
+    #         plot_file_prefix = "centered-coal-units-vs-psrf",
+    #         column_labels = root_gamma_labels_centered,
+    #         row_labels = row_labels,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "PSRF",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
+
+
+    parameters_to_plot = {
+            "event-time": {
+                    "headers": height_parameters,
+                    "label": "event time",
+                    "short_label": "time",
+                    "symbol": "t",
+                    "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "pad_left": pad_left,
+            },
+            "ancestor-size": {
+                    "headers": root_size_parameters,
+                    "label": "ancestor population size",
+                    "short_label": "size",
+                    "symbol": "N_e\\mu",
+                    "xy_limits": None,
+                    "pad_left": pad_left + 0.01,
+            },
+            "descendant-size": {
+                    "headers": leaf_size_parameters,
+                    "label": "descendant population size",
+                    "short_label": "size",
+                    "symbol": "N_e\\mu",
+                    "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "pad_left": pad_left,
+            },
+    }
+
+    all_sim_dirs = sim_dirs_opt_all
+    all_results = results_opt_all
+    all_var_only_results = var_only_results_opt_all 
+    # all_sim_dirs = sim_dirs + sim_dirs_recent + sim_dirs_centered[1:] + sim_dirs_opt_all
+    # all_results = results + results_recent + results_centered[1:] + results_opt_all
+    # all_var_only_results = var_only_results + var_only_results_recent + var_only_results_centered[1:] + results_opt_all
+
+    for parameter, p_info in parameters_to_plot.items():
+        # data = [ScatterData.init(r, p_info["headers"],
+        #         highlight_parameter_prefix = "psrf",
+        #         highlight_threshold = 1.1,
+        #         ) for r in results]
+        # var_only_data = [ScatterData.init(r, p_info["headers"],
+        #         highlight_parameter_prefix = "psrf",
+        #         highlight_threshold = 1.1,
+        #         ) for r in var_only_results]
+
+        # data_recent = [ScatterData.init(r, p_info["headers"],
+        #         highlight_parameter_prefix = "psrf",
+        #         highlight_threshold = 1.1,
+        #         ) for r in results_recent]
+        # var_only_data_recent = [ScatterData.init(r, p_info["headers"],
+        #         highlight_parameter_prefix = "psrf",
+        #         highlight_threshold = 1.1,
+        #         ) for r in var_only_results_recent]
+
+        # data_centered = [ScatterData.init(r, p_info["headers"],
+        #         highlight_parameter_prefix = "psrf",
+        #         highlight_threshold = 1.1,
+        #         ) for r in results_centered]
+        # var_only_data_centered = [ScatterData.init(r, p_info["headers"],
+        #         highlight_parameter_prefix = "psrf",
+        #         highlight_threshold = 1.1,
+        #         ) for r in var_only_results_centered]
+
+        data_opt_all = [ScatterData.init(r, p_info["headers"],
+                highlight_parameter_prefix = "psrf",
+                highlight_threshold = 1.1,
+                ) for r in results_opt_all]
+        var_only_data_opt_all = [ScatterData.init(r, p_info["headers"],
+                highlight_parameter_prefix = "psrf",
+                highlight_threshold = 1.1,
+                ) for r in var_only_results_opt_all]
+        
+        x_label = "True {0} (${1}$)".format(
+                p_info["label"],
+                p_info["symbol"])
+        y_label = "Estimated {0} ($\\hat{{{1}}}$)".format(
+                p_info["label"],
+                p_info["symbol"])
+
+        # generate_scatter_plots(
+        #         data_grid = [data, var_only_data],
+        #         plot_file_prefix = parameter,
+        #         parameter_symbol = p_info["symbol"],
+        #         column_labels = root_gamma_labels,
+        #         row_labels = row_labels,
+        #         plot_width = 1.9,
+        #         plot_height = 1.8,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         x_label = x_label,
+        #         x_label_size = 18.0,
+        #         y_label = y_label,
+        #         y_label_size = 18.0,
+        #         force_shared_x_range = True,
+        #         force_shared_y_range = True,
+        #         force_shared_xy_ranges = True,
+        #         force_shared_spines = True,
+        #         include_coverage = True,
+        #         include_rmse = True,
+        #         include_identity_line = True,
+        #         include_error_bars = True)
+
+        # generate_scatter_plots(
+        #         data_grid = [data_recent, var_only_data_recent],
+        #         plot_file_prefix = "recent-" + parameter,
+        #         parameter_symbol = p_info["symbol"],
+        #         column_labels = root_gamma_labels_recent,
+        #         row_labels = row_labels,
+        #         plot_width = 1.9,
+        #         plot_height = 1.8,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         x_label = x_label,
+        #         x_label_size = 18.0,
+        #         y_label = y_label,
+        #         y_label_size = 18.0,
+        #         force_shared_x_range = True,
+        #         force_shared_y_range = True,
+        #         force_shared_xy_ranges = True,
+        #         force_shared_spines = True,
+        #         include_coverage = True,
+        #         include_rmse = True,
+        #         include_identity_line = True,
+        #         include_error_bars = True)
+
+        # generate_scatter_plots(
+        #         data_grid = [data_centered, var_only_data_centered],
+        #         plot_file_prefix = "centered-" + parameter,
+        #         parameter_symbol = p_info["symbol"],
+        #         column_labels = root_gamma_labels_centered,
+        #         row_labels = row_labels,
+        #         plot_width = 1.9,
+        #         plot_height = 1.8,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         x_label = x_label,
+        #         x_label_size = 18.0,
+        #         y_label = y_label,
+        #         y_label_size = 18.0,
+        #         force_shared_x_range = True,
+        #         force_shared_y_range = True,
+        #         force_shared_xy_ranges = True,
+        #         force_shared_spines = True,
+        #         include_coverage = True,
+        #         include_rmse = True,
+        #         include_identity_line = True,
+        #         include_error_bars = True)
+
+        # generate_scatter_plots(
+        #         data_grid = [data_opt_all, var_only_data_opt_all],
+        #         plot_file_prefix = "opt-all-" + parameter,
+        #         parameter_symbol = p_info["symbol"],
+        #         column_labels = root_gamma_labels_opt_all,
+        #         row_labels = row_labels,
+        #         plot_width = 1.9,
+        #         plot_height = 1.8,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         x_label = x_label,
+        #         x_label_size = 18.0,
+        #         y_label = y_label,
+        #         y_label_size = 18.0,
+        #         force_shared_x_range = True,
+        #         force_shared_y_range = True,
+        #         force_shared_xy_ranges = True,
+        #         force_shared_spines = True,
+        #         include_coverage = True,
+        #         include_rmse = True,
+        #         include_identity_line = True,
+        #         include_error_bars = True)
+
+
+        # Generate individual scatters
+        all_data = data_opt_all
+        all_var_only_data = var_only_data_opt_all
+        # all_data = data + data_recent + data_centered[1:] + data_opt_all
+        # all_var_only_data = var_only_data + var_only_data_recent + var_only_data_centered[1:] + var_only_data_opt_all
+        for i in range(len(all_data)):
+            prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
+            y_label = "Estimated {0} ($\\hat{{{1}}}$)".format(
+                    p_info["short_label"],
+                    p_info["symbol"])
+            # generate_specific_scatter_plot(
+            #         data = all_data[i],
+            #         plot_file_prefix = parameter + "-" + prefix + "-y",
+            #         parameter_symbol = p_info["symbol"],
+            #         title = None,
+            #         title_size = 16.0,
+            #         x_label = None,
+            #         x_label_size = 16.0,
+            #         y_label = y_label,
+            #         y_label_size = 16.0,
+            #         plot_width = 3.5,
+            #         plot_height = 3.0,
+            #         pad_left = 0.2,
+            #         pad_right = 0.965,
+            #         pad_bottom = 0.18,
+            #         pad_top = 0.9,
+            #         force_shared_xy_ranges = True,
+            #         include_coverage = True,
+            #         include_rmse = True,
+            #         include_identity_line = True,
+            #         include_error_bars = True,
+            #         )
+            generate_specific_scatter_plot(
+                    data = all_data[i],
+                    plot_file_prefix = parameter + "-" + prefix,
+                    parameter_symbol = p_info["symbol"],
+                    title = None,
+                    title_size = 16.0,
+                    x_label = None,
+                    x_label_size = 16.0,
+                    y_label = None,
+                    y_label_size = 16.0,
+                    plot_width = plot_width,
+                    plot_height = plot_height,
+                    pad_left = p_info["pad_left"],
+                    pad_right = pad_right,
+                    pad_bottom = pad_bottom,
+                    pad_top = pad_top,
+                    force_shared_xy_ranges = True,
+                    xy_limits = p_info["xy_limits"],
+                    include_coverage = True,
+                    include_rmse = True,
+                    include_identity_line = True,
+                    include_error_bars = True,
+                    )
+            generate_specific_scatter_plot(
+                    data = all_var_only_data[i],
+                    plot_file_prefix = "var-only-" + parameter + "-" + prefix,
+                    parameter_symbol = p_info["symbol"],
+                    title = None,
+                    title_size = 16.0,
+                    x_label = None,
+                    x_label_size = 16.0,
+                    y_label = None,
+                    y_label_size = 16.0,
+                    plot_width = plot_width,
+                    plot_height = plot_height,
+                    pad_left = p_info["pad_left"],
+                    pad_right = pad_right,
+                    pad_bottom = pad_bottom,
+                    pad_top = pad_top,
+                    force_shared_xy_ranges = True,
+                    xy_limits = p_info["xy_limits"],
+                    include_coverage = True,
+                    include_rmse = True,
+                    include_identity_line = True,
+                    include_error_bars = True,
+                    )
+
+    coal_units_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y", "highlight_values", "highlight_threshold"),
+                    list(get_true_est_coal_units(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters)) + [1.1]
+                    ))
+            ) for r in results_opt_all]
+    var_only_coal_units_opt_all = [ScatterData(
+            **dict(zip(
+                    ("x", "y", "highlight_values", "highlight_threshold"),
+                    list(get_true_est_coal_units(
+                            r,
+                            height_parameters,
+                            leaf_size_parameters)) + [1.1]
+                    ))
+            ) for r in var_only_results_opt_all]
+
+    all_data = coal_units_opt_all
+    all_var_only_data = var_only_coal_units_opt_all
+
+    parameter = "event-time-coal-units"
+    symbol = "t"
+    for i in range(len(all_data)):
+        prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
+        y_label = "Estimated event time in coalescent units"
+        generate_specific_scatter_plot(
+                data = all_data[i],
+                plot_file_prefix = parameter + "-" + prefix,
+                parameter_symbol = symbol,
+                title = None,
+                title_size = 16.0,
+                x_label = None,
+                x_label_size = 16.0,
+                y_label = None,
+                y_label_size = 16.0,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                pad_left = pad_left,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                force_shared_xy_ranges = True,
+                xy_limits = None,
+                include_coverage = False,
+                include_rmse = False,
+                include_identity_line = True,
+                include_error_bars = False,
+                )
+        generate_specific_scatter_plot(
+                data = all_var_only_data[i],
+                plot_file_prefix = "var-only-" + parameter + "-" + prefix,
+                parameter_symbol = symbol,
+                title = None,
+                title_size = 16.0,
+                x_label = None,
+                x_label_size = 16.0,
+                y_label = None,
+                y_label_size = 16.0,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                pad_left = pad_left,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                force_shared_xy_ranges = True,
+                xy_limits = None,
+                include_coverage = False,
+                include_rmse = False,
+                include_identity_line = True,
+                include_error_bars = False,
+                )
+
+
+    # generate_model_plots(
+    #         results_grid = [results, var_only_results],
+    #         column_labels = root_gamma_labels,
+    #         row_labels = row_labels,
+    #         number_of_comparisons = 3,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         y_label_size = 18.0,
+    #         y_label = None,
+    #         number_font_size = 12.0,
+    #         plot_file_prefix = None)
+    # generate_model_plots(
+    #         results_grid = [results_recent, var_only_results_recent],
+    #         column_labels = root_gamma_labels_recent,
+    #         row_labels = row_labels,
+    #         number_of_comparisons = 3,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         y_label_size = 18.0,
+    #         y_label = None,
+    #         number_font_size = 12.0,
+    #         plot_file_prefix = "recent")
+    # generate_model_plots(
+    #         results_grid = [results_centered, var_only_results_centered],
+    #         column_labels = root_gamma_labels_centered,
+    #         row_labels = row_labels,
+    #         number_of_comparisons = 3,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         y_label_size = 18.0,
+    #         y_label = None,
+    #         number_font_size = 12.0,
+    #         plot_file_prefix = "centered")
+    # generate_model_plots(
+    #         results_grid = [results_opt_all, var_only_results_opt_all],
+    #         column_labels = root_gamma_labels_opt_all,
+    #         row_labels = row_labels,
+    #         number_of_comparisons = 3,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         y_label_size = 18.0,
+    #         y_label = None,
+    #         number_font_size = 12.0,
+    #         plot_file_prefix = "opt-all")
+
+    # Generate individual model plots
+    for i in range(len(all_results)):
+        prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
+        # generate_specific_model_plots(
+        #         results = all_results[i],
+        #         number_of_comparisons = 3,
+        #         plot_title = None,
+        #         include_x_label = False,
+        #         include_y_label = True,
+        #         include_median = True,
+        #         include_cs = True,
+        #         include_prop_correct = True,
+        #         plot_width = 3.5,
+        #         plot_height = 3.3,
+        #         xy_label_size = 16.0,
+        #         title_size = 16.0,
+        #         pad_left = 0.16,
+        #         pad_right = 0.99,
+        #         pad_bottom = 0.165,
+        #         pad_top = 0.915,
+        #         lower_annotation_y = 0.01,
+        #         upper_annotation_y = 0.915,
+        #         plot_file_prefix = "nevents-" + prefix + "-y")
+        generate_specific_model_plots(
+                results = all_results[i],
+                number_of_comparisons = 3,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.03,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 0.89,
+                plot_file_prefix = "nevents-" + prefix)
+        generate_specific_model_plots(
+                results = all_var_only_results[i],
+                number_of_comparisons = 3,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.03,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 0.89,
+                plot_file_prefix = "var-only-nevents-" + prefix)
+        generate_specific_model_plots(
+                results = all_results[i],
+                number_of_comparisons = 3,
+                show_all_models = True,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.03,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 0.997,
+                plot_file_prefix = "model-" + prefix)
+        generate_specific_model_plots(
+                results = all_var_only_results[i],
+                number_of_comparisons = 3,
+                show_all_models = True,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.03,
+                pad_right = pad_right,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 0.997,
+                plot_file_prefix = "var-only-model-" + prefix)
+
+    # Generate histograms for the number of variable sites
+    parameters = [
+            "n_var_sites_c1",
+            "n_var_sites_c2",
+            "n_var_sites_c3",
+            ]
+    # data = [HistogramData.init(r, parameters, True) for r in results]
+    # data_recent = [HistogramData.init(r, parameters, True) for r in results_recent]
+    # data_centered = [HistogramData.init(r, parameters, True) for r in results_centered]
+    data_opt_all = [HistogramData.init(r, parameters, True) for r in results_opt_all]
+
+    # generate_histograms(
+    #         data_grid = [data_opt_all],
+    #         plot_file_prefix = "opt-all-number-of-variable-sites-500k",
+    #         column_labels = root_gamma_labels_opt_all,
+    #         row_labels = None,
+    #         parameter_label = "Number of variable sites",
+    #         range_key = "range",
+    #         number_of_digits = 0,
+    #         plot_width = 1.9,
+    #         plot_height = 2.0,
+    #         pad_left = 0.08,
+    #         pad_right = 0.99,
+    #         pad_bottom = 0.2,
+    #         pad_top = 0.90,
+    #         force_shared_x_range = True,
+    #         force_shared_bins = True,
+    #         force_shared_y_range = True,
+    #         force_shared_spines = True,
+    #         )
+    # generate_histograms(
+    #         data_grid = [data],
+    #         plot_file_prefix = "number-of-variable-sites-500k",
+    #         column_labels = root_gamma_labels,
+    #         row_labels = None,
+    #         parameter_label = "Number of variable sites",
+    #         range_key = "range",
+    #         number_of_digits = 0,
+    #         plot_width = 1.9,
+    #         plot_height = 2.0,
+    #         pad_left = 0.08,
+    #         pad_right = 0.99,
+    #         pad_bottom = 0.2,
+    #         pad_top = 0.90,
+    #         force_shared_x_range = True,
+    #         force_shared_bins = True,
+    #         force_shared_y_range = True,
+    #         force_shared_spines = True,
+    #         )
+    # generate_histograms(
+    #         data_grid = [data_recent],
+    #         plot_file_prefix = "recent-number-of-variable-sites-500k",
+    #         column_labels = root_gamma_labels_recent,
+    #         row_labels = None,
+    #         parameter_label = "Number of variable sites",
+    #         range_key = "range",
+    #         number_of_digits = 0,
+    #         plot_width = 1.9,
+    #         plot_height = 2.0,
+    #         pad_left = 0.08,
+    #         pad_right = 0.99,
+    #         pad_bottom = 0.2,
+    #         pad_top = 0.90,
+    #         force_shared_x_range = True,
+    #         force_shared_bins = True,
+    #         force_shared_y_range = True,
+    #         force_shared_spines = True,
+    #         )
+    # generate_histograms(
+    #         data_grid = [data_centered],
+    #         plot_file_prefix = "centered-number-of-variable-sites-500k",
+    #         column_labels = root_gamma_labels_centered,
+    #         row_labels = None,
+    #         parameter_label = "Number of variable sites",
+    #         range_key = "range",
+    #         number_of_digits = 0,
+    #         plot_width = 1.9,
+    #         plot_height = 2.0,
+    #         pad_left = 0.08,
+    #         pad_right = 0.99,
+    #         pad_bottom = 0.2,
+    #         pad_top = 0.90,
+    #         force_shared_x_range = True,
+    #         force_shared_bins = True,
+    #         force_shared_y_range = True,
+    #         force_shared_spines = True,
+    #         )
+
+
+    histograms_to_plot = {
+            "n-var-sites": {
+                    "headers": [
+                            "n_var_sites_c1",
+                            "n_var_sites_c2",
+                            "n_var_sites_c3",
+                    ],
+                    "label": "Number of variable sites",
+                    "short_label": "No. variable sites",
+                    "ndigits": 0,
+            },
+            "ess-ln-likelihood": {
+                    "headers": [
+                            "ess_sum_ln_likelihood",
+                    ],
+                    "label": "Effective sample size of log likelihood",
+                    "short_label": "ESS of lnL",
+                    "ndigits": 1,
+            },
+            "ess-event-time": {
+                    "headers": [
+                            "ess_sum_root_height_c1sp1",
+                            "ess_sum_root_height_c2sp1",
+                            "ess_sum_root_height_c3sp1",
+                    ],
+                    "label": "Effective sample size of event time",
+                    "short_label": "ESS of time",
+                    "ndigits": 1,
+            },
+            "ess-root-pop-size": {
+                    "headers": [
+                            "ess_sum_pop_size_root_c1sp1",
+                            "ess_sum_pop_size_root_c2sp1",
+                            "ess_sum_pop_size_root_c3sp1",
+                    ],
+                    "label": "Effective sample size of ancestral population size",
+                    "short_label": "ESS of ancestral size",
+                    "ndigits": 1,
+            },
+            "psrf-ln-likelihood": {
+                    "headers": [
+                            "psrf_ln_likelihood",
+                    ],
+                    "label": "PSRF of log likelihood",
+                    "short_label": "PSRF of lnL",
+                    "ndigits": 2,
+            },
+            "psrf-event-time": {
+                    "headers": [
+                            "psrf_root_height_c1sp1",
+                            "psrf_root_height_c2sp1",
+                            "psrf_root_height_c3sp1",
+                    ],
+                    "label": "PSRF of event time",
+                    "short_label": "PSRF of time",
+                    "ndigits": 2,
+            },
+    }
+
+    for parameter, p_info in histograms_to_plot.items():
+        data_opt_all = [HistogramData.init(r, p_info["headers"], False) for r in results_opt_all]
+        var_only_data_opt_all = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results_opt_all]
+
+        all_data = data_opt_all
+        all_var_only_data = var_only_data_opt_all
+        for i in range(len(all_data)):
+            prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
+            generate_specific_histogram(
+                    data = all_data[i],
+                    plot_file_prefix = parameter + "-" + prefix,
+                    title = None,
+                    title_size = 16.0,
+                    x_label = None,
+                    x_label_size = 16.0,
+                    y_label = None,
+                    y_label_size = 16.0,
+                    plot_width = plot_width,
+                    plot_height = plot_height,
+                    pad_left = pad_left,
+                    pad_right = pad_right,
+                    pad_bottom = pad_bottom,
+                    pad_top = pad_top,
+                    bins = None,
+                    range_key = "range",
+                    number_of_digits = p_info["ndigits"])
+            generate_specific_histogram(
+                    data = all_var_only_data[i],
+                    plot_file_prefix = "var-only-" + parameter + "-" + prefix,
+                    title = None,
+                    title_size = 16.0,
+                    x_label = None,
+                    x_label_size = 16.0,
+                    y_label = None,
+                    y_label_size = 16.0,
+                    plot_width = plot_width,
+                    plot_height = plot_height,
+                    pad_left = pad_left,
+                    pad_right = pad_right,
+                    pad_bottom = pad_bottom,
+                    pad_top = pad_top,
+                    bins = None,
+                    range_key = "range",
+                    number_of_digits = p_info["ndigits"])
+
+        # data = [HistogramData.init(r, p_info["headers"], False) for r in results]
+        # var_only_data = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results]
+
+        # data_recent = [HistogramData.init(r, p_info["headers"], False) for r in results_recent]
+        # var_only_data_recent = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results_recent]
+
+        # data_centered = [HistogramData.init(r, p_info["headers"], False) for r in results_centered]
+        # var_only_data_centered = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results_centered]
+
+        # generate_histograms(
+        #         data_grid = [data_opt_all, var_only_data_opt_all],
+        #         plot_file_prefix = "opt-all-" + parameter,
+        #         column_labels = root_gamma_labels_opt_all,
+        #         row_labels = row_labels,
+        #         parameter_label = p_info["label"],
+        #         range_key = "range",
+        #         number_of_digits = 2,
+        #         plot_width = 1.9,
+        #         plot_height = 1.9,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         force_shared_x_range = False,
+        #         force_shared_bins = False,
+        #         force_shared_y_range = True,
+        #         force_shared_spines = False,
+        #         )
+        # generate_histograms(
+        #         data_grid = [data, var_only_data],
+        #         plot_file_prefix = parameter,
+        #         column_labels = root_gamma_labels,
+        #         row_labels = row_labels,
+        #         parameter_label = p_info["label"],
+        #         range_key = "range",
+        #         number_of_digits = 2,
+        #         plot_width = 1.9,
+        #         plot_height = 1.9,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         force_shared_x_range = False,
+        #         force_shared_bins = False,
+        #         force_shared_y_range = True,
+        #         force_shared_spines = False,
+        #         )
+        # generate_histograms(
+        #         data_grid = [data_recent, var_only_data_recent],
+        #         plot_file_prefix = "recent-" + parameter,
+        #         column_labels = root_gamma_labels_recent,
+        #         row_labels = row_labels,
+        #         parameter_label = p_info["label"],
+        #         range_key = "range",
+        #         number_of_digits = 2,
+        #         plot_width = 1.9,
+        #         plot_height = 1.9,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         force_shared_x_range = False,
+        #         force_shared_bins = False,
+        #         force_shared_y_range = True,
+        #         force_shared_spines = False,
+        #         )
+        # generate_histograms(
+        #         data_grid = [data_centered, var_only_data_centered],
+        #         plot_file_prefix = "centered-" + parameter,
+        #         column_labels = root_gamma_labels_centered,
+        #         row_labels = row_labels,
+        #         parameter_label = p_info["label"],
+        #         range_key = "range",
+        #         number_of_digits = 2,
+        #         plot_width = 1.9,
+        #         plot_height = 1.9,
+        #         pad_left = 0.08,
+        #         pad_right = 0.98,
+        #         pad_bottom = 0.14,
+        #         pad_top = 0.94,
+        #         force_shared_x_range = False,
+        #         force_shared_bins = False,
+        #         force_shared_y_range = True,
+        #         force_shared_spines = False,
+        #         )
+
+
+    # plot_ess_versus_error(
     #         parameters = [
     #                 "root_height_c1sp1",
     #                 "root_height_c2sp1",
     #                 "root_height_c3sp1",
     #                 ],
+    #         results_grid = [results_opt_all, var_only_results_opt_all],
+    #         column_labels = root_gamma_labels_opt_all,
+    #         row_labels = row_labels,
     #         parameter_label = "event time",
-    #         parameter_symbol = "t",
-    #         plot_width = 1.7,
-    #         plot_height = 1.5,
-    #         pad_left = 0.1,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.12,
-    #         pad_top = 0.92,
-    #         plot_file_prefix = "event-time-const",
-    #         include_variable_only = False)
-    # generate_scatter_plots(
+    #         plot_file_prefix = "opt-all-event-time")
+    # plot_ess_versus_error(
     #         parameters = [
     #                 "root_height_c1sp1",
     #                 "root_height_c2sp1",
     #                 "root_height_c3sp1",
     #                 ],
+    #         results_grid = [results, var_only_results],
+    #         column_labels = root_gamma_labels,
+    #         row_labels = row_labels,
     #         parameter_label = "event time",
-    #         parameter_symbol = "t",
-    #         plot_width = 1.7,
-    #         plot_height = 1.5,
-    #         pad_left = 0.1,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.12,
-    #         pad_top = 0.92,
-    #         plot_file_prefix = "event-time-mean-change-const",
-    #         include_variable_only = False,
-    #         column_indices = [0, 1, 2])
-    # generate_scatter_plots(
+    #         plot_file_prefix = "event-time")
+    # plot_ess_versus_error(
     #         parameters = [
     #                 "root_height_c1sp1",
     #                 "root_height_c2sp1",
     #                 "root_height_c3sp1",
     #                 ],
+    #         results_grid = [results_recent, var_only_results_recent],
+    #         column_labels = root_gamma_labels_recent,
+    #         row_labels = row_labels,
     #         parameter_label = "event time",
-    #         parameter_symbol = "t",
-    #         plot_width = 1.7,
-    #         plot_height = 1.5,
-    #         pad_left = 0.1,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.12,
-    #         pad_top = 0.92,
-    #         plot_file_prefix = "event-time-shape-change-const",
-    #         include_variable_only = False,
-    #         column_indices = [1, 3, 4])
-
-    # Generate individual scatters for time
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-005-500k"),
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            parameter_symbol = "t",
-            include_x_label = False,
-            include_y_label = True,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.5,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.965,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "event-time-0010-005-500k-y",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            parameter_symbol = "t",
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.5,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.965,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "event-time-0010-010-500k",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-020-500k"),
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            parameter_symbol = "t",
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.5,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.965,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "event-time-0010-020-500k",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            parameter_symbol = "t",
-            include_x_label = True,
-            include_y_label = True,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.5,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.965,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "event-time-0010-010-500k-xy",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            parameter_symbol = "t",
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.5,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.965,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "event-time-0100-001-500k-x",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-1000-0001-500k"),
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            parameter_symbol = "t",
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.5,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.2,
-            pad_right = 0.965,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "event-time-1000-0001-500k-x",
-            variable_only = False)
+    #         plot_file_prefix = "recent-event-time")
+    # plot_ess_versus_error(
+    #         parameters = [
+    #                 "root_height_c1sp1",
+    #                 "root_height_c2sp1",
+    #                 "root_height_c3sp1",
+    #                 ],
+    #         results_grid = [results_centered, var_only_results_centered],
+    #         column_labels = root_gamma_labels_centered,
+    #         row_labels = row_labels,
+    #         parameter_label = "event time",
+    #         plot_file_prefix = "centered-event-time")
 
 
-    generate_scatter_plots(
-            parameters = [
-                    "pop_size_root_c1sp1",
-                    "pop_size_root_c2sp1",
-                    "pop_size_root_c3sp1",
-                    ],
-            parameter_label = "root size",
-            parameter_symbol = "N_e\\mu",
-            plot_width = 1.9,
-            plot_height = 1.8,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            plot_file_prefix = "root-pop-size")
-
-    # Generate individual scatters for root size
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-005-500k"),
-            parameters = [
-                    "pop_size_root_c1sp1",
-                    "pop_size_root_c2sp1",
-                    "pop_size_root_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = False,
-            include_y_label = True,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0010-005-500k-y",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            parameters = [
-                    "pop_size_root_c1sp1",
-                    "pop_size_root_c2sp1",
-                    "pop_size_root_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0010-010-500k",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-020-500k"),
-            parameters = [
-                    "pop_size_root_c1sp1",
-                    "pop_size_root_c2sp1",
-                    "pop_size_root_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0010-020-500k",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            parameters = [
-                    "pop_size_root_c1sp1",
-                    "pop_size_root_c2sp1",
-                    "pop_size_root_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = True,
-            include_y_label = True,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0010-010-500k-xy",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
-            parameters = [
-                    "pop_size_root_c1sp1",
-                    "pop_size_root_c2sp1",
-                    "pop_size_root_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-0100-001-500k-x",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-1000-0001-500k"),
-            parameters = [
-                    "pop_size_root_c1sp1",
-                    "pop_size_root_c2sp1",
-                    "pop_size_root_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "root-pop-size-1000-0001-500k-x",
-            variable_only = False)
-
-
-    generate_scatter_plots(
-            parameters = [
-                    "pop_size_c1sp1",
-                    "pop_size_c2sp1",
-                    "pop_size_c3sp1",
-                    ],
-            parameter_label = "leaf size",
-            parameter_symbol = "N_e\\mu",
-            plot_width = 1.9,
-            plot_height = 1.8,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            plot_file_prefix = "leaf-pop-size")
-
-    # Generate individual scatters for leaf size
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-005-500k"),
-            parameters = [
-                    "pop_size_c1sp1",
-                    "pop_size_c2sp1",
-                    "pop_size_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = False,
-            include_y_label = True,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0010-005-500k-y",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            parameters = [
-                    "pop_size_c1sp1",
-                    "pop_size_c2sp1",
-                    "pop_size_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0010-010-500k",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-020-500k"),
-            parameters = [
-                    "pop_size_c1sp1",
-                    "pop_size_c2sp1",
-                    "pop_size_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0010-020-500k",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            parameters = [
-                    "pop_size_c1sp1",
-                    "pop_size_c2sp1",
-                    "pop_size_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = True,
-            include_y_label = True,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0010-010-500k-xy",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
-            parameters = [
-                    "pop_size_c1sp1",
-                    "pop_size_c2sp1",
-                    "pop_size_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-0100-001-500k-x",
-            variable_only = False)
-    generate_specific_scatter_plot(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-1000-0001-500k"),
-            parameters = [
-                    "pop_size_c1sp1",
-                    "pop_size_c2sp1",
-                    "pop_size_c3sp1",
-                    ],
-            parameter_label = "size",
-            parameter_symbol = "N_e\\mu",
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_rmse = False,
-            include_ci = True,
-            plot_width = 3.6,
-            plot_height = 3.0,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.215,
-            pad_right = 0.955,
-            pad_bottom = 0.18,
-            pad_top = 0.9,
-            plot_file_prefix = "leaf-pop-size-1000-0001-500k-x",
-            variable_only = False)
-
-
-    generate_model_plots(
-            number_of_comparisons = 3,
-            plot_width = 1.9,
-            plot_height = 1.8,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            include_variable_only = True,
-            column_indices = None)
-    generate_specific_model_plots(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-005-500k"),
-            number_of_comparisons = 3,
-            include_x_label = False,
-            include_y_label = True,
-            include_title = False,
-            include_median = True,
-            include_cs = True,
-            include_prop_correct = True,
-            plot_width = 3.5,
-            plot_height = 3.3,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.16,
-            pad_right = 0.99,
-            pad_bottom = 0.165,
-            pad_top = 0.915,
-            lower_annotation_y = 0.01,
-            upper_annotation_y = 0.915,
-            plot_file_prefix = "nevents-0010-005-500k-y",
-            variable_only = False)
-    generate_specific_model_plots(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            number_of_comparisons = 3,
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_median = True,
-            include_cs = True,
-            include_prop_correct = True,
-            plot_width = 3.5,
-            plot_height = 3.3,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.16,
-            pad_right = 0.99,
-            pad_bottom = 0.165,
-            pad_top = 0.915,
-            lower_annotation_y = 0.01,
-            upper_annotation_y = 0.915,
-            plot_file_prefix = "nevents-0010-010-500k",
-            variable_only = False)
-    generate_specific_model_plots(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-020-500k"),
-            number_of_comparisons = 3,
-            include_x_label = False,
-            include_y_label = False,
-            include_title = False,
-            include_median = True,
-            include_cs = True,
-            include_prop_correct = True,
-            plot_width = 3.5,
-            plot_height = 3.3,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.16,
-            pad_right = 0.99,
-            pad_bottom = 0.165,
-            pad_top = 0.915,
-            lower_annotation_y = 0.01,
-            upper_annotation_y = 0.915,
-            plot_file_prefix = "nevents-0010-020-500k",
-            variable_only = False)
-    generate_specific_model_plots(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0010-010-500k"),
-            number_of_comparisons = 3,
-            include_x_label = True,
-            include_y_label = True,
-            include_title = True,
-            include_median = True,
-            include_cs = True,
-            include_prop_correct = True,
-            plot_width = 3.5,
-            plot_height = 3.3,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.16,
-            pad_right = 0.99,
-            pad_bottom = 0.165,
-            pad_top = 0.915,
-            lower_annotation_y = 0.01,
-            upper_annotation_y = 0.915,
-            plot_file_prefix = "nevents-0010-010-500k-xy",
-            variable_only = False)
-    generate_specific_model_plots(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-0100-001-500k"),
-            number_of_comparisons = 3,
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_median = True,
-            include_cs = True,
-            include_prop_correct = True,
-            plot_width = 3.5,
-            plot_height = 3.3,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.16,
-            pad_right = 0.99,
-            pad_bottom = 0.165,
-            pad_top = 0.915,
-            lower_annotation_y = 0.01,
-            upper_annotation_y = 0.915,
-            plot_file_prefix = "nevents-0100-001-500k-x",
-            variable_only = False)
-    generate_specific_model_plots(
-            sim_dir = os.path.join(project_util.VAL_DIR, "03pops-dpp-root-1000-0001-500k"),
-            number_of_comparisons = 3,
-            include_x_label = True,
-            include_y_label = False,
-            include_title = True,
-            include_median = True,
-            include_cs = True,
-            include_prop_correct = True,
-            plot_width = 3.5,
-            plot_height = 3.3,
-            xy_label_size = 16.0,
-            title_size = 16.0,
-            pad_left = 0.16,
-            pad_right = 0.99,
-            pad_bottom = 0.165,
-            pad_top = 0.915,
-            lower_annotation_y = 0.01,
-            upper_annotation_y = 0.915,
-            plot_file_prefix = "nevents-1000-0001-500k-x",
-            variable_only = False)
-
-
-    generate_histograms(
-            parameters = [
-                    "n_var_sites_c1",
-                    "n_var_sites_c2",
-                    "n_var_sites_c3",
-                    ],
-            parameter_label = "Number of variable sites",
-            plot_file_prefix = "number-of-variable-sites-500k",
-            parameter_discrete = True,
-            range_key = "range",
-            number_of_digits = 0,
-            plot_width = 1.9,
-            plot_height = 2.0,
-            pad_left = 0.08,
-            pad_right = 0.99,
-            pad_bottom = 0.2,
-            pad_top = 0.90,
-            include_variable_only = False,
-            row_indices = [0])
-    generate_histograms(
-            parameters = [
-                    "ess_sum_ln_likelihood",
-                    ],
-            parameter_label = "Effective sample size of log likelihood",
-            plot_file_prefix = "ess-ln-likelihood",
-            parameter_discrete = False,
-            range_key = "range",
-            number_of_digits = 0,
-            plot_width = 1.9,
-            plot_height = 1.9,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            include_variable_only = True)
-    generate_histograms(
-            parameters = [
-                    "ess_sum_root_height_c1sp1",
-                    "ess_sum_root_height_c2sp1",
-                    "ess_sum_root_height_c3sp1",
-                    ],
-            parameter_label = "Effective sample size of event time",
-            plot_file_prefix = "ess-event-time",
-            parameter_discrete = False,
-            range_key = "range",
-            number_of_digits = 0,
-            plot_width = 1.9,
-            plot_height = 1.9,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            include_variable_only = True)
-    generate_histograms(
-            parameters = [
-                    "ess_sum_pop_size_root_c1sp1",
-                    "ess_sum_pop_size_root_c2sp1",
-                    "ess_sum_pop_size_root_c3sp1",
-                    ],
-            parameter_label = "Effective sample size of root population size",
-            plot_file_prefix = "ess-root-pop-size",
-            parameter_discrete = False,
-            range_key = "range",
-            number_of_digits = 0,
-            plot_width = 1.9,
-            plot_height = 1.9,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            include_variable_only = True)
-    generate_histograms(
-            parameters = [
-                    "psrf_ln_likelihood",
-                    ],
-            parameter_label = "PSRF of log likelihood",
-            plot_file_prefix = "psrf-ln-likelihood",
-            parameter_discrete = False,
-            range_key = "range",
-            number_of_digits = 3,
-            plot_width = 1.9,
-            plot_height = 1.9,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            include_variable_only = True)
-    generate_histograms(
-            parameters = [
-                    "psrf_root_height_c1sp1",
-                    "psrf_root_height_c2sp1",
-                    "psrf_root_height_c3sp1",
-                    ],
-            parameter_label = "PSRF of event time",
-            plot_file_prefix = "psrf-event-time",
-            parameter_discrete = False,
-            range_key = "range",
-            number_of_digits = 3,
-            plot_width = 1.9,
-            plot_height = 1.9,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            include_variable_only = True)
-    plot_ess_versus_error(
-            parameters = [
-                    "root_height_c1sp1",
-                    "root_height_c2sp1",
-                    "root_height_c3sp1",
-                    ],
-            parameter_label = "event time",
-            plot_file_prefix = "event-time")
     # plot_nevents_estimated_vs_true_probs(
     #         sim_dir = "03pops-dpp-root-0100-100k",
     #         nevents = 1,
