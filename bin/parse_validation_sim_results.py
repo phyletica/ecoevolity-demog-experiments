@@ -363,12 +363,12 @@ def main_cli(argv = sys.argv):
     four_run_val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-dpp-root-*-t0002-*'))
     three_run_val_sim_dirs = [d for d in val_sim_dirs if d not in four_run_val_sim_dirs]
     parse_simulation_results(
-            four_run_val_sim_dirs
+            four_run_val_sim_dirs,
             expected_number_of_runs = 4,
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin)
     parse_simulation_results(
-            three_run_val_sim_dirs
+            three_run_val_sim_dirs,
             expected_number_of_runs = 3,
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin)
