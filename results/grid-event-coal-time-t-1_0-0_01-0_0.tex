@@ -1,0 +1,62 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}ccccc@{}}
+        & \multirow{1}{0.15\textwidth}{\centering\Large Prior on relative ancestral pop size}
+        &
+        & \multirow{1}{0.15\textwidth}{\centering\Large All sites analyzed}
+        & \multirow{1}{0.15\textwidth}{\centering\Large Only variable sites analyzed} \\
+        & & & & \\
+        & & & & \\
+        \multirow{5}{*}[-14em]{\begin{sideways}\large Density\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_025-0_0-gamma.pdf}
+        & \multirow{5}{*}[-8em]{\begin{sideways}\large Estimated demographic event time\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/event-coal-time-a-10_0-0_025-0_0-t-1_0-0_01-0_0-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-event-coal-time-a-10_0-0_025-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_05-0_0-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/event-coal-time-a-10_0-0_05-0_0-t-1_0-0_01-0_0-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-event-coal-time-a-10_0-0_05-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_2-0_0-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/event-coal-time-a-10_0-0_2-0_0-t-1_0-0_01-0_0-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-event-coal-time-a-10_0-0_2-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_1-0_0-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/event-coal-time-a-10_0-0_1-0_0-t-1_0-0_01-0_0-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-event-coal-time-a-10_0-0_1-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-100_0-0_01-0_0-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/event-coal-time-a-100_0-0_01-0_0-t-1_0-0_01-0_0-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-event-coal-time-a-100_0-0_01-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        & \multirow{1}{0.15\textwidth}{\centering\large Relative population size}
+        &
+        & \multicolumn{2}{c}{\large True demographic event time in units of $2N_e$ generations} \\
+    \end{tabular}
+\end{figure}
+
+\end{document}
