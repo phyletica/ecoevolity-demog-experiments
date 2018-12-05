@@ -104,6 +104,8 @@ sim_dir_to_priors = {
             ),
 }
 
+unique_time_priors = set(p[1] for p in sim_dir_to_priors.values())
+
 
 def get_prefix_from_sim_dir_name(sim_dir_name):
     conc_prior, time_prior = sim_dir_to_priors[sim_dir_name]
@@ -346,6 +348,12 @@ def plot_gamma(shape = 1.0,
         include_x_label = True,
         include_y_label = True,
         include_title = True,
+        curve_line_width = 1.5,
+        curve_line_style = '-',
+        curve_line_color = (57 / 255.0, 115 / 255.0, 124 / 255.0),
+        one_line_width = 1.0,
+        one_line_style = '--',
+        one_line_color = (184 / 255.0, 90 / 255.0, 13 / 255.0),
         plot_width = 3.5,
         plot_height = 3.0,
         xy_label_size = 16.0,
@@ -376,15 +384,15 @@ def plot_gamma(shape = 1.0,
     line = ax.plot(x_plot, d)
     ax.set_xlim(x_min, x_max_plot)
     plt.setp(line,
-            color = (57 / 255.0, 115 / 255.0, 124 / 255.0),
-            linestyle = '-',
-            linewidth = 1.5,
+            color = curve_line_color,
+            linestyle = curve_line_style,
+            linewidth = curve_line_width,
             marker = '',
             zorder = 100)
     ax.axvline(x = 1.0,
-            color = (184 / 255.0, 90 / 255.0, 13 / 255.0),
-            linestyle = '--',
-            linewidth = 1.0,
+            color = one_line_color,
+            linestyle = one_line_style,
+            linewidth = one_line_width,
             marker = '',
             zorder = 0)
     if include_x_label:
@@ -1591,7 +1599,7 @@ def generate_specific_histogram(
             )
 
     ax.text(0.98, 0.98,
-            "\\scriptsize {mean:,.{ndigits}f} ({lower:,.{ndigits}f}--{upper:,.{ndigits}f})".format(
+            "{mean:,.{ndigits}f} ({lower:,.{ndigits}f}--{upper:,.{ndigits}f})".format(
                     mean = summary["mean"],
                     lower = summary[range_key][0],
                     upper = summary[range_key][1],
@@ -1624,6 +1632,7 @@ def generate_specific_histogram(
         os.mkdir(plot_dir)
     plot_path = os.path.join(plot_dir,
             "{0}-histogram.pdf".format(plot_file_prefix))
+    plt.savefig(plot_path)
     _LOG.info("Plots written to {0!r}\n".format(plot_path))
 
 
@@ -1963,7 +1972,8 @@ def generate_specific_model_plots(
                         str(n),
                         horizontalalignment = "center",
                         verticalalignment = "center",
-                        fontsize = 6)
+                        # fontsize = 8,
+                        )
     else:
         ax.imshow(true_map_nevents,
                 origin = 'lower',
@@ -1981,7 +1991,7 @@ def generate_specific_model_plots(
     if include_cs:
         if show_all_models:
             ax.text(0.98, lower_annotation_y,
-                    "\\tiny$p(\\mathcal{{T}} \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
+                    "$p(\\mathcal{{T}} \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
                             p_model_within_95_cred),
                     horizontalalignment = "right",
                     verticalalignment = "bottom",
@@ -1996,10 +2006,10 @@ def generate_specific_model_plots(
     if include_prop_correct:
         if show_all_models:
             ax.text(0.02, upper_annotation_y,
-                    "\\tiny$p(\\hat{{\\mathcal{{T}}}} = \\mathcal{{T}}) = {0:.3f}$".format(
+                    "$p(\\hat{{\\mathcal{{T}}}} = \\mathcal{{T}}) = {0:.3f}$".format(
                             p_model_correct),
                     horizontalalignment = "left",
-                    verticalalignment = "top",
+                    verticalalignment = "bottom",
                     transform = ax.transAxes)
         else:
             ax.text(0.02, upper_annotation_y,
@@ -2011,10 +2021,10 @@ def generate_specific_model_plots(
     if include_median:
         if show_all_models:
             ax.text(0.98, upper_annotation_y,
-                    "\\tiny$\\widetilde{{p(\\mathcal{{T}}|\\mathbf{{D}})}} = {0:.3f}$".format(
+                    "$\\widetilde{{p(\\mathcal{{T}}|\\mathbf{{D}})}} = {0:.3f}$".format(
                             median_true_model_prob),
                     horizontalalignment = "right",
-                    verticalalignment = "top",
+                    verticalalignment = "bottom",
                     transform = ax.transAxes)
         else:
             ax.text(0.98, upper_annotation_y,
@@ -2103,7 +2113,6 @@ def parse_results(paths):
 
 
 def main_cli(argv = sys.argv):
-    # Plot relative root priors
     if not os.path.exists(project_util.RESULTS_DIR):
         os.mkdir(project_util.RESULTS_DIR)
     if not os.path.exists(project_util.PLOT_DIR):
@@ -2116,26 +2125,27 @@ def main_cli(argv = sys.argv):
     plot_width = 2.8
     plot_height = 2.2
 
+    # Plot relative root priors
     root_gamma_parameters = (
-            (5.0, 0.04, 0.05),
-            (5.0, 0.19, 0.05),
-            (5.0, 0.79, 0.05),
-            (50.0, 0.02, 0.0),
-            (500.0, 0.002, 0.0),
-            (10.0, 0.025, 0.0),
-            (10.0, 0.05, 0.0),
-            (10.0, 0.1, 0.0),
-            (10.0, 0.2, 0.0),
-            (100.0, 0.01, 0.0),
-            (1000.0, 0.001, 0.0),
+            (5.0, 0.04, 0.05, 8.0),
+            (5.0, 0.19, 0.05, 8.0),
+            (5.0, 0.79, 0.05, 8.0),
+            (50.0, 0.02, 0.0, 8.0),
+            (500.0, 0.002, 0.0, 8.0),
+            (10.0, 0.025, 0.0, 4.0),
+            (10.0, 0.05, 0.0, 4.0),
+            (10.0, 0.1, 0.0, 4.0),
+            (10.0, 0.2, 0.0, 4.0),
+            (100.0, 0.01, 0.0, 4.0),
+            (1000.0, 0.001, 0.0, 4.0),
             )
-    x_max = float("-inf")
-    for shape, scale, offset in root_gamma_parameters:
-        q = scipy.stats.gamma.ppf(0.975, shape, scale = scale)
-        q += offset
-        if q > x_max:
-            x_max = q
-    for i, (shape, scale, offset) in enumerate(root_gamma_parameters):
+    # x_max = float("-inf")
+    # for shape, scale, offset in root_gamma_parameters:
+    #     q = scipy.stats.gamma.ppf(0.975, shape, scale = scale)
+    #     q += offset
+    #     if q > x_max:
+    #         x_max = q
+    for i, (shape, scale, offset, x_max) in enumerate(root_gamma_parameters):
         shape_str = str(shape).replace(".", "_")
         scale_str = str(scale).replace(".", "_")
         offset_str = str(offset).replace(".", "_")
@@ -2153,6 +2163,12 @@ def main_cli(argv = sys.argv):
                 include_x_label = False, # Going to add x-axis in slides
                 include_y_label = False,
                 include_title = False,
+                curve_line_width = 2.5,
+                curve_line_style = '-',
+                curve_line_color = '0.45',
+                one_line_width = 1.5,
+                one_line_style = '--',
+                one_line_color = '0.7',
                 plot_width = plot_width,
                 plot_height = plot_height,
                 xy_label_size = 16.0,
@@ -2188,6 +2204,12 @@ def main_cli(argv = sys.argv):
                 include_x_label = False, # Going to add x-axis in slides
                 include_y_label = False,
                 include_title = False,
+                curve_line_width = 2.5,
+                curve_line_style = '-',
+                curve_line_color = '0.45',
+                one_line_width = 1.5,
+                one_line_style = '--',
+                one_line_color = '0.7',
                 plot_width = plot_width,
                 plot_height = plot_height,
                 xy_label_size = 16.0,
@@ -2199,21 +2221,6 @@ def main_cli(argv = sys.argv):
                 plot_file_prefix = plot_file_prefix)
 
 
-    # sim_dirs = [
-    #         "03pops-dpp-root-0010-0025-500k",
-    #         "03pops-dpp-root-0010-005-500k",
-    #         "03pops-dpp-root-0010-010-500k",
-    #         "03pops-dpp-root-0010-020-500k",
-    # ]
-    # sim_dirs_recent = [
-    #         "03pops-dpp-root-0010-0025-t0001-500k",
-    #         "03pops-dpp-root-0010-005-t0001-500k",
-    # ]
-    # sim_dirs_centered = [
-    #         "03pops-dpp-root-0010-010-500k",
-    #         "03pops-dpp-root-0100-001-500k",
-    #         "03pops-dpp-root-1000-0001-500k",
-    # ]
     sim_dirs_opt = [
             "03pops-dpp-root-0005-004-t0002-500k",
             "03pops-dpp-root-0005-019-t0002-500k",
@@ -2232,126 +2239,44 @@ def main_cli(argv = sys.argv):
             "03pops-dpp-root-0500-0002-t0002-500k",
     ]
 
-    # root_gamma_labels = []
-    # for sim_dir in sim_dirs:
-    #     root_gamma_labels.append(get_root_gamma_label(sim_dir))
-
-    # root_gamma_labels_recent = []
-    # for sim_dir in sim_dirs_recent:
-    #     root_gamma_labels_recent.append(get_root_gamma_label(sim_dir))
-
-    # root_gamma_labels_centered = []
-    # for sim_dir in sim_dirs_centered:
-    #     root_gamma_labels_centered.append(get_root_gamma_label(sim_dir))
-
-    root_gamma_labels_opt = []
-    for sim_dir in sim_dirs_opt:
-        root_gamma_labels_opt.append(get_root_gamma_label(sim_dir))
-
-    root_gamma_labels_opt_centered = []
-    for sim_dir in sim_dirs_opt_centered:
-        root_gamma_labels_opt_centered.append(get_root_gamma_label(sim_dir))
-
-    root_gamma_labels_opt_all = []
-    for sim_dir in sim_dirs_opt_all:
-        root_gamma_labels_opt_all.append(get_root_gamma_label(sim_dir))
+    sim_dirs = [
+            "03pops-dpp-root-0010-0025-500k",
+            "03pops-dpp-root-0010-0025-t0001-500k",
+            "03pops-dpp-root-0010-005-500k",
+            "03pops-dpp-root-0010-005-t0001-500k",
+            "03pops-dpp-root-0010-010-500k",
+            "03pops-dpp-root-0010-020-500k",
+            "03pops-dpp-root-0100-001-500k",
+            "03pops-dpp-root-1000-0001-500k",
+            ] + sim_dirs_opt_all
 
 
-    # results = []
-    # for sim_dir in sim_dirs:
-    #     results.append(
-    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
-    #                     sim_dir,
-    #                     "batch00?",
-    #                     "results.csv.gz")))
-    #             )
-
-    # var_only_results = []
-    # for sim_dir in sim_dirs:
-    #     var_only_results.append(
-    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
-    #                     sim_dir,
-    #                     "batch00?",
-    #                     "var-only-results.csv.gz")))
-    #             )
-
-    # results_recent = []
-    # for sim_dir in sim_dirs_recent:
-    #     results_recent.append(
-    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
-    #                     sim_dir,
-    #                     "batch00?",
-    #                     "results.csv.gz")))
-    #             )
-
-    # var_only_results_recent = []
-    # for sim_dir in sim_dirs_recent:
-    #     var_only_results_recent.append(
-    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
-    #                     sim_dir,
-    #                     "batch00?",
-    #                     "var-only-results.csv.gz")))
-    #             )
-
-    # results_centered = []
-    # for sim_dir in sim_dirs_centered:
-    #     results_centered.append(
-    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
-    #                     sim_dir,
-    #                     "batch00?",
-    #                     "results.csv.gz")))
-    #             )
-
-    # var_only_results_centered = []
-    # for sim_dir in sim_dirs_centered:
-    #     var_only_results_centered.append(
-    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
-    #                     sim_dir,
-    #                     "batch00?",
-    #                     "var-only-results.csv.gz")))
-    #             )
-
-    results_opt_all = []
-    for sim_dir in sim_dirs_opt_all:
-        results_opt_all.append(
+    results = []
+    var_only_results = []
+    for sim_dir in sim_dirs:
+        results.append(
                 parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
                         sim_dir,
                         "batch00?",
                         "results.csv.gz")))
                 )
-
-    var_only_results_opt_all = []
-    for sim_dir in sim_dirs_opt_all:
-        var_only_results_opt_all.append(
+        var_only_results.append(
                 parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
                         sim_dir,
                         "batch00?",
                         "var-only-results.csv.gz")))
                 )
 
-    results_opt = [
-            results_opt_all[0],
-            results_opt_all[2],
-            results_opt_all[1],
-            ]
-    var_only_results_opt = [
-            var_only_results_opt_all[0],
-            var_only_results_opt_all[2],
-            var_only_results_opt_all[1],
-            ]
-    results_opt_centered = results_opt_all[2:]
-    var_only_results_opt_centered = var_only_results_opt_all[2:]
-
-    row_labels = [
-            "All sites",
-            "Variable-only sites",
-    ]
-
 
     height_parameters = [
             "root_height_c1sp1",
             "root_height_c2sp1",
             "root_height_c3sp1",
+    ]
+    coal_height_parameters = [
+            "coal_root_height_c1sp1",
+            "coal_root_height_c2sp1",
+            "coal_root_height_c3sp1",
     ]
     root_size_parameters = [
             "pop_size_root_c1sp1",
@@ -2364,374 +2289,6 @@ def main_cli(argv = sys.argv):
             "pop_size_c3sp1",
     ]
 
-    coal_units_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y", "highlight_values", "highlight_threshold"),
-                    list(get_true_est_coal_units(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters)) + [1.1]
-                    ))
-            ) for r in results_opt_all]
-    var_only_coal_units_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y", "highlight_values", "highlight_threshold"),
-                    list(get_true_est_coal_units(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters)) + [1.1]
-                    ))
-            ) for r in var_only_results_opt_all]
-
-    t_vs_e_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y", "highlight_values", "highlight_threshold"),
-                    list(get_coal_units_vs_error(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters)) + [1.1]
-                    ))
-            ) for r in results_opt_all]
-    vo_t_vs_e_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y", "highlight_values", "highlight_threshold"),
-                    list(get_coal_units_vs_error(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters)) + [1.1]
-                    ))
-            ) for r in var_only_results_opt_all]
-
-    # t_vs_e = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y", "highlight_values", "highlight_threshold"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters)) + [1.1]
-    #                 ))
-    #         ) for r in results]
-    # vo_t_vs_e = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y", "highlight_values", "highlight_threshold"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters)) + [1.1]
-    #                 ))
-    #         ) for r in var_only_results]
-    # t_vs_e_recent = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y", "highlight_values", "highlight_threshold"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters)) + [1.1]
-    #                 ))
-    #         ) for r in results_recent]
-    # vo_t_vs_e_recent = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y", "highlight_values", "highlight_threshold"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters)) + [1.1]
-    #                 ))
-    #         ) for r in var_only_results_recent]
-    # t_vs_e_centered = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y", "highlight_values", "highlight_threshold"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters)) + [1.1]
-    #                 ))
-    #         ) for r in results_centered]
-    # vo_t_vs_e_centered = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y", "highlight_values", "highlight_threshold"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters)) + [1.1]
-    #                 ))
-    #         ) for r in var_only_results_centered]
-
-
-    t_vs_psrf_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y"),
-                    list(get_coal_units_vs_error(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters,
-                            psrf_as_response = True))
-                    ))
-            ) for r in results_opt_all]
-    vo_t_vs_psrf_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y"),
-                    list(get_coal_units_vs_error(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters,
-                            psrf_as_response = True))
-                    ))
-            ) for r in var_only_results_opt_all]
-
-    # t_vs_psrf = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters,
-    #                         psrf_as_response = True))
-    #                 ))
-    #         ) for r in results]
-    # vo_t_vs_psrf = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters,
-    #                         psrf_as_response = True))
-    #                 ))
-    #         ) for r in var_only_results]
-    # t_vs_psrf_recent = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters,
-    #                         psrf_as_response = True))
-    #                 ))
-    #         ) for r in results_recent]
-    # vo_t_vs_psrf_recent = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters,
-    #                         psrf_as_response = True))
-    #                 ))
-    #         ) for r in var_only_results_recent]
-    # t_vs_psrf_centered = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters,
-    #                         psrf_as_response = True))
-    #                 ))
-    #         ) for r in results_centered]
-    # vo_t_vs_psrf_centered = [ScatterData(
-    #         **dict(zip(
-    #                 ("x", "y"),
-    #                 list(get_coal_units_vs_error(
-    #                         r,
-    #                         height_parameters,
-    #                         leaf_size_parameters,
-    #                         psrf_as_response = True))
-    #                 ))
-    #         ) for r in var_only_results_centered]
-
-    generate_scatter_plots(
-            data_grid = [t_vs_e_opt_all, vo_t_vs_e_opt_all],
-            plot_file_prefix = "opt-all-coal-units-vs-error",
-            column_labels = root_gamma_labels_opt_all,
-            row_labels = row_labels,
-            plot_width = 1.9,
-            plot_height = 1.8,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            x_label = "True event time in coalescent units",
-            x_label_size = 18.0,
-            y_label = "Relative error",
-            y_label_size = 18.0,
-            force_shared_x_range = False,
-            force_shared_y_range = False,
-            force_shared_xy_ranges = False,
-            force_shared_spines = False,
-            include_coverage = False,
-            include_rmse = False,
-            include_identity_line = False,
-            include_error_bars = False)
-
-    # generate_scatter_plots(
-    #         data_grid = [t_vs_e, vo_t_vs_e],
-    #         plot_file_prefix = "coal-units-vs-error",
-    #         column_labels = root_gamma_labels,
-    #         row_labels = row_labels,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         x_label = "True event time in coalescent units",
-    #         x_label_size = 18.0,
-    #         y_label = "Relative error",
-    #         y_label_size = 18.0,
-    #         force_shared_x_range = False,
-    #         force_shared_y_range = False,
-    #         force_shared_xy_ranges = False,
-    #         force_shared_spines = False,
-    #         include_coverage = False,
-    #         include_rmse = False,
-    #         include_identity_line = False,
-    #         include_error_bars = False)
-
-    # generate_scatter_plots(
-    #         data_grid = [t_vs_e_recent, vo_t_vs_e_recent],
-    #         plot_file_prefix = "recent-coal-units-vs-error",
-    #         column_labels = root_gamma_labels_recent,
-    #         row_labels = row_labels,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         x_label = "True event time in coalescent units",
-    #         x_label_size = 18.0,
-    #         y_label = "Relative error",
-    #         y_label_size = 18.0,
-    #         force_shared_x_range = False,
-    #         force_shared_y_range = False,
-    #         force_shared_xy_ranges = False,
-    #         force_shared_spines = False,
-    #         include_coverage = False,
-    #         include_rmse = False,
-    #         include_identity_line = False,
-    #         include_error_bars = False)
-
-    # generate_scatter_plots(
-    #         data_grid = [t_vs_e_centered, vo_t_vs_e_centered],
-    #         plot_file_prefix = "centered-coal-units-vs-error",
-    #         column_labels = root_gamma_labels_centered,
-    #         row_labels = row_labels,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         x_label = "True event time in coalescent units",
-    #         x_label_size = 18.0,
-    #         y_label = "Relative error",
-    #         y_label_size = 18.0,
-    #         force_shared_x_range = False,
-    #         force_shared_y_range = False,
-    #         force_shared_xy_ranges = False,
-    #         force_shared_spines = False,
-    #         include_coverage = False,
-    #         include_rmse = False,
-    #         include_identity_line = False,
-    #         include_error_bars = False)
-
-    generate_scatter_plots(
-            data_grid = [t_vs_psrf_opt_all, vo_t_vs_psrf_opt_all],
-            plot_file_prefix = "opt-all-coal-units-vs-psrf",
-            column_labels = root_gamma_labels_opt_all,
-            row_labels = row_labels,
-            plot_width = 1.9,
-            plot_height = 1.8,
-            pad_left = 0.08,
-            pad_right = 0.98,
-            pad_bottom = 0.14,
-            pad_top = 0.94,
-            x_label = "True event time in coalescent units",
-            x_label_size = 18.0,
-            y_label = "PSRF",
-            y_label_size = 18.0,
-            force_shared_x_range = False,
-            force_shared_y_range = False,
-            force_shared_xy_ranges = False,
-            force_shared_spines = False,
-            include_coverage = False,
-            include_rmse = False,
-            include_identity_line = False,
-            include_error_bars = False)
-
-    # generate_scatter_plots(
-    #         data_grid = [t_vs_psrf, vo_t_vs_psrf],
-    #         plot_file_prefix = "coal-units-vs-psrf",
-    #         column_labels = root_gamma_labels,
-    #         row_labels = row_labels,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         x_label = "True event time in coalescent units",
-    #         x_label_size = 18.0,
-    #         y_label = "PSRF",
-    #         y_label_size = 18.0,
-    #         force_shared_x_range = False,
-    #         force_shared_y_range = False,
-    #         force_shared_xy_ranges = False,
-    #         force_shared_spines = False,
-    #         include_coverage = False,
-    #         include_rmse = False,
-    #         include_identity_line = False,
-    #         include_error_bars = False)
-
-    # generate_scatter_plots(
-    #         data_grid = [t_vs_psrf_recent, vo_t_vs_psrf_recent],
-    #         plot_file_prefix = "recent-coal-units-vs-psrf",
-    #         column_labels = root_gamma_labels_recent,
-    #         row_labels = row_labels,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         x_label = "True event time in coalescent units",
-    #         x_label_size = 18.0,
-    #         y_label = "PSRF",
-    #         y_label_size = 18.0,
-    #         force_shared_x_range = False,
-    #         force_shared_y_range = False,
-    #         force_shared_xy_ranges = False,
-    #         force_shared_spines = False,
-    #         include_coverage = False,
-    #         include_rmse = False,
-    #         include_identity_line = False,
-    #         include_error_bars = False)
-
-    # generate_scatter_plots(
-    #         data_grid = [t_vs_psrf_centered, vo_t_vs_psrf_centered],
-    #         plot_file_prefix = "centered-coal-units-vs-psrf",
-    #         column_labels = root_gamma_labels_centered,
-    #         row_labels = row_labels,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         x_label = "True event time in coalescent units",
-    #         x_label_size = 18.0,
-    #         y_label = "PSRF",
-    #         y_label_size = 18.0,
-    #         force_shared_x_range = False,
-    #         force_shared_y_range = False,
-    #         force_shared_xy_ranges = False,
-    #         force_shared_spines = False,
-    #         include_coverage = False,
-    #         include_rmse = False,
-    #         include_identity_line = False,
-    #         include_error_bars = False)
-
 
     parameters_to_plot = {
             "event-time": {
@@ -2739,8 +2296,17 @@ def main_cli(argv = sys.argv):
                     "label": "event time",
                     "short_label": "time",
                     "symbol": "t",
-                    "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    # "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
+            },
+            "event-coal-time": {
+                    "headers": coal_height_parameters,
+                    "label": "event time in coalescent units",
+                    "short_label": "time in coal units",
+                    "symbol": "t",
+                    "xy_limits": None,
+                    "pad_left": pad_left - 0.02,
             },
             "ancestor-size": {
                     "headers": root_size_parameters,
@@ -2755,54 +2321,22 @@ def main_cli(argv = sys.argv):
                     "label": "descendant population size",
                     "short_label": "size",
                     "symbol": "N_e\\mu",
-                    "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    # "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
             },
     }
 
-    all_sim_dirs = sim_dirs_opt_all
-    all_results = results_opt_all
-    all_var_only_results = var_only_results_opt_all 
-    # all_sim_dirs = sim_dirs + sim_dirs_recent + sim_dirs_centered[1:] + sim_dirs_opt_all
-    # all_results = results + results_recent + results_centered[1:] + results_opt_all
-    # all_var_only_results = var_only_results + var_only_results_recent + var_only_results_centered[1:] + results_opt_all
 
     for parameter, p_info in parameters_to_plot.items():
-        # data = [ScatterData.init(r, p_info["headers"],
-        #         highlight_parameter_prefix = "psrf",
-        #         highlight_threshold = 1.1,
-        #         ) for r in results]
-        # var_only_data = [ScatterData.init(r, p_info["headers"],
-        #         highlight_parameter_prefix = "psrf",
-        #         highlight_threshold = 1.1,
-        #         ) for r in var_only_results]
-
-        # data_recent = [ScatterData.init(r, p_info["headers"],
-        #         highlight_parameter_prefix = "psrf",
-        #         highlight_threshold = 1.1,
-        #         ) for r in results_recent]
-        # var_only_data_recent = [ScatterData.init(r, p_info["headers"],
-        #         highlight_parameter_prefix = "psrf",
-        #         highlight_threshold = 1.1,
-        #         ) for r in var_only_results_recent]
-
-        # data_centered = [ScatterData.init(r, p_info["headers"],
-        #         highlight_parameter_prefix = "psrf",
-        #         highlight_threshold = 1.1,
-        #         ) for r in results_centered]
-        # var_only_data_centered = [ScatterData.init(r, p_info["headers"],
-        #         highlight_parameter_prefix = "psrf",
-        #         highlight_threshold = 1.1,
-        #         ) for r in var_only_results_centered]
-
-        data_opt_all = [ScatterData.init(r, p_info["headers"],
+        data = [ScatterData.init(r, p_info["headers"],
                 highlight_parameter_prefix = "psrf",
                 highlight_threshold = 1.1,
-                ) for r in results_opt_all]
-        var_only_data_opt_all = [ScatterData.init(r, p_info["headers"],
+                ) for r in results]
+        var_only_data = [ScatterData.init(r, p_info["headers"],
                 highlight_parameter_prefix = "psrf",
                 highlight_threshold = 1.1,
-                ) for r in var_only_results_opt_all]
+                ) for r in var_only_results]
         
         x_label = "True {0} (${1}$)".format(
                 p_info["label"],
@@ -2811,141 +2345,32 @@ def main_cli(argv = sys.argv):
                 p_info["label"],
                 p_info["symbol"])
 
-        # generate_scatter_plots(
-        #         data_grid = [data, var_only_data],
-        #         plot_file_prefix = parameter,
-        #         parameter_symbol = p_info["symbol"],
-        #         column_labels = root_gamma_labels,
-        #         row_labels = row_labels,
-        #         plot_width = 1.9,
-        #         plot_height = 1.8,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         x_label = x_label,
-        #         x_label_size = 18.0,
-        #         y_label = y_label,
-        #         y_label_size = 18.0,
-        #         force_shared_x_range = True,
-        #         force_shared_y_range = True,
-        #         force_shared_xy_ranges = True,
-        #         force_shared_spines = True,
-        #         include_coverage = True,
-        #         include_rmse = True,
-        #         include_identity_line = True,
-        #         include_error_bars = True)
-
-        # generate_scatter_plots(
-        #         data_grid = [data_recent, var_only_data_recent],
-        #         plot_file_prefix = "recent-" + parameter,
-        #         parameter_symbol = p_info["symbol"],
-        #         column_labels = root_gamma_labels_recent,
-        #         row_labels = row_labels,
-        #         plot_width = 1.9,
-        #         plot_height = 1.8,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         x_label = x_label,
-        #         x_label_size = 18.0,
-        #         y_label = y_label,
-        #         y_label_size = 18.0,
-        #         force_shared_x_range = True,
-        #         force_shared_y_range = True,
-        #         force_shared_xy_ranges = True,
-        #         force_shared_spines = True,
-        #         include_coverage = True,
-        #         include_rmse = True,
-        #         include_identity_line = True,
-        #         include_error_bars = True)
-
-        # generate_scatter_plots(
-        #         data_grid = [data_centered, var_only_data_centered],
-        #         plot_file_prefix = "centered-" + parameter,
-        #         parameter_symbol = p_info["symbol"],
-        #         column_labels = root_gamma_labels_centered,
-        #         row_labels = row_labels,
-        #         plot_width = 1.9,
-        #         plot_height = 1.8,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         x_label = x_label,
-        #         x_label_size = 18.0,
-        #         y_label = y_label,
-        #         y_label_size = 18.0,
-        #         force_shared_x_range = True,
-        #         force_shared_y_range = True,
-        #         force_shared_xy_ranges = True,
-        #         force_shared_spines = True,
-        #         include_coverage = True,
-        #         include_rmse = True,
-        #         include_identity_line = True,
-        #         include_error_bars = True)
-
-        # generate_scatter_plots(
-        #         data_grid = [data_opt_all, var_only_data_opt_all],
-        #         plot_file_prefix = "opt-all-" + parameter,
-        #         parameter_symbol = p_info["symbol"],
-        #         column_labels = root_gamma_labels_opt_all,
-        #         row_labels = row_labels,
-        #         plot_width = 1.9,
-        #         plot_height = 1.8,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         x_label = x_label,
-        #         x_label_size = 18.0,
-        #         y_label = y_label,
-        #         y_label_size = 18.0,
-        #         force_shared_x_range = True,
-        #         force_shared_y_range = True,
-        #         force_shared_xy_ranges = True,
-        #         force_shared_spines = True,
-        #         include_coverage = True,
-        #         include_rmse = True,
-        #         include_identity_line = True,
-        #         include_error_bars = True)
-
+        maximums = {}
+        if p_info["xy_limits"] == "calc_by_time_prior":
+            maximums = dict(zip(unique_time_priors, (float('-inf') for i in range(len(unique_time_priors)))))
+            for i in range(len(data)):
+                time_prior = sim_dir_to_priors[sim_dirs[i]][1]
+                maximums[time_prior] = max(maximums[time_prior],
+                        max(data[i].x),
+                        max(data[i].y),
+                        max(var_only_data[i].x),
+                        max(var_only_data[i].y),
+                        )
 
         # Generate individual scatters
-        all_data = data_opt_all
-        all_var_only_data = var_only_data_opt_all
-        # all_data = data + data_recent + data_centered[1:] + data_opt_all
-        # all_var_only_data = var_only_data + var_only_data_recent + var_only_data_centered[1:] + var_only_data_opt_all
-        for i in range(len(all_data)):
-            prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
+        for i in range(len(data)):
+            xy_lim = p_info["xy_limits"]
+            if p_info["xy_limits"] == "calc_by_time_prior":
+                time_prior = sim_dir_to_priors[sim_dirs[i]][1]
+                mx = maximums[time_prior]
+                xy_lim = (0.0, mx * 1.02, 0.0, mx * 1.02)
+
+            prefix = get_prefix_from_sim_dir_name(sim_dirs[i])
             y_label = "Estimated {0} ($\\hat{{{1}}}$)".format(
                     p_info["short_label"],
                     p_info["symbol"])
-            # generate_specific_scatter_plot(
-            #         data = all_data[i],
-            #         plot_file_prefix = parameter + "-" + prefix + "-y",
-            #         parameter_symbol = p_info["symbol"],
-            #         title = None,
-            #         title_size = 16.0,
-            #         x_label = None,
-            #         x_label_size = 16.0,
-            #         y_label = y_label,
-            #         y_label_size = 16.0,
-            #         plot_width = 3.5,
-            #         plot_height = 3.0,
-            #         pad_left = 0.2,
-            #         pad_right = 0.965,
-            #         pad_bottom = 0.18,
-            #         pad_top = 0.9,
-            #         force_shared_xy_ranges = True,
-            #         include_coverage = True,
-            #         include_rmse = True,
-            #         include_identity_line = True,
-            #         include_error_bars = True,
-            #         )
             generate_specific_scatter_plot(
-                    data = all_data[i],
+                    data = data[i],
                     plot_file_prefix = parameter + "-" + prefix,
                     parameter_symbol = p_info["symbol"],
                     title = None,
@@ -2961,14 +2386,14 @@ def main_cli(argv = sys.argv):
                     pad_bottom = pad_bottom,
                     pad_top = pad_top,
                     force_shared_xy_ranges = True,
-                    xy_limits = p_info["xy_limits"],
+                    xy_limits = xy_lim,
                     include_coverage = True,
                     include_rmse = True,
                     include_identity_line = True,
                     include_error_bars = True,
                     )
             generate_specific_scatter_plot(
-                    data = all_var_only_data[i],
+                    data = var_only_data[i],
                     plot_file_prefix = "var-only-" + parameter + "-" + prefix,
                     parameter_symbol = p_info["symbol"],
                     title = None,
@@ -2984,174 +2409,20 @@ def main_cli(argv = sys.argv):
                     pad_bottom = pad_bottom,
                     pad_top = pad_top,
                     force_shared_xy_ranges = True,
-                    xy_limits = p_info["xy_limits"],
+                    xy_limits = xy_lim,
                     include_coverage = True,
                     include_rmse = True,
                     include_identity_line = True,
                     include_error_bars = True,
                     )
 
-    coal_units_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y", "highlight_values", "highlight_threshold"),
-                    list(get_true_est_coal_units(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters)) + [1.1]
-                    ))
-            ) for r in results_opt_all]
-    var_only_coal_units_opt_all = [ScatterData(
-            **dict(zip(
-                    ("x", "y", "highlight_values", "highlight_threshold"),
-                    list(get_true_est_coal_units(
-                            r,
-                            height_parameters,
-                            leaf_size_parameters)) + [1.1]
-                    ))
-            ) for r in var_only_results_opt_all]
 
-    all_data = coal_units_opt_all
-    all_var_only_data = var_only_coal_units_opt_all
-
-    parameter = "event-time-coal-units"
-    symbol = "t"
-    for i in range(len(all_data)):
-        prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
-        y_label = "Estimated event time in coalescent units"
-        generate_specific_scatter_plot(
-                data = all_data[i],
-                plot_file_prefix = parameter + "-" + prefix,
-                parameter_symbol = symbol,
-                title = None,
-                title_size = 16.0,
-                x_label = None,
-                x_label_size = 16.0,
-                y_label = None,
-                y_label_size = 16.0,
-                plot_width = plot_width,
-                plot_height = plot_height,
-                pad_left = pad_left,
-                pad_right = pad_right,
-                pad_bottom = pad_bottom,
-                pad_top = pad_top,
-                force_shared_xy_ranges = True,
-                xy_limits = None,
-                include_coverage = False,
-                include_rmse = False,
-                include_identity_line = True,
-                include_error_bars = False,
-                )
-        generate_specific_scatter_plot(
-                data = all_var_only_data[i],
-                plot_file_prefix = "var-only-" + parameter + "-" + prefix,
-                parameter_symbol = symbol,
-                title = None,
-                title_size = 16.0,
-                x_label = None,
-                x_label_size = 16.0,
-                y_label = None,
-                y_label_size = 16.0,
-                plot_width = plot_width,
-                plot_height = plot_height,
-                pad_left = pad_left,
-                pad_right = pad_right,
-                pad_bottom = pad_bottom,
-                pad_top = pad_top,
-                force_shared_xy_ranges = True,
-                xy_limits = None,
-                include_coverage = False,
-                include_rmse = False,
-                include_identity_line = True,
-                include_error_bars = False,
-                )
-
-
-    # generate_model_plots(
-    #         results_grid = [results, var_only_results],
-    #         column_labels = root_gamma_labels,
-    #         row_labels = row_labels,
-    #         number_of_comparisons = 3,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         y_label_size = 18.0,
-    #         y_label = None,
-    #         number_font_size = 12.0,
-    #         plot_file_prefix = None)
-    # generate_model_plots(
-    #         results_grid = [results_recent, var_only_results_recent],
-    #         column_labels = root_gamma_labels_recent,
-    #         row_labels = row_labels,
-    #         number_of_comparisons = 3,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         y_label_size = 18.0,
-    #         y_label = None,
-    #         number_font_size = 12.0,
-    #         plot_file_prefix = "recent")
-    # generate_model_plots(
-    #         results_grid = [results_centered, var_only_results_centered],
-    #         column_labels = root_gamma_labels_centered,
-    #         row_labels = row_labels,
-    #         number_of_comparisons = 3,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         y_label_size = 18.0,
-    #         y_label = None,
-    #         number_font_size = 12.0,
-    #         plot_file_prefix = "centered")
-    # generate_model_plots(
-    #         results_grid = [results_opt_all, var_only_results_opt_all],
-    #         column_labels = root_gamma_labels_opt_all,
-    #         row_labels = row_labels,
-    #         number_of_comparisons = 3,
-    #         plot_width = 1.9,
-    #         plot_height = 1.8,
-    #         pad_left = 0.08,
-    #         pad_right = 0.98,
-    #         pad_bottom = 0.14,
-    #         pad_top = 0.94,
-    #         y_label_size = 18.0,
-    #         y_label = None,
-    #         number_font_size = 12.0,
-    #         plot_file_prefix = "opt-all")
 
     # Generate individual model plots
-    for i in range(len(all_results)):
-        prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
-        # generate_specific_model_plots(
-        #         results = all_results[i],
-        #         number_of_comparisons = 3,
-        #         plot_title = None,
-        #         include_x_label = False,
-        #         include_y_label = True,
-        #         include_median = True,
-        #         include_cs = True,
-        #         include_prop_correct = True,
-        #         plot_width = 3.5,
-        #         plot_height = 3.3,
-        #         xy_label_size = 16.0,
-        #         title_size = 16.0,
-        #         pad_left = 0.16,
-        #         pad_right = 0.99,
-        #         pad_bottom = 0.165,
-        #         pad_top = 0.915,
-        #         lower_annotation_y = 0.01,
-        #         upper_annotation_y = 0.915,
-        #         plot_file_prefix = "nevents-" + prefix + "-y")
+    for i in range(len(results)):
+        prefix = get_prefix_from_sim_dir_name(sim_dirs[i])
         generate_specific_model_plots(
-                results = all_results[i],
+                results = results[i],
                 number_of_comparisons = 3,
                 plot_title = None,
                 include_x_label = False,
@@ -3159,19 +2430,19 @@ def main_cli(argv = sys.argv):
                 include_median = True,
                 include_cs = True,
                 include_prop_correct = True,
-                plot_width = plot_width,
+                plot_width = plot_width * 0.94,
                 plot_height = plot_height,
                 xy_label_size = 16.0,
                 title_size = 16.0,
-                pad_left = pad_left - 0.03,
-                pad_right = pad_right,
-                pad_bottom = pad_bottom,
-                pad_top = pad_top,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
                 lower_annotation_y = 0.01,
-                upper_annotation_y = 0.89,
+                upper_annotation_y = 1.015,
                 plot_file_prefix = "nevents-" + prefix)
         generate_specific_model_plots(
-                results = all_var_only_results[i],
+                results = var_only_results[i],
                 number_of_comparisons = 3,
                 plot_title = None,
                 include_x_label = False,
@@ -3179,147 +2450,59 @@ def main_cli(argv = sys.argv):
                 include_median = True,
                 include_cs = True,
                 include_prop_correct = True,
-                plot_width = plot_width,
+                plot_width = plot_width * 0.94,
                 plot_height = plot_height,
                 xy_label_size = 16.0,
                 title_size = 16.0,
-                pad_left = pad_left - 0.03,
-                pad_right = pad_right,
-                pad_bottom = pad_bottom,
-                pad_top = pad_top,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
                 lower_annotation_y = 0.01,
-                upper_annotation_y = 0.89,
+                upper_annotation_y = 1.015,
                 plot_file_prefix = "var-only-nevents-" + prefix)
         generate_specific_model_plots(
-                results = all_results[i],
+                results = results[i],
                 number_of_comparisons = 3,
                 show_all_models = True,
                 plot_title = None,
                 include_x_label = False,
                 include_y_label = False,
                 include_median = True,
-                include_cs = True,
+                include_cs = False,
                 include_prop_correct = True,
-                plot_width = plot_width,
+                plot_width = plot_width * 0.96,
                 plot_height = plot_height,
                 xy_label_size = 16.0,
                 title_size = 16.0,
                 pad_left = pad_left - 0.03,
-                pad_right = pad_right,
-                pad_bottom = pad_bottom,
-                pad_top = pad_top,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
                 lower_annotation_y = 0.01,
-                upper_annotation_y = 0.997,
+                upper_annotation_y = 1.015,
                 plot_file_prefix = "model-" + prefix)
         generate_specific_model_plots(
-                results = all_var_only_results[i],
+                results = var_only_results[i],
                 number_of_comparisons = 3,
                 show_all_models = True,
                 plot_title = None,
                 include_x_label = False,
                 include_y_label = False,
                 include_median = True,
-                include_cs = True,
+                include_cs = False,
                 include_prop_correct = True,
-                plot_width = plot_width,
+                plot_width = plot_width * 0.96,
                 plot_height = plot_height,
                 xy_label_size = 16.0,
                 title_size = 16.0,
                 pad_left = pad_left - 0.03,
-                pad_right = pad_right,
-                pad_bottom = pad_bottom,
-                pad_top = pad_top,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
                 lower_annotation_y = 0.01,
-                upper_annotation_y = 0.997,
+                upper_annotation_y = 1.015,
                 plot_file_prefix = "var-only-model-" + prefix)
-
-    # Generate histograms for the number of variable sites
-    parameters = [
-            "n_var_sites_c1",
-            "n_var_sites_c2",
-            "n_var_sites_c3",
-            ]
-    # data = [HistogramData.init(r, parameters, True) for r in results]
-    # data_recent = [HistogramData.init(r, parameters, True) for r in results_recent]
-    # data_centered = [HistogramData.init(r, parameters, True) for r in results_centered]
-    data_opt_all = [HistogramData.init(r, parameters, True) for r in results_opt_all]
-
-    # generate_histograms(
-    #         data_grid = [data_opt_all],
-    #         plot_file_prefix = "opt-all-number-of-variable-sites-500k",
-    #         column_labels = root_gamma_labels_opt_all,
-    #         row_labels = None,
-    #         parameter_label = "Number of variable sites",
-    #         range_key = "range",
-    #         number_of_digits = 0,
-    #         plot_width = 1.9,
-    #         plot_height = 2.0,
-    #         pad_left = 0.08,
-    #         pad_right = 0.99,
-    #         pad_bottom = 0.2,
-    #         pad_top = 0.90,
-    #         force_shared_x_range = True,
-    #         force_shared_bins = True,
-    #         force_shared_y_range = True,
-    #         force_shared_spines = True,
-    #         )
-    # generate_histograms(
-    #         data_grid = [data],
-    #         plot_file_prefix = "number-of-variable-sites-500k",
-    #         column_labels = root_gamma_labels,
-    #         row_labels = None,
-    #         parameter_label = "Number of variable sites",
-    #         range_key = "range",
-    #         number_of_digits = 0,
-    #         plot_width = 1.9,
-    #         plot_height = 2.0,
-    #         pad_left = 0.08,
-    #         pad_right = 0.99,
-    #         pad_bottom = 0.2,
-    #         pad_top = 0.90,
-    #         force_shared_x_range = True,
-    #         force_shared_bins = True,
-    #         force_shared_y_range = True,
-    #         force_shared_spines = True,
-    #         )
-    # generate_histograms(
-    #         data_grid = [data_recent],
-    #         plot_file_prefix = "recent-number-of-variable-sites-500k",
-    #         column_labels = root_gamma_labels_recent,
-    #         row_labels = None,
-    #         parameter_label = "Number of variable sites",
-    #         range_key = "range",
-    #         number_of_digits = 0,
-    #         plot_width = 1.9,
-    #         plot_height = 2.0,
-    #         pad_left = 0.08,
-    #         pad_right = 0.99,
-    #         pad_bottom = 0.2,
-    #         pad_top = 0.90,
-    #         force_shared_x_range = True,
-    #         force_shared_bins = True,
-    #         force_shared_y_range = True,
-    #         force_shared_spines = True,
-    #         )
-    # generate_histograms(
-    #         data_grid = [data_centered],
-    #         plot_file_prefix = "centered-number-of-variable-sites-500k",
-    #         column_labels = root_gamma_labels_centered,
-    #         row_labels = None,
-    #         parameter_label = "Number of variable sites",
-    #         range_key = "range",
-    #         number_of_digits = 0,
-    #         plot_width = 1.9,
-    #         plot_height = 2.0,
-    #         pad_left = 0.08,
-    #         pad_right = 0.99,
-    #         pad_bottom = 0.2,
-    #         pad_top = 0.90,
-    #         force_shared_x_range = True,
-    #         force_shared_bins = True,
-    #         force_shared_y_range = True,
-    #         force_shared_spines = True,
-    #         )
 
 
     histograms_to_plot = {
@@ -3382,15 +2565,13 @@ def main_cli(argv = sys.argv):
     }
 
     for parameter, p_info in histograms_to_plot.items():
-        data_opt_all = [HistogramData.init(r, p_info["headers"], False) for r in results_opt_all]
-        var_only_data_opt_all = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results_opt_all]
+        data = [HistogramData.init(r, p_info["headers"], False) for r in results]
+        var_only_data = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results]
 
-        all_data = data_opt_all
-        all_var_only_data = var_only_data_opt_all
-        for i in range(len(all_data)):
-            prefix = get_prefix_from_sim_dir_name(all_sim_dirs[i])
+        for i in range(len(data)):
+            prefix = get_prefix_from_sim_dir_name(sim_dirs[i])
             generate_specific_histogram(
-                    data = all_data[i],
+                    data = data[i],
                     plot_file_prefix = parameter + "-" + prefix,
                     title = None,
                     title_size = 16.0,
@@ -3408,7 +2589,7 @@ def main_cli(argv = sys.argv):
                     range_key = "range",
                     number_of_digits = p_info["ndigits"])
             generate_specific_histogram(
-                    data = all_var_only_data[i],
+                    data = var_only_data[i],
                     plot_file_prefix = "var-only-" + parameter + "-" + prefix,
                     title = None,
                     title_size = 16.0,
@@ -3426,144 +2607,146 @@ def main_cli(argv = sys.argv):
                     range_key = "range",
                     number_of_digits = p_info["ndigits"])
 
-        # data = [HistogramData.init(r, p_info["headers"], False) for r in results]
-        # var_only_data = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results]
 
-        # data_recent = [HistogramData.init(r, p_info["headers"], False) for r in results_recent]
-        # var_only_data_recent = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results_recent]
+    # root_gamma_labels_opt = []
+    # for sim_dir in sim_dirs_opt:
+    #     root_gamma_labels_opt.append(get_root_gamma_label(sim_dir))
 
-        # data_centered = [HistogramData.init(r, p_info["headers"], False) for r in results_centered]
-        # var_only_data_centered = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results_centered]
+    # root_gamma_labels_opt_centered = []
+    # for sim_dir in sim_dirs_opt_centered:
+    #     root_gamma_labels_opt_centered.append(get_root_gamma_label(sim_dir))
 
-        # generate_histograms(
-        #         data_grid = [data_opt_all, var_only_data_opt_all],
-        #         plot_file_prefix = "opt-all-" + parameter,
-        #         column_labels = root_gamma_labels_opt_all,
-        #         row_labels = row_labels,
-        #         parameter_label = p_info["label"],
-        #         range_key = "range",
-        #         number_of_digits = 2,
-        #         plot_width = 1.9,
-        #         plot_height = 1.9,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         force_shared_x_range = False,
-        #         force_shared_bins = False,
-        #         force_shared_y_range = True,
-        #         force_shared_spines = False,
-        #         )
-        # generate_histograms(
-        #         data_grid = [data, var_only_data],
-        #         plot_file_prefix = parameter,
-        #         column_labels = root_gamma_labels,
-        #         row_labels = row_labels,
-        #         parameter_label = p_info["label"],
-        #         range_key = "range",
-        #         number_of_digits = 2,
-        #         plot_width = 1.9,
-        #         plot_height = 1.9,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         force_shared_x_range = False,
-        #         force_shared_bins = False,
-        #         force_shared_y_range = True,
-        #         force_shared_spines = False,
-        #         )
-        # generate_histograms(
-        #         data_grid = [data_recent, var_only_data_recent],
-        #         plot_file_prefix = "recent-" + parameter,
-        #         column_labels = root_gamma_labels_recent,
-        #         row_labels = row_labels,
-        #         parameter_label = p_info["label"],
-        #         range_key = "range",
-        #         number_of_digits = 2,
-        #         plot_width = 1.9,
-        #         plot_height = 1.9,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         force_shared_x_range = False,
-        #         force_shared_bins = False,
-        #         force_shared_y_range = True,
-        #         force_shared_spines = False,
-        #         )
-        # generate_histograms(
-        #         data_grid = [data_centered, var_only_data_centered],
-        #         plot_file_prefix = "centered-" + parameter,
-        #         column_labels = root_gamma_labels_centered,
-        #         row_labels = row_labels,
-        #         parameter_label = p_info["label"],
-        #         range_key = "range",
-        #         number_of_digits = 2,
-        #         plot_width = 1.9,
-        #         plot_height = 1.9,
-        #         pad_left = 0.08,
-        #         pad_right = 0.98,
-        #         pad_bottom = 0.14,
-        #         pad_top = 0.94,
-        #         force_shared_x_range = False,
-        #         force_shared_bins = False,
-        #         force_shared_y_range = True,
-        #         force_shared_spines = False,
-        #         )
+    # root_gamma_labels_opt_all = []
+    # for sim_dir in sim_dirs_opt_all:
+    #     root_gamma_labels_opt_all.append(get_root_gamma_label(sim_dir))
 
+    # root_gamma_labels = []
+    # for sim_dir in sim_dirs:
+    #     root_gamma_labels.append(get_root_gamma_label(sim_dir))
+    
+    # results_opt_all = []
+    # for sim_dir in sim_dirs_opt_all:
+    #     results_opt_all.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "results.csv.gz")))
+    #             )
 
-    # plot_ess_versus_error(
-    #         parameters = [
-    #                 "root_height_c1sp1",
-    #                 "root_height_c2sp1",
-    #                 "root_height_c3sp1",
-    #                 ],
-    #         results_grid = [results_opt_all, var_only_results_opt_all],
+    # var_only_results_opt_all = []
+    # for sim_dir in sim_dirs_opt_all:
+    #     var_only_results_opt_all.append(
+    #             parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+    #                     sim_dir,
+    #                     "batch00?",
+    #                     "var-only-results.csv.gz")))
+    #             )
+
+    # results_opt = [
+    #         results_opt_all[0],
+    #         results_opt_all[2],
+    #         results_opt_all[1],
+    #         ]
+    # var_only_results_opt = [
+    #         var_only_results_opt_all[0],
+    #         var_only_results_opt_all[2],
+    #         var_only_results_opt_all[1],
+    #         ]
+    # results_opt_centered = results_opt_all[2:]
+    # var_only_results_opt_centered = var_only_results_opt_all[2:]
+
+    # row_labels = [
+    #         "All sites",
+    #         "Variable-only sites",
+    # ]
+
+    # t_vs_e_opt_all = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in results_opt_all]
+    # vo_t_vs_e_opt_all = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y", "highlight_values", "highlight_threshold"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters)) + [1.1]
+    #                 ))
+    #         ) for r in var_only_results_opt_all]
+
+    # t_vs_psrf_opt_all = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in results_opt_all]
+    # vo_t_vs_psrf_opt_all = [ScatterData(
+    #         **dict(zip(
+    #                 ("x", "y"),
+    #                 list(get_coal_units_vs_error(
+    #                         r,
+    #                         height_parameters,
+    #                         leaf_size_parameters,
+    #                         psrf_as_response = True))
+    #                 ))
+    #         ) for r in var_only_results_opt_all]
+
+    # generate_scatter_plots(
+    #         data_grid = [t_vs_e_opt_all, vo_t_vs_e_opt_all],
+    #         plot_file_prefix = "opt-all-coal-units-vs-error",
     #         column_labels = root_gamma_labels_opt_all,
     #         row_labels = row_labels,
-    #         parameter_label = "event time",
-    #         plot_file_prefix = "opt-all-event-time")
-    # plot_ess_versus_error(
-    #         parameters = [
-    #                 "root_height_c1sp1",
-    #                 "root_height_c2sp1",
-    #                 "root_height_c3sp1",
-    #                 ],
-    #         results_grid = [results, var_only_results],
-    #         column_labels = root_gamma_labels,
-    #         row_labels = row_labels,
-    #         parameter_label = "event time",
-    #         plot_file_prefix = "event-time")
-    # plot_ess_versus_error(
-    #         parameters = [
-    #                 "root_height_c1sp1",
-    #                 "root_height_c2sp1",
-    #                 "root_height_c3sp1",
-    #                 ],
-    #         results_grid = [results_recent, var_only_results_recent],
-    #         column_labels = root_gamma_labels_recent,
-    #         row_labels = row_labels,
-    #         parameter_label = "event time",
-    #         plot_file_prefix = "recent-event-time")
-    # plot_ess_versus_error(
-    #         parameters = [
-    #                 "root_height_c1sp1",
-    #                 "root_height_c2sp1",
-    #                 "root_height_c3sp1",
-    #                 ],
-    #         results_grid = [results_centered, var_only_results_centered],
-    #         column_labels = root_gamma_labels_centered,
-    #         row_labels = row_labels,
-    #         parameter_label = "event time",
-    #         plot_file_prefix = "centered-event-time")
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "Relative error",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
 
-
-    # plot_nevents_estimated_vs_true_probs(
-    #         sim_dir = "03pops-dpp-root-0100-100k",
-    #         nevents = 1,
-    #         nbins = 5,
-    #         plot_file_prefix = "100k-sites")
+    # generate_scatter_plots(
+    #         data_grid = [t_vs_psrf_opt_all, vo_t_vs_psrf_opt_all],
+    #         plot_file_prefix = "opt-all-coal-units-vs-psrf",
+    #         column_labels = root_gamma_labels_opt_all,
+    #         row_labels = row_labels,
+    #         plot_width = 1.9,
+    #         plot_height = 1.8,
+    #         pad_left = 0.08,
+    #         pad_right = 0.98,
+    #         pad_bottom = 0.14,
+    #         pad_top = 0.94,
+    #         x_label = "True event time in coalescent units",
+    #         x_label_size = 18.0,
+    #         y_label = "PSRF",
+    #         y_label_size = 18.0,
+    #         force_shared_x_range = False,
+    #         force_shared_y_range = False,
+    #         force_shared_xy_ranges = False,
+    #         force_shared_spines = False,
+    #         include_coverage = False,
+    #         include_rmse = False,
+    #         include_identity_line = False,
+    #         include_error_bars = False)
 
 
 if __name__ == "__main__":
