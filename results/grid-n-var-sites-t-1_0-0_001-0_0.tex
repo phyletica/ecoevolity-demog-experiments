@@ -1,0 +1,63 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}cccccc@{}}
+        & \multirow{1}{0.15\textwidth}[8em]{\centering\Large Event~time~distribution:}
+        &
+        & \multicolumn{1}{c}{\includegraphics[width=0.15\textwidth]{plots/prior-time-1_0-0_001-0_0-gamma.pdf}}
+        &
+        & \multicolumn{1}{c}{\includegraphics[width=0.15\textwidth]{plots/prior-time-1_0-0_01-0_0-gamma.pdf}} \\
+        % &
+        % &
+        % & \multicolumn{1}{c}{\large Event time}
+        % &
+        % & \multicolumn{1}{c}{\large Event time} \\
+        \cline{1-2}\cline{4-4}\cline{6-6}
+        & & & & & \\
+        & \multirow{1}{0.15\textwidth}{\centering\Large Distribution on relative size of ancestral population}
+        &
+        &
+        &
+        & \\[9ex]
+        \multirow{2}{*}[1em]{\begin{sideways}\large Density\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_025-0_0-gamma.pdf}
+        & \multirow{2}{*}[2em]{\begin{sideways}\large Frequency\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/n-var-sites-a-10_0-0_025-0_0-t-1_0-0_001-0_0-histogram.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/n-var-sites-a-10_0-0_025-0_0-t-1_0-0_01-0_0-histogram.pdf} \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_05-0_0-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/n-var-sites-a-10_0-0_05-0_0-t-1_0-0_001-0_0-histogram.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/n-var-sites-a-10_0-0_05-0_0-t-1_0-0_01-0_0-histogram.pdf} \\
+        & \multirow{1}{0.15\textwidth}{\centering\large Relative population size}
+        &
+        & \multicolumn{3}{c}{\large Number of variable sites} \\
+    \end{tabular}
+\end{figure}
+
+\end{document}
