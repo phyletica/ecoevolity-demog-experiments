@@ -10,9 +10,12 @@ cd ../results
 
 for p in grid-*.tex;
 do
+    path_prefix="${p%.*}"
+    pdf_path="${path_prefix}.pdf"
+    cropped_pdf_path="cropped-${pdf_path}"
     latexmk -C "$p"
     latexmk -pdf "$p"
-    pdfcrop "$p" "cropped-${p}"
+    pdfcrop "$pdf_path" "$cropped_pdf_path"
     latexmk -C "$p"
 done
 
