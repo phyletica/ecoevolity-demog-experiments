@@ -1,0 +1,108 @@
+---
+
+comparisons:
+- comparison:
+    path: "../alignments/stickleback-bear.nex"
+- comparison:
+    path: "../alignments/stickleback-boot.nex"
+- comparison:
+    path: "../alignments/stickleback-mud.nex"
+- comparison:
+    path: "../alignments/stickleback-rabbit.nex"
+- comparison:
+    path: "../alignments/stickleback-resurrection.nex"
+
+global_comparison_settings:
+    ploidy: 2
+    genotypes_are_diploid: true
+    markers_are_dominant: false
+    population_name_delimiter: "-"
+    population_name_is_prefix: true
+    constant_sites_removed: true
+    equal_population_sizes: false
+    parameters:
+        population_size:
+            value: 0.002
+            estimate: true
+            prior:
+                gamma_distribution:
+                    shape: 2.0
+                    scale: 0.001
+                    offset: 0.0
+        root_relative_population_size:
+            value: 1.0
+            estimate: true
+            prior:
+                gamma_distribution:
+                    shape: 1.0
+                    scale: 1.0
+                    offset: 0.0
+        freq_1:
+            value: 0.5
+            estimate: false
+
+        mutation_rate:
+            value: 1.0
+            estimate: false
+
+    operators:
+        TimeSizeRateMixer:
+            weight: 0
+        TimeSizeRateScaler:
+            weight: 0
+        EventTimeScaler:
+            weight: 0
+        RootPopulationSizeScaler:
+            weight: 1
+            scale: 0.1
+        LeafPopulationSizeScaler:
+            weight: 1
+            scale: 0.1
+        MutationRateScaler:
+            weight: 0
+        FreqMover:
+            weight: 0
+        TimeRootSizeMixer:
+            weight: 0
+
+
+event_model_prior:
+    dirichlet_process:
+        parameters:
+            concentration:
+                # value:      2.22543 # mean 3
+                # value:      13.0 # half of prior on 5
+                value:      0.3725 # half of prior on 1
+                estimate:   false
+
+event_time_prior:
+    gamma_distribution:
+        shape: 1.0
+        scale: 0.001
+        offset: 0.0
+
+mcmc_settings:
+    chain_length: 150000
+    sample_frequency: 100
+
+operator_settings:
+    auto_optimize: true
+    auto_optimize_delay: 1000
+    operators:
+        ModelOperator:
+            weight: 10
+            number_of_auxiliary_categories: 4
+        ConcentrationScaler:
+            weight: 0
+        TimeSizeRateMixer:
+            weight: 6
+            scale: 0.1
+        TimeSizeRateScaler:
+            weight: 4
+            scale: 0.1
+        EventTimeScaler:
+            weight: 1
+            scale: 0.1
+        TimeRootSizeMixer:
+            weight: 6
+            scale: 0.05
