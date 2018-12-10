@@ -1,7 +1,7 @@
 #! /bin/sh
 
 username="$USER"
-if [ "$username" == "aubjro" ]
+if [ "$username" = "aubjro" ]
 then
     module load gcc/6.1.0
 elif [ -n "$PBS_JOBNAME" ]
