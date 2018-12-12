@@ -1,0 +1,44 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}llll@{}}
+        & \multicolumn{1}{c}{All sites analyzed} & \multicolumn{1}{c}{Only variable sites analyzed} & \\
+        \multirow{2}{*}[2em]{\begin{sideways}\large Probability\end{sideways}}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-allsites-dpp-0_3725-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-snps-dpp-0_3725-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf}
+        & \multirow{1}{*}[11.5em]{\begin{rotate}{270}$\alpha = 0.3725$\end{rotate}} \\
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-allsites-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-snps-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf}
+        & \multirow{1}{*}[11.5em]{\begin{rotate}{270}$\alpha = 2.22543$\end{rotate}} \\
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-allsites-dpp-13_0-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-snps-dpp-13_0-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf}
+        & \multirow{1}{*}[11.5em]{\begin{rotate}{270}$\alpha = 13.0$\end{rotate}} \\
+        & \multicolumn{2}{c}{\large Number of demographic events} & 
+    \end{tabular}
+\end{figure}
+
+\end{document}
