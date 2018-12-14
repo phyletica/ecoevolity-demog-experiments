@@ -1,0 +1,44 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}llll@{}}
+        & \multicolumn{1}{c}{\large All sites analyzed} & \multicolumn{1}{c}{\large Only variable sites analyzed} & \\[1ex]
+        \multirow{2}{*}[-4em]{\begin{sideways}\large Population\end{sideways}}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-allsites-dpp-2_22543-root-1_0-0_1-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-snps-dpp-2_22543-root-1_0-0_1-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf}
+        & \multirow{1}{*}[11em]{\begin{rotate}{270}$R_{N_e} \sim \textrm{\sffamily Exp}(\textrm{\sffamily mean}=0.1)$\end{rotate}} \\
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-allsites-dpp-2_22543-root-1_0-0_5-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-snps-dpp-2_22543-root-1_0-0_5-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf}
+        & \multirow{1}{*}[11em]{\begin{rotate}{270}$R_{N_e} \sim \textrm{\sffamily Exp}(\textrm{\sffamily mean}=0.5)$\end{rotate}} \\
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-allsites-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-snps-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf}
+        & \multirow{1}{*}[11em]{\begin{rotate}{270}$R_{N_e} \sim \textrm{\sffamily Exp}(\textrm{\sffamily mean}=1.0)$\end{rotate}} \\
+        & \multicolumn{2}{c}{\large Time of demographic change ($t$)} & 
+    \end{tabular}
+\end{figure}
+
+\end{document}
