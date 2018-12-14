@@ -17,7 +17,7 @@ fi
 locussize="100"
 simname="03pops-dpp-root-0005-004-t0002-500k"
 cfgpath="../../configs/config-${simname}.yml"
-outputdir="../../simulations/validation/${simname}/batch001"
+outputdir="../../simulations/validation/${simname}-0100ul/batch001"
 rngseed=772839595
 nreps=500
 

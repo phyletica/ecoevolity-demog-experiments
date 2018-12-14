@@ -17,7 +17,7 @@ fi
 ssprob="0.40"
 simname="03pops-dpp-root-0005-004-t0002-500k"
 cfgpath="../../configs/config-${simname}.yml"
-outputdir="../../simulations/validation/${simname}/batch001"
+outputdir="../../simulations/validation/${simname}-040s/batch001"
 rngseed=747229760
 nreps=500
 
