@@ -47,7 +47,7 @@ def update_time_size_rate_scalers(config):
 
 
 def main_cli(argv = sys.argv):
-    config_path_pattern = os.path.join(project_util.VAL_DIR, "*", "*", "simcoevolity-sim-*.yml") 
+    config_path_pattern = os.path.join(project_util.VAL_DIR, "*[ks]", "*", "simcoevolity-sim-*.yml")
 
     for config_path in sorted(glob.glob(config_path_pattern)):
         dir_path = os.path.dirname(config_path)
