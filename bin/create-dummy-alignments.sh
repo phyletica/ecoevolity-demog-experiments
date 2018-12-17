@@ -22,7 +22,26 @@ do
     i=`expr $i + 1`
 done
 
+# Generate 500k dummy pair alignments
+NSPECIES=2
+NGENOMES=10
+i=4
+while [ "$i" -lt 7 ]
+do
+    prefix="c${i}sp"
+    outfile="${alignment_dir}/comp0${i}-${NSPECIES}species-${NGENOMES}genomes-${NCHARS}chars.nex"
+    ./generate-dummy-biallelic-alignment.py \
+        --nspecies "$NSPECIES" \
+        --ngenomes "$NGENOMES" \
+        --ncharacters "$NCHARS" \
+        --prefix "$prefix" \
+        > "$outfile"
+    i=`expr $i + 1`
+done
+
 # Generate 100k dummy alignments
+NSPECIES=1
+NGENOMES=20
 NCHARS=100000
 
 i=1
