@@ -157,14 +157,15 @@ do
     pdfcrop "$p" "$p"
 done
 
-for p in grid-*.tex
+for p in grid-*.tex;
 do
+    path_prefix="${p%.*}"
+    pdf_path="${path_prefix}.pdf"
+    cropped_pdf_path="cropped-${pdf_path}"
+    latexmk -C "$p"
     latexmk -pdf "$p"
-done
-
-for p in grid-*.pdf
-do
-    pdfcrop "$p" "$p"
+    pdfcrop "$pdf_path" "$cropped_pdf_path"
+    latexmk -C "$p"
 done
 
 cd "$current_dir"
