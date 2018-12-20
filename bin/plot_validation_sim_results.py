@@ -42,6 +42,36 @@ sim_dir_to_priors = {
                 (5.0, 0.04, 0.05),
                 (4.0, 0.000475, 0.0001)
             ),
+        "03pops-dpp-root-0005-004-t0002-500k-0100l":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-004-t0002-500k-0100ul":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-004-t0002-500k-040s":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-004-t0002-500k-060s":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-009-t0002-500k":
+            (
+                (5.0, 0.09, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-03pairs-dpp-root-0005-009-t0002-500k":
+            (
+                (5.0, 0.09, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
         "03pops-dpp-root-0005-019-t0002-500k":
             (
                 (5.0, 0.19, 0.05),
@@ -117,6 +147,16 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
             t_scale = str(time_prior[1]).replace(".", "_"),
             t_offset = str(time_prior[2]).replace(".", "_"),
             )
+    if sim_dir_name.endswith("-0100l"):
+        s + "-loci-100-allsites"
+    elif sim_dir_name.endswith("-0100ul"):
+        s + "-loci-100-unlinkedsnps"
+    elif sim_dir_name.endswith("-040s"):
+        s + "-singletonprob-0_4"
+    elif sim_dir_name.endswith("-060s"):
+        s + "-singletonprob-0_6"
+    if sim_dir_name.startswith("03pops-03pairs"):
+        s + "-mixed-comps"
     return s
 
 
@@ -1869,6 +1909,8 @@ def generate_specific_model_plots(
         upper_annotation_y = 0.92,
         plot_file_prefix = None,
         plot_dir = project_util.PLOT_DIR,
+        model_key = "model",
+        num_events_key = "num_events",
         ):
     if show_all_models and (number_of_comparisons != 3):
         raise Exception("show all models only supported for 3 comparisons")
@@ -1902,12 +1944,12 @@ def generate_specific_model_plots(
     for i in range(5):
         true_map_model.append([0 for i in range(5)])
         true_map_nevents_probs.append([[] for i in range(5)])
-    true_nevents = tuple(int(x) for x in results["true_num_events"])
-    map_nevents = tuple(int(x) for x in results["map_num_events"])
-    true_model = tuple(x for x in results["true_model"])
-    map_model = tuple(x for x in results["map_model"])
-    true_nevents_cred_levels = tuple(float(x) for x in results["true_num_events_cred_level"])
-    true_model_cred_levels = tuple(float(x) for x in results["true_model_cred_level"])
+    true_nevents = tuple(int(x) for x in results["true_{num_events}".format(num_events = num_events_key)])
+    map_nevents = tuple(int(x) for x in results["map_{num_events}".format(num_events = num_events_key)])
+    true_model = tuple(x for x in results["true_{model}".format(model = model_key)])
+    map_model = tuple(x for x in results["map_{model}".format(model = model_key)])
+    true_nevents_cred_levels = tuple(float(x) for x in results["true_{num_events}_cred_level".format(num_events = num_events_key)])
+    true_model_cred_levels = tuple(float(x) for x in results["true_{model}_cred_level".format(model = model_key)])
     assert(len(true_nevents) == len(map_nevents))
     assert(len(true_nevents) == len(true_nevents_cred_levels))
     assert(len(true_nevents) == len(true_model_cred_levels))
@@ -1918,9 +1960,9 @@ def generate_specific_model_plots(
     map_nevents_probs = []
     for i in range(len(true_nevents)):
         true_nevents_probs.append(float(
-            results["num_events_{0}_p".format(true_nevents[i])][i]))
+            results["{num_events}_{n}_p".format(num_events = num_events_key, n = true_nevents[i])][i]))
         map_nevents_probs.append(float(
-            results["num_events_{0}_p".format(map_nevents[i])][i]))
+            results["{num_events}_{n}_p".format(num_events = num_events_key, n = map_nevents[i])][i]))
     assert(len(true_nevents) == len(true_nevents_probs))
     assert(len(true_nevents) == len(map_nevents_probs))
 
@@ -2223,6 +2265,7 @@ def main_cli(argv = sys.argv):
 
     sim_dirs_opt = [
             "03pops-dpp-root-0005-004-t0002-500k",
+            "03pops-dpp-root-0005-009-t0002-500k",
             "03pops-dpp-root-0005-019-t0002-500k",
             "03pops-dpp-root-0005-079-t0002-500k",
     ]
@@ -2233,13 +2276,21 @@ def main_cli(argv = sys.argv):
     ]
     sim_dirs_opt_all = [
             "03pops-dpp-root-0005-004-t0002-500k",
+            "03pops-dpp-root-0005-009-t0002-500k",
             "03pops-dpp-root-0005-079-t0002-500k",
             "03pops-dpp-root-0005-019-t0002-500k",
             "03pops-dpp-root-0050-002-t0002-500k",
             "03pops-dpp-root-0500-0002-t0002-500k",
     ]
 
+    sim_dirs_mixed_comparisons = [
+            "03pops-03pairs-dpp-root-0005-009-t0002-500k",
+            ]
+
     sim_dirs = [
+            "03pops-dpp-root-0005-004-t0002-500k-0100l",
+            "03pops-dpp-root-0005-004-t0002-500k-0100ul",
+            "03pops-dpp-root-0005-004-t0002-500k-040s",
             "03pops-dpp-root-0010-0025-500k",
             "03pops-dpp-root-0010-0025-t0001-500k",
             "03pops-dpp-root-0010-005-500k",
@@ -2250,22 +2301,26 @@ def main_cli(argv = sys.argv):
             "03pops-dpp-root-1000-0001-500k",
             ] + sim_dirs_opt_all
 
+    all_sim_dirs = sim_dirs + sim_dirs_mixed_comparisons
 
-    results = []
-    var_only_results = []
-    for sim_dir in sim_dirs:
-        results.append(
-                parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+
+    results = {}
+    var_only_results = {}
+    for sim_dir in all_sim_dirs:
+        results[sim_dir] = parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
                         sim_dir,
                         "batch00?",
                         "results.csv.gz")))
-                )
-        var_only_results.append(
-                parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+        var_only_results[sim_dir] = parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
                         sim_dir,
                         "batch00?",
                         "var-only-results.csv.gz")))
-                )
+
+    results_mixed_comps = {}
+    var_only_results_mixed_comps = {}
+    for sim_dir in sim_dirs_mixed_comparisons:
+        results_mixed_comps[sim_dir] = results[sim_dir]
+        var_only_results_mixed_comps[sim_dir] = var_only_results[sim_dir]
 
 
     height_parameters = [
@@ -2273,20 +2328,43 @@ def main_cli(argv = sys.argv):
             "root_height_c2sp1",
             "root_height_c3sp1",
     ]
+    div_height_parameters = [
+            "root_height_c4sp1",
+            "root_height_c5sp1",
+            "root_height_c6sp1",
+    ]
     coal_height_parameters = [
             "coal_root_height_c1sp1",
             "coal_root_height_c2sp1",
             "coal_root_height_c3sp1",
+    ]
+    div_coal_height_parameters = [
+            "coal_root_height_c4sp1",
+            "coal_root_height_c5sp1",
+            "coal_root_height_c6sp1",
     ]
     root_size_parameters = [
             "pop_size_root_c1sp1",
             "pop_size_root_c2sp1",
             "pop_size_root_c3sp1",
     ]
+    div_root_size_parameters = [
+            "pop_size_root_c4sp1",
+            "pop_size_root_c5sp1",
+            "pop_size_root_c6sp1",
+    ]
     leaf_size_parameters = [
             "pop_size_c1sp1",
             "pop_size_c2sp1",
             "pop_size_c3sp1",
+    ]
+    div_leaf_size_parameters = [
+            "pop_size_c4sp1",
+            "pop_size_c5sp1",
+            "pop_size_c6sp1",
+            "pop_size_c4sp2",
+            "pop_size_c5sp2",
+            "pop_size_c6sp2",
     ]
 
 
@@ -2299,6 +2377,27 @@ def main_cli(argv = sys.argv):
                     # "xy_limits": (0.0, 0.008, 0.0, 0.008),
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
+                    "mixed_comp_only": False,
+            },
+            "div-time": {
+                    "headers": div_height_parameters,
+                    "label": "divergence time",
+                    "short_label": "div time",
+                    "symbol": "t",
+                    # "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "xy_limits": "calc_by_time_prior",
+                    "pad_left": pad_left,
+                    "mixed_comp_only": True,
+            },
+            "div-demog-time": {
+                    "headers": height_parameters + div_height_parameters,
+                    "label": "event time",
+                    "short_label": "time",
+                    "symbol": "t",
+                    # "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "xy_limits": "calc_by_time_prior",
+                    "pad_left": pad_left,
+                    "mixed_comp_only": True,
             },
             "event-coal-time": {
                     "headers": coal_height_parameters,
@@ -2307,6 +2406,25 @@ def main_cli(argv = sys.argv):
                     "symbol": "t",
                     "xy_limits": None,
                     "pad_left": pad_left - 0.02,
+                    "mixed_comp_only": False,
+            },
+            "event-div-coal-time": {
+                    "headers": div_coal_height_parameters,
+                    "label": "divergence time in coalescent units",
+                    "short_label": "div time in coal units",
+                    "symbol": "t",
+                    "xy_limits": None,
+                    "pad_left": pad_left - 0.02,
+                    "mixed_comp_only": True,
+            },
+            "event-div-demog-coal-time": {
+                    "headers": coal_height_parameters + div_coal_height_parameters,
+                    "label": "event time in coalescent units",
+                    "short_label": "time in coal units",
+                    "symbol": "t",
+                    "xy_limits": None,
+                    "pad_left": pad_left - 0.02,
+                    "mixed_comp_only": True,
             },
             "ancestor-size": {
                     "headers": root_size_parameters,
@@ -2315,6 +2433,25 @@ def main_cli(argv = sys.argv):
                     "symbol": "N_e\\mu",
                     "xy_limits": None,
                     "pad_left": pad_left + 0.01,
+                    "mixed_comp_only": False,
+            },
+            "div-ancestor-size": {
+                    "headers": div_root_size_parameters,
+                    "label": "ancestor population size",
+                    "short_label": "size",
+                    "symbol": "N_e\\mu",
+                    "xy_limits": None,
+                    "pad_left": pad_left + 0.01,
+                    "mixed_comp_only": True,
+            },
+            "div-demog-ancestor-size": {
+                    "headers": root_size_parameters + div_root_size_parameters,
+                    "label": "ancestor population size",
+                    "short_label": "size",
+                    "symbol": "N_e\\mu",
+                    "xy_limits": None,
+                    "pad_left": pad_left + 0.01,
+                    "mixed_comp_only": True,
             },
             "descendant-size": {
                     "headers": leaf_size_parameters,
@@ -2324,19 +2461,56 @@ def main_cli(argv = sys.argv):
                     # "xy_limits": (0.0, 0.008, 0.0, 0.008),
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
+                    "mixed_comp_only": False,
+            },
+            "div-descendant-size": {
+                    "headers": div_leaf_size_parameters,
+                    "label": "descendant population size",
+                    "short_label": "size",
+                    "symbol": "N_e\\mu",
+                    # "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "xy_limits": "calc_by_time_prior",
+                    "pad_left": pad_left,
+                    "mixed_comp_only": True,
+            },
+            "div-demog-descendant-size": {
+                    "headers": leaf_size_parameters + div_leaf_size_parameters,
+                    "label": "descendant population size",
+                    "short_label": "size",
+                    "symbol": "N_e\\mu",
+                    # "xy_limits": (0.0, 0.008, 0.0, 0.008),
+                    "xy_limits": "calc_by_time_prior",
+                    "pad_left": pad_left,
+                    "mixed_comp_only": True,
             },
     }
 
 
     for parameter, p_info in parameters_to_plot.items():
-        data = [ScatterData.init(r, p_info["headers"],
-                highlight_parameter_prefix = "psrf",
-                highlight_threshold = 1.1,
-                ) for r in results]
-        var_only_data = [ScatterData.init(r, p_info["headers"],
-                highlight_parameter_prefix = "psrf",
-                highlight_threshold = 1.1,
-                ) for r in var_only_results]
+        data = {}
+        var_only_data = {}
+        if p_info["mixed_comp_only"]:
+            for sim_dir, r in results_mixed_comps.items():
+                data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
+            for sim_dir, r in var_only_results_mixed_comps.items():
+                var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
+        else:
+            for sim_dir, r in results.items():
+                data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
+            for sim_dir, r in var_only_results.items():
+                var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
         
         x_label = "True {0} (${1}$)".format(
                 p_info["label"],
@@ -2348,29 +2522,29 @@ def main_cli(argv = sys.argv):
         maximums = {}
         if p_info["xy_limits"] == "calc_by_time_prior":
             maximums = dict(zip(unique_time_priors, (float('-inf') for i in range(len(unique_time_priors)))))
-            for i in range(len(data)):
-                time_prior = sim_dir_to_priors[sim_dirs[i]][1]
+            for sim_dir in data.keys():
+                time_prior = sim_dir_to_priors[sim_dir][1]
                 maximums[time_prior] = max(maximums[time_prior],
-                        max(data[i].x),
-                        max(data[i].y),
-                        max(var_only_data[i].x),
-                        max(var_only_data[i].y),
+                        max(data[sim_dir].x),
+                        max(data[sim_dir].y),
+                        max(var_only_data[sim_dir].x),
+                        max(var_only_data[sim_dir].y),
                         )
 
         # Generate individual scatters
-        for i in range(len(data)):
+        for sim_dir in data.keys():
             xy_lim = p_info["xy_limits"]
             if p_info["xy_limits"] == "calc_by_time_prior":
-                time_prior = sim_dir_to_priors[sim_dirs[i]][1]
+                time_prior = sim_dir_to_priors[sim_dir][1]
                 mx = maximums[time_prior]
                 xy_lim = (0.0, mx * 1.02, 0.0, mx * 1.02)
 
-            prefix = get_prefix_from_sim_dir_name(sim_dirs[i])
+            prefix = get_prefix_from_sim_dir_name(sim_dir)
             y_label = "Estimated {0} ($\\hat{{{1}}}$)".format(
                     p_info["short_label"],
                     p_info["symbol"])
             generate_specific_scatter_plot(
-                    data = data[i],
+                    data = data[sim_dir],
                     plot_file_prefix = parameter + "-" + prefix,
                     parameter_symbol = p_info["symbol"],
                     title = None,
@@ -2393,7 +2567,7 @@ def main_cli(argv = sys.argv):
                     include_error_bars = True,
                     )
             generate_specific_scatter_plot(
-                    data = var_only_data[i],
+                    data = var_only_data[sim_dir],
                     plot_file_prefix = "var-only-" + parameter + "-" + prefix,
                     parameter_symbol = p_info["symbol"],
                     title = None,
@@ -2419,10 +2593,10 @@ def main_cli(argv = sys.argv):
 
 
     # Generate individual model plots
-    for i in range(len(results)):
-        prefix = get_prefix_from_sim_dir_name(sim_dirs[i])
+    for sim_dir in sim_dirs:
+        prefix = get_prefix_from_sim_dir_name(sim_dir)
         generate_specific_model_plots(
-                results = results[i],
+                results = results[sim_dir],
                 number_of_comparisons = 3,
                 plot_title = None,
                 include_x_label = False,
@@ -2442,7 +2616,7 @@ def main_cli(argv = sys.argv):
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "nevents-" + prefix)
         generate_specific_model_plots(
-                results = var_only_results[i],
+                results = var_only_results[sim_dir],
                 number_of_comparisons = 3,
                 plot_title = None,
                 include_x_label = False,
@@ -2462,7 +2636,7 @@ def main_cli(argv = sys.argv):
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "var-only-nevents-" + prefix)
         generate_specific_model_plots(
-                results = results[i],
+                results = results[sim_dir],
                 number_of_comparisons = 3,
                 show_all_models = True,
                 plot_title = None,
@@ -2483,7 +2657,7 @@ def main_cli(argv = sys.argv):
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "model-" + prefix)
         generate_specific_model_plots(
-                results = var_only_results[i],
+                results = var_only_results[sim_dir],
                 number_of_comparisons = 3,
                 show_all_models = True,
                 plot_title = None,
@@ -2504,6 +2678,237 @@ def main_cli(argv = sys.argv):
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "var-only-model-" + prefix)
 
+    for sim_dir in sim_dirs_mixed_comparisons:
+        prefix = get_prefix_from_sim_dir_name(sim_dir)
+        generate_specific_model_plots(
+                results = results[sim_dir],
+                number_of_comparisons = 6,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "nevents-" + prefix)
+        generate_specific_model_plots(
+                results = results[sim_dir],
+                number_of_comparisons = 3,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "num-div-events-" + prefix,
+                model_key = "div_model",
+                num_events_key = "num_div_events",
+                )
+        generate_specific_model_plots(
+                results = results[sim_dir],
+                number_of_comparisons = 3,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "num-demog-events-" + prefix,
+                model_key = "demog_model",
+                num_events_key = "num_demog_events",
+                )
+        generate_specific_model_plots(
+                results = results[sim_dir],
+                number_of_comparisons = 3,
+                show_all_models = True,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "div-model-" + prefix,
+                model_key = "div_model",
+                num_events_key = "num_div_events",
+                )
+        generate_specific_model_plots(
+                results = results[sim_dir],
+                number_of_comparisons = 3,
+                show_all_models = True,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "demog-model-" + prefix,
+                model_key = "demog_model",
+                num_events_key = "num_demog_events",
+                )
+        generate_specific_model_plots(
+                results = var_only_results[sim_dir],
+                number_of_comparisons = 6,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "var-only-nevents-" + prefix)
+        generate_specific_model_plots(
+                results = var_only_results[sim_dir],
+                number_of_comparisons = 3,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "var-only-num-div-events-" + prefix,
+                model_key = "div_model",
+                num_events_key = "num_div_events",
+                )
+        generate_specific_model_plots(
+                results = var_only_results[sim_dir],
+                number_of_comparisons = 3,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "var-only-num-demog-events-" + prefix,
+                model_key = "demog_model",
+                num_events_key = "num_demog_events",
+                )
+        generate_specific_model_plots(
+                results = var_only_results[sim_dir],
+                number_of_comparisons = 3,
+                show_all_models = True,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "var-only-div-model-" + prefix,
+                model_key = "div_model",
+                num_events_key = "num_div_events",
+                )
+        generate_specific_model_plots(
+                results = var_only_results[sim_dir],
+                number_of_comparisons = 3,
+                show_all_models = True,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = True,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.94,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.04,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "var-only-demog-model-" + prefix,
+                model_key = "demog_model",
+                num_events_key = "num_demog_events",
+                )
+
 
     histograms_to_plot = {
             "n-var-sites": {
@@ -2515,6 +2920,18 @@ def main_cli(argv = sys.argv):
                     "label": "Number of variable sites",
                     "short_label": "No. variable sites",
                     "ndigits": 0,
+                    "mixed_comp_only": False,
+            },
+            "div-n-var-sites": {
+                    "headers": [
+                            "n_var_sites_c4",
+                            "n_var_sites_c5",
+                            "n_var_sites_c6",
+                    ],
+                    "label": "Number of variable sites",
+                    "short_label": "No. variable sites",
+                    "ndigits": 0,
+                    "mixed_comp_only": True,
             },
             "ess-ln-likelihood": {
                     "headers": [
@@ -2523,6 +2940,7 @@ def main_cli(argv = sys.argv):
                     "label": "Effective sample size of log likelihood",
                     "short_label": "ESS of lnL",
                     "ndigits": 1,
+                    "mixed_comp_only": False,
             },
             "ess-event-time": {
                     "headers": [
@@ -2533,6 +2951,18 @@ def main_cli(argv = sys.argv):
                     "label": "Effective sample size of event time",
                     "short_label": "ESS of time",
                     "ndigits": 1,
+                    "mixed_comp_only": False,
+            },
+            "ess-div-time": {
+                    "headers": [
+                            "ess_sum_root_height_c4sp1",
+                            "ess_sum_root_height_c5sp1",
+                            "ess_sum_root_height_c6sp1",
+                    ],
+                    "label": "Effective sample size of event time",
+                    "short_label": "ESS of time",
+                    "ndigits": 1,
+                    "mixed_comp_only": True,
             },
             "ess-root-pop-size": {
                     "headers": [
@@ -2543,6 +2973,18 @@ def main_cli(argv = sys.argv):
                     "label": "Effective sample size of ancestral population size",
                     "short_label": "ESS of ancestral size",
                     "ndigits": 1,
+                    "mixed_comp_only": False,
+            },
+            "ess-div-root-pop-size": {
+                    "headers": [
+                            "ess_sum_pop_size_root_c4sp1",
+                            "ess_sum_pop_size_root_c5sp1",
+                            "ess_sum_pop_size_root_c6sp1",
+                    ],
+                    "label": "Effective sample size of ancestral population size",
+                    "short_label": "ESS of ancestral size",
+                    "ndigits": 1,
+                    "mixed_comp_only": True,
             },
             "psrf-ln-likelihood": {
                     "headers": [
@@ -2551,6 +2993,7 @@ def main_cli(argv = sys.argv):
                     "label": "PSRF of log likelihood",
                     "short_label": "PSRF of lnL",
                     "ndigits": 2,
+                    "mixed_comp_only": False,
             },
             "psrf-event-time": {
                     "headers": [
@@ -2561,17 +3004,39 @@ def main_cli(argv = sys.argv):
                     "label": "PSRF of event time",
                     "short_label": "PSRF of time",
                     "ndigits": 2,
+                    "mixed_comp_only": False,
+            },
+            "psrf-div-time": {
+                    "headers": [
+                            "psrf_root_height_c4sp1",
+                            "psrf_root_height_c5sp1",
+                            "psrf_root_height_c6sp1",
+                    ],
+                    "label": "PSRF of event time",
+                    "short_label": "PSRF of time",
+                    "ndigits": 2,
+                    "mixed_comp_only": True,
             },
     }
 
     for parameter, p_info in histograms_to_plot.items():
-        data = [HistogramData.init(r, p_info["headers"], False) for r in results]
-        var_only_data = [HistogramData.init(r, p_info["headers"], False) for r in var_only_results]
+        data = {}
+        var_only_data = {}
+        if p_info["mixed_comp_only"]:
+            for sim_dir, r in results_mixed_comps:
+                data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+            for sim_dir, r in var_only_results_mixed_comps:
+                var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+        else:
+            for sim_dir, r in results:
+                data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+            for sim_dir, r in var_only_results:
+                var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
 
-        for i in range(len(data)):
-            prefix = get_prefix_from_sim_dir_name(sim_dirs[i])
+        for sim_dir in data.keys():
+            prefix = get_prefix_from_sim_dir_name(sim_dir)
             generate_specific_histogram(
-                    data = data[i],
+                    data = data[sim_dir],
                     plot_file_prefix = parameter + "-" + prefix,
                     title = None,
                     title_size = 16.0,
@@ -2589,7 +3054,7 @@ def main_cli(argv = sys.argv):
                     range_key = "range",
                     number_of_digits = p_info["ndigits"])
             generate_specific_histogram(
-                    data = var_only_data[i],
+                    data = var_only_data[sim_dir],
                     plot_file_prefix = "var-only-" + parameter + "-" + prefix,
                     title = None,
                     title_size = 16.0,
