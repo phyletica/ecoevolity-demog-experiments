@@ -23,13 +23,17 @@ def line_count(path):
             count += 1
     return count
 
-def get_parameter_names(number_of_comparisons, dpp = True):
+def get_parameter_names(number_of_comparisons, dpp = True,
+        mixed_comparisons = False):
     p = ["ln_likelihood"]
     if dpp:
         p.append("concentration")
     else:
         p.append("split_weight")
     p.append("number_of_events")
+    if mixed_comparisons:
+        p.append("number_of_div_events")
+        p.append("number_of_demog_events")
     for i in range(number_of_comparisons):
         p.append("ln_likelihood_c{0}sp1".format(i + 1))
         p.append("root_height_c{0}sp1".format(i + 1))
@@ -40,7 +44,8 @@ def get_parameter_names(number_of_comparisons, dpp = True):
         p.append("pop_size_root_c{0}sp1".format(i + 1))
     return p
 
-def get_results_header(number_of_comparisons, dpp = True):
+def get_results_header(number_of_comparisons, dpp = True,
+        mixed_comparisons = False):
     h = [
             "batch",
             "sim",
@@ -56,6 +61,23 @@ def get_results_header(number_of_comparisons, dpp = True):
             "map_num_events",
             "true_num_events_cred_level",
         ]
+    if mixed_comparisons:
+        h.append("true_div_model")
+        h.append("map_div_model")
+        h.append("true_div_model_cred_level")
+        h.append("map_div_model_p")
+        h.append("true_div_model_p")
+        h.append("true_num_div_events")
+        h.append("map_num_div_events")
+        h.append("true_num_div_events_cred_level")
+        h.append("true_demog_model")
+        h.append("map_demog_model")
+        h.append("true_demog_model_cred_level")
+        h.append("map_demog_model_p")
+        h.append("true_demog_model_p")
+        h.append("true_num_demog_events")
+        h.append("map_num_demog_events")
+        h.append("true_num_demog_events_cred_level")
 
     for i in range(number_of_comparisons):
         h.append("num_events_{0}_p".format(i+1))
@@ -63,7 +85,8 @@ def get_results_header(number_of_comparisons, dpp = True):
     for i in range(number_of_comparisons):
         h.append("n_var_sites_c{0}".format(i+1))
 
-    for p in get_parameter_names(number_of_comparisons, dpp = dpp):
+    for p in get_parameter_names(number_of_comparisons, dpp = dpp,
+            mixed_comparisons = mixed_comparisons):
         h.append("true_{0}".format(p))
         h.append("true_{0}_rank".format(p))
         h.append("mean_{0}".format(p))
@@ -78,8 +101,10 @@ def get_results_header(number_of_comparisons, dpp = True):
         h.append("psrf_{0}".format(p))
     return h
 
-def get_empty_results_dict(number_of_comparisons, dpp = True):
-    h = get_results_header(number_of_comparisons, dpp = dpp)
+def get_empty_results_dict(number_of_comparisons, dpp = True,
+        mixed_comparisons = False):
+    h = get_results_header(number_of_comparisons, dpp = dpp,
+            mixed_comparisons = mixed_comparisons)
     return dict(zip(h, ([] for i in range(len(h)))))
 
 def get_results_from_sim_rep(
@@ -91,7 +116,8 @@ def get_results_from_sim_rep(
         batch_number,
         sim_number,
         expected_number_of_samples = 1501,
-        burnin = 401):
+        burnin = 401,
+        mixed_comparisons = False):
     posterior_paths = sorted(posterior_paths)
     stdout_paths = sorted(stdout_paths)
     nchains = len(posterior_paths)
@@ -170,6 +196,67 @@ def get_results_from_sim_rep(
     results["true_num_events_cred_level"] = true_nevents_cred
     for i in range(number_of_comparisons):
         results["num_events_{0}_p".format(i + 1)] = post_sample.get_number_of_events_probability(i + 1)
+
+    if mixed_comparisons:
+        true_div_model, = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.div_height_index_keys)
+        true_div_model_p = post_sample.get_div_model_probability(true_div_model)
+        true_div_model_cred = post_sample.get_div_model_credibility_level(true_div_model)
+        map_div_models = post_sample.get_div_map_models()
+        map_div_model = map_div_models[0]
+        if len(map_div_models) > 1:
+            if true_div_model in map_div_models:
+                map_div_model = true_div_model
+        map_div_model_p = post_sample.get_div_model_probability(map_div_model)
+        results["true_div_model"] = "".join((str(i) for i in true_div_model))
+        results["map_div_model"] = "".join((str(i) for i in map_div_model))
+        results["true_div_model_cred_level"] = true_div_model_cred
+        results["map_div_model_p"] = map_div_model_p
+        results["true_div_model_p"] = true_div_model_p
+
+        true_demog_model, = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.demog_height_index_keys)
+        true_demog_model_p = post_sample.get_demog_model_probability(true_demog_model)
+        true_demog_model_cred = post_sample.get_demog_model_credibility_level(true_demog_model)
+        map_demog_models = post_sample.get_demog_map_models()
+        map_demog_model = map_demog_models[0]
+        if len(map_demog_models) > 1:
+            if true_demog_model in map_demog_models:
+                map_demog_model = true_demog_model
+        map_demog_model_p = post_sample.get_demog_model_probability(map_demog_model)
+        results["true_demog_model"] = "".join((str(i) for i in true_demog_model))
+        results["map_demog_model"] = "".join((str(i) for i in map_demog_model))
+        results["true_demog_model_cred_level"] = true_demog_model_cred
+        results["map_demog_model_p"] = map_demog_model_p
+        results["true_demog_model_p"] = true_demog_model_p
+        
+        true_div_nevents = max(true_div_model) + 1
+        true_values["number_of_div_events"] = true_div_nevents
+        true_div_nevents_p = post_sample.get_number_of_div_events_probability(true_div_nevents)
+        true_div_nevents_cred = post_sample.get_number_of_div_events_credibility_level(true_div_nevents)
+        map_numbers_of_div_events = post_sample.get_map_numbers_of_div_events()
+        map_div_nevents = map_numbers_of_div_events[0]
+        if len(map_numbers_of_div_events) > 1:
+            if true_div_nevents in map_numbers_of_div_events:
+                map_div_nevents = true_div_nevents
+        results["true_num_div_events"] = true_div_nevents
+        results["map_num_div_events"] = map_div_nevents
+        results["true_num_div_events_cred_level"] = true_div_nevents_cred
+        for i in range(len(post_sample.div_height_index_keys)):
+            results["num_div_events_{0}_p".format(i + 1)] = post_sample.get_number_of_div_events_probability(i + 1)
+        
+        true_demog_nevents = max(true_demog_model) + 1
+        true_values["number_of_demog_events"] = true_demog_nevents
+        true_demog_nevents_p = post_sample.get_number_of_demog_events_probability(true_demog_nevents)
+        true_demog_nevents_cred = post_sample.get_number_of_demog_events_credibility_level(true_demog_nevents)
+        map_numbers_of_demog_events = post_sample.get_map_numbers_of_demog_events()
+        map_demog_nevents = map_numbers_of_demog_events[0]
+        if len(map_numbers_of_demog_events) > 1:
+            if true_demog_nevents in map_numbers_of_demog_events:
+                map_demog_nevents = true_demog_nevents
+        results["true_num_demog_events"] = true_demog_nevents
+        results["map_num_demog_events"] = map_demog_nevents
+        results["true_num_demog_events_cred_level"] = true_demog_nevents_cred
+        for i in range(len(post_sample.demog_height_index_keys)):
+            results["num_demog_events_{0}_p".format(i + 1)] = post_sample.get_number_of_demog_events_probability(i + 1)
     
     for p in parameter_names:
         true_val = float(true_values[p][0])
@@ -207,7 +294,8 @@ def parse_simulation_results(
         val_sim_dirs,
         expected_number_of_runs = 2,
         expected_number_of_samples = 1501,
-        burnin = 401):
+        burnin = 401,
+        mixed_comparisons = False):
     batch_number_pattern = re.compile(r'batch(?P<batch_number>\d+)')
     sim_number_pattern = re.compile(r'-sim-(?P<sim_number>\d+)-')
     # val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '0*'))
@@ -215,8 +303,10 @@ def parse_simulation_results(
         dpp = True
         sim_name = os.path.basename(val_sim_dir)
         number_of_comparisons = int(sim_name[0:2])
-        parameter_names = get_parameter_names(number_of_comparisons, dpp = dpp)
-        header = get_results_header(number_of_comparisons, dpp = dpp)
+        parameter_names = get_parameter_names(number_of_comparisons, dpp = dpp,
+                mixed_comparisons = mixed_comparisons)
+        header = get_results_header(number_of_comparisons, dpp = dpp,
+                mixed_comparisons = mixed_comparisons)
 
         batch_dirs = glob.glob(os.path.join(val_sim_dir, "batch*"))
         for batch_dir in sorted(batch_dirs):
@@ -245,8 +335,10 @@ def parse_simulation_results(
                 skipping_sim = True
             if ((skipping_sim) and (not var_only_present)):
                 continue
-            results = get_empty_results_dict(number_of_comparisons, dpp = dpp)
-            var_only_results = get_empty_results_dict(number_of_comparisons, dpp = dpp)
+            results = get_empty_results_dict(number_of_comparisons, dpp = dpp,
+                    mixed_comparisons = mixed_comparisons)
+            var_only_results = get_empty_results_dict(number_of_comparisons, dpp = dpp,
+                    mixed_comparisons = mixed_comparisons)
 
             posterior_paths = glob.glob(os.path.join(batch_dir,
                     "run-1-simcoevolity-sim-*-config-state-run-1.log*"))
@@ -285,7 +377,8 @@ def parse_simulation_results(
                             batch_number = batch_number,
                             sim_number = sim_number,
                             expected_number_of_samples = expected_number_of_samples,
-                            burnin = burnin)
+                            burnin = burnin,
+                            mixed_comparisons = mixed_comparisons)
                     for k, v in rep_results.items():
                         results[k].append(v)
                 if var_only_present:
@@ -310,7 +403,8 @@ def parse_simulation_results(
                             batch_number = batch_number,
                             sim_number = sim_number,
                             expected_number_of_samples = expected_number_of_samples,
-                            burnin = burnin)
+                            burnin = burnin,
+                            mixed_comparisons = mixed_comparisons)
                     if not skipping_sim:
                         assert(rep_results["n_var_sites_c1"] == var_only_rep_results["n_var_sites_c1"])
                     for k, v in var_only_rep_results.items():
@@ -362,6 +456,7 @@ def main_cli(argv = sys.argv):
     val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-dpp-root-*'))
     four_run_val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-dpp-root-*-t0002-*'))
     three_run_val_sim_dirs = [d for d in val_sim_dirs if d not in four_run_val_sim_dirs]
+    mixed_comparison_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-03pairs-dpp-root-*'))
     parse_simulation_results(
             four_run_val_sim_dirs,
             expected_number_of_runs = 4,
@@ -372,6 +467,12 @@ def main_cli(argv = sys.argv):
             expected_number_of_runs = 3,
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin)
+    parse_simulation_results(
+            mixed_comparison_sim_dirs,
+            expected_number_of_runs = 4,
+            expected_number_of_samples = args.expected_number_of_samples,
+            burnin = args.burnin,
+            mixed_comparisons = True)
 
 
 if __name__ == "__main__":
