@@ -78,6 +78,10 @@ def get_results_header(number_of_comparisons, dpp = True,
         h.append("true_num_demog_events")
         h.append("map_num_demog_events")
         h.append("true_num_demog_events_cred_level")
+        # Hack
+        for i in range(3):
+            h.append("num_div_events_{0}_p".format(i+1))
+            h.append("num_demog_events_{0}_p".format(i+1))
 
     for i in range(number_of_comparisons):
         h.append("num_events_{0}_p".format(i+1))
@@ -201,7 +205,7 @@ def get_results_from_sim_rep(
         true_div_model, vals = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.div_height_index_keys)
         true_div_model_p = post_sample.get_div_model_probability(true_div_model)
         true_div_model_cred = post_sample.get_div_model_credibility_level(true_div_model)
-        map_div_models = post_sample.get_div_map_models()
+        map_div_models = post_sample.get_map_div_models()
         map_div_model = map_div_models[0]
         if len(map_div_models) > 1:
             if true_div_model in map_div_models:
@@ -216,7 +220,7 @@ def get_results_from_sim_rep(
         true_demog_model, vals = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.demog_height_index_keys)
         true_demog_model_p = post_sample.get_demog_model_probability(true_demog_model)
         true_demog_model_cred = post_sample.get_demog_model_credibility_level(true_demog_model)
-        map_demog_models = post_sample.get_demog_map_models()
+        map_demog_models = post_sample.get_map_demog_models()
         map_demog_model = map_demog_models[0]
         if len(map_demog_models) > 1:
             if true_demog_model in map_demog_models:
@@ -229,7 +233,7 @@ def get_results_from_sim_rep(
         results["true_demog_model_p"] = true_demog_model_p
         
         true_div_nevents = max(true_div_model) + 1
-        true_values["number_of_div_events"] = true_div_nevents
+        true_values["number_of_div_events"] = [true_div_nevents]
         true_div_nevents_p = post_sample.get_number_of_div_events_probability(true_div_nevents)
         true_div_nevents_cred = post_sample.get_number_of_div_events_credibility_level(true_div_nevents)
         map_numbers_of_div_events = post_sample.get_map_numbers_of_div_events()
@@ -244,7 +248,7 @@ def get_results_from_sim_rep(
             results["num_div_events_{0}_p".format(i + 1)] = post_sample.get_number_of_div_events_probability(i + 1)
         
         true_demog_nevents = max(true_demog_model) + 1
-        true_values["number_of_demog_events"] = true_demog_nevents
+        true_values["number_of_demog_events"] = [true_demog_nevents]
         true_demog_nevents_p = post_sample.get_number_of_demog_events_probability(true_demog_nevents)
         true_demog_nevents_cred = post_sample.get_number_of_demog_events_credibility_level(true_demog_nevents)
         map_numbers_of_demog_events = post_sample.get_map_numbers_of_demog_events()
