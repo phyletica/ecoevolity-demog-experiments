@@ -198,7 +198,7 @@ def get_results_from_sim_rep(
         results["num_events_{0}_p".format(i + 1)] = post_sample.get_number_of_events_probability(i + 1)
 
     if mixed_comparisons:
-        true_div_model, = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.div_height_index_keys)
+        true_div_model, vals = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.div_height_index_keys)
         true_div_model_p = post_sample.get_div_model_probability(true_div_model)
         true_div_model_cred = post_sample.get_div_model_credibility_level(true_div_model)
         map_div_models = post_sample.get_div_map_models()
@@ -213,7 +213,7 @@ def get_results_from_sim_rep(
         results["map_div_model_p"] = map_div_model_p
         results["true_div_model_p"] = true_div_model_p
 
-        true_demog_model, = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.demog_height_index_keys)
+        true_demog_model, vals = pycoevolity.posterior.standardize_partition(int(true_values[h][0]) for h in post_sample.demog_height_index_keys)
         true_demog_model_p = post_sample.get_demog_model_probability(true_demog_model)
         true_demog_model_cred = post_sample.get_demog_model_credibility_level(true_demog_model)
         map_demog_models = post_sample.get_demog_map_models()
@@ -292,6 +292,7 @@ def get_results_from_sim_rep(
 
 def parse_simulation_results(
         val_sim_dirs,
+        number_of_comparisons = 3,
         expected_number_of_runs = 2,
         expected_number_of_samples = 1501,
         burnin = 401,
@@ -302,7 +303,6 @@ def parse_simulation_results(
     for val_sim_dir in sorted(val_sim_dirs):
         dpp = True
         sim_name = os.path.basename(val_sim_dir)
-        number_of_comparisons = int(sim_name[0:2])
         parameter_names = get_parameter_names(number_of_comparisons, dpp = dpp,
                 mixed_comparisons = mixed_comparisons)
         header = get_results_header(number_of_comparisons, dpp = dpp,
@@ -459,16 +459,19 @@ def main_cli(argv = sys.argv):
     mixed_comparison_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-03pairs-dpp-root-*'))
     parse_simulation_results(
             four_run_val_sim_dirs,
+            number_of_comparisons = 3,
             expected_number_of_runs = 4,
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin)
     parse_simulation_results(
             three_run_val_sim_dirs,
+            number_of_comparisons = 3,
             expected_number_of_runs = 3,
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin)
     parse_simulation_results(
             mixed_comparison_sim_dirs,
+            number_of_comparisons = 6,
             expected_number_of_runs = 4,
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin,
