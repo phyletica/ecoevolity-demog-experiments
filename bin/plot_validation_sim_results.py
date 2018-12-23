@@ -2170,6 +2170,7 @@ def main_cli(argv = sys.argv):
     # Plot relative root priors
     root_gamma_parameters = (
             (5.0, 0.04, 0.05, 8.0),
+            (5.0, 0.09, 0.05, 8.0),
             (5.0, 0.19, 0.05, 8.0),
             (5.0, 0.79, 0.05, 8.0),
             (50.0, 0.02, 0.0, 8.0),
