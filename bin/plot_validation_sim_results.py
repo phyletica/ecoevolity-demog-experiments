@@ -148,15 +148,15 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
             t_offset = str(time_prior[2]).replace(".", "_"),
             )
     if sim_dir_name.endswith("-0100l"):
-        s + "-loci-100-allsites"
+        s += "-loci-100-allsites"
     elif sim_dir_name.endswith("-0100ul"):
-        s + "-loci-100-unlinkedsnps"
+        s += "-loci-100-unlinkedsnps"
     elif sim_dir_name.endswith("-040s"):
-        s + "-singletonprob-0_4"
+        s += "-singletonprob-0_4"
     elif sim_dir_name.endswith("-060s"):
-        s + "-singletonprob-0_6"
+        s += "-singletonprob-0_6"
     if sim_dir_name.startswith("03pops-03pairs"):
-        s + "-mixed-comps"
+        s += "-mixed-comps"
     return s
 
 
@@ -1969,7 +1969,7 @@ def generate_specific_model_plots(
     mean_true_nevents_prob = sum(true_nevents_probs) / len(true_nevents_probs)
     median_true_nevents_prob = pycoevolity.stats.median(true_nevents_probs)
 
-    true_model_probs = tuple(float(x) for x in results["true_model_p"])
+    true_model_probs = tuple(float(x) for x in results["true_{model}_p".format(model = model_key)])
     assert(len(true_nevents) == len(true_model_probs))
 
     mean_true_model_prob = sum(true_model_probs) / len(true_model_probs)
@@ -2291,6 +2291,7 @@ def main_cli(argv = sys.argv):
             "03pops-dpp-root-0005-004-t0002-500k-0100l",
             "03pops-dpp-root-0005-004-t0002-500k-0100ul",
             "03pops-dpp-root-0005-004-t0002-500k-040s",
+            "03pops-dpp-root-0005-004-t0002-500k-060s",
             "03pops-dpp-root-0010-0025-500k",
             "03pops-dpp-root-0010-0025-t0001-500k",
             "03pops-dpp-root-0010-005-500k",
@@ -2311,16 +2312,19 @@ def main_cli(argv = sys.argv):
                         sim_dir,
                         "batch00?",
                         "results.csv.gz")))
-        var_only_results[sim_dir] = parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+        var_only_results_paths = glob.glob(os.path.join(project_util.VAL_DIR,
                         sim_dir,
                         "batch00?",
-                        "var-only-results.csv.gz")))
+                        "var-only-results.csv.gz"))
+        if var_only_results_paths:
+            var_only_results[sim_dir] = parse_results(var_only_results_paths)
 
     results_mixed_comps = {}
     var_only_results_mixed_comps = {}
     for sim_dir in sim_dirs_mixed_comparisons:
         results_mixed_comps[sim_dir] = results[sim_dir]
-        var_only_results_mixed_comps[sim_dir] = var_only_results[sim_dir]
+        if sim_dir in var_only_results:
+            var_only_results_mixed_comps[sim_dir] = var_only_results[sim_dir]
 
 
     height_parameters = [
@@ -2362,9 +2366,9 @@ def main_cli(argv = sys.argv):
             "pop_size_c4sp1",
             "pop_size_c5sp1",
             "pop_size_c6sp1",
-            "pop_size_c4sp2",
-            "pop_size_c5sp2",
-            "pop_size_c6sp2",
+            # "pop_size_c4sp2",
+            # "pop_size_c5sp2",
+            # "pop_size_c6sp2",
     ]
 
 
@@ -2523,18 +2527,28 @@ def main_cli(argv = sys.argv):
         if p_info["xy_limits"] == "calc_by_time_prior":
             maximums = dict(zip(unique_time_priors, (float('-inf') for i in range(len(unique_time_priors)))))
             for sim_dir in data.keys():
+                if sim_dir.endswith("-040s") or sim_dir.endswith("-060s"):
+                    continue
                 time_prior = sim_dir_to_priors[sim_dir][1]
-                maximums[time_prior] = max(maximums[time_prior],
-                        max(data[sim_dir].x),
-                        max(data[sim_dir].y),
-                        max(var_only_data[sim_dir].x),
-                        max(var_only_data[sim_dir].y),
-                        )
+                if sim_dir in var_only_data:
+                    maximums[time_prior] = max(maximums[time_prior],
+                            max(data[sim_dir].x),
+                            max(data[sim_dir].y),
+                            max(var_only_data[sim_dir].x),
+                            max(var_only_data[sim_dir].y),
+                            )
+                else:
+                    maximums[time_prior] = max(maximums[time_prior],
+                            max(data[sim_dir].x),
+                            max(data[sim_dir].y),
+                            )
 
         # Generate individual scatters
         for sim_dir in data.keys():
             xy_lim = p_info["xy_limits"]
-            if p_info["xy_limits"] == "calc_by_time_prior":
+            if sim_dir.endswith("-040s") or sim_dir.endswith("-060s"):
+                xy_lim = None
+            if xy_lim == "calc_by_time_prior":
                 time_prior = sim_dir_to_priors[sim_dir][1]
                 mx = maximums[time_prior]
                 xy_lim = (0.0, mx * 1.02, 0.0, mx * 1.02)
@@ -2566,29 +2580,30 @@ def main_cli(argv = sys.argv):
                     include_identity_line = True,
                     include_error_bars = True,
                     )
-            generate_specific_scatter_plot(
-                    data = var_only_data[sim_dir],
-                    plot_file_prefix = "var-only-" + parameter + "-" + prefix,
-                    parameter_symbol = p_info["symbol"],
-                    title = None,
-                    title_size = 16.0,
-                    x_label = None,
-                    x_label_size = 16.0,
-                    y_label = None,
-                    y_label_size = 16.0,
-                    plot_width = plot_width,
-                    plot_height = plot_height,
-                    pad_left = p_info["pad_left"],
-                    pad_right = pad_right,
-                    pad_bottom = pad_bottom,
-                    pad_top = pad_top,
-                    force_shared_xy_ranges = True,
-                    xy_limits = xy_lim,
-                    include_coverage = True,
-                    include_rmse = True,
-                    include_identity_line = True,
-                    include_error_bars = True,
-                    )
+            if sim_dir in var_only_data:
+                generate_specific_scatter_plot(
+                        data = var_only_data[sim_dir],
+                        plot_file_prefix = "var-only-" + parameter + "-" + prefix,
+                        parameter_symbol = p_info["symbol"],
+                        title = None,
+                        title_size = 16.0,
+                        x_label = None,
+                        x_label_size = 16.0,
+                        y_label = None,
+                        y_label_size = 16.0,
+                        plot_width = plot_width,
+                        plot_height = plot_height,
+                        pad_left = p_info["pad_left"],
+                        pad_right = pad_right,
+                        pad_bottom = pad_bottom,
+                        pad_top = pad_top,
+                        force_shared_xy_ranges = True,
+                        xy_limits = xy_lim,
+                        include_coverage = True,
+                        include_rmse = True,
+                        include_identity_line = True,
+                        include_error_bars = True,
+                        )
 
 
 
@@ -2616,26 +2631,6 @@ def main_cli(argv = sys.argv):
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "nevents-" + prefix)
         generate_specific_model_plots(
-                results = var_only_results[sim_dir],
-                number_of_comparisons = 3,
-                plot_title = None,
-                include_x_label = False,
-                include_y_label = False,
-                include_median = True,
-                include_cs = True,
-                include_prop_correct = True,
-                plot_width = plot_width * 0.94,
-                plot_height = plot_height,
-                xy_label_size = 16.0,
-                title_size = 16.0,
-                pad_left = pad_left - 0.04,
-                pad_right = 0.985,
-                pad_bottom = pad_bottom - 0.015,
-                pad_top = pad_top - 0.07,
-                lower_annotation_y = 0.01,
-                upper_annotation_y = 1.015,
-                plot_file_prefix = "var-only-nevents-" + prefix)
-        generate_specific_model_plots(
                 results = results[sim_dir],
                 number_of_comparisons = 3,
                 show_all_models = True,
@@ -2656,27 +2651,48 @@ def main_cli(argv = sys.argv):
                 lower_annotation_y = 0.01,
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "model-" + prefix)
-        generate_specific_model_plots(
-                results = var_only_results[sim_dir],
-                number_of_comparisons = 3,
-                show_all_models = True,
-                plot_title = None,
-                include_x_label = False,
-                include_y_label = False,
-                include_median = True,
-                include_cs = False,
-                include_prop_correct = True,
-                plot_width = plot_width * 0.96,
-                plot_height = plot_height,
-                xy_label_size = 16.0,
-                title_size = 16.0,
-                pad_left = pad_left - 0.03,
-                pad_right = 0.985,
-                pad_bottom = pad_bottom - 0.015,
-                pad_top = pad_top - 0.07,
-                lower_annotation_y = 0.01,
-                upper_annotation_y = 1.015,
-                plot_file_prefix = "var-only-model-" + prefix)
+        if sim_dir in var_only_results:
+            generate_specific_model_plots(
+                    results = var_only_results[sim_dir],
+                    number_of_comparisons = 3,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = True,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.94,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.04,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-nevents-" + prefix)
+            generate_specific_model_plots(
+                    results = var_only_results[sim_dir],
+                    number_of_comparisons = 3,
+                    show_all_models = True,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = False,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.96,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.03,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-model-" + prefix)
 
     for sim_dir in sim_dirs_mixed_comparisons:
         prefix = get_prefix_from_sim_dir_name(sim_dir)
@@ -2794,120 +2810,121 @@ def main_cli(argv = sys.argv):
                 model_key = "demog_model",
                 num_events_key = "num_demog_events",
                 )
-        generate_specific_model_plots(
-                results = var_only_results[sim_dir],
-                number_of_comparisons = 6,
-                plot_title = None,
-                include_x_label = False,
-                include_y_label = False,
-                include_median = True,
-                include_cs = True,
-                include_prop_correct = True,
-                plot_width = plot_width * 0.94,
-                plot_height = plot_height,
-                xy_label_size = 16.0,
-                title_size = 16.0,
-                pad_left = pad_left - 0.04,
-                pad_right = 0.985,
-                pad_bottom = pad_bottom - 0.015,
-                pad_top = pad_top - 0.07,
-                lower_annotation_y = 0.01,
-                upper_annotation_y = 1.015,
-                plot_file_prefix = "var-only-nevents-" + prefix)
-        generate_specific_model_plots(
-                results = var_only_results[sim_dir],
-                number_of_comparisons = 3,
-                plot_title = None,
-                include_x_label = False,
-                include_y_label = False,
-                include_median = True,
-                include_cs = True,
-                include_prop_correct = True,
-                plot_width = plot_width * 0.94,
-                plot_height = plot_height,
-                xy_label_size = 16.0,
-                title_size = 16.0,
-                pad_left = pad_left - 0.04,
-                pad_right = 0.985,
-                pad_bottom = pad_bottom - 0.015,
-                pad_top = pad_top - 0.07,
-                lower_annotation_y = 0.01,
-                upper_annotation_y = 1.015,
-                plot_file_prefix = "var-only-num-div-events-" + prefix,
-                model_key = "div_model",
-                num_events_key = "num_div_events",
-                )
-        generate_specific_model_plots(
-                results = var_only_results[sim_dir],
-                number_of_comparisons = 3,
-                plot_title = None,
-                include_x_label = False,
-                include_y_label = False,
-                include_median = True,
-                include_cs = True,
-                include_prop_correct = True,
-                plot_width = plot_width * 0.94,
-                plot_height = plot_height,
-                xy_label_size = 16.0,
-                title_size = 16.0,
-                pad_left = pad_left - 0.04,
-                pad_right = 0.985,
-                pad_bottom = pad_bottom - 0.015,
-                pad_top = pad_top - 0.07,
-                lower_annotation_y = 0.01,
-                upper_annotation_y = 1.015,
-                plot_file_prefix = "var-only-num-demog-events-" + prefix,
-                model_key = "demog_model",
-                num_events_key = "num_demog_events",
-                )
-        generate_specific_model_plots(
-                results = var_only_results[sim_dir],
-                number_of_comparisons = 3,
-                show_all_models = True,
-                plot_title = None,
-                include_x_label = False,
-                include_y_label = False,
-                include_median = True,
-                include_cs = True,
-                include_prop_correct = True,
-                plot_width = plot_width * 0.94,
-                plot_height = plot_height,
-                xy_label_size = 16.0,
-                title_size = 16.0,
-                pad_left = pad_left - 0.04,
-                pad_right = 0.985,
-                pad_bottom = pad_bottom - 0.015,
-                pad_top = pad_top - 0.07,
-                lower_annotation_y = 0.01,
-                upper_annotation_y = 1.015,
-                plot_file_prefix = "var-only-div-model-" + prefix,
-                model_key = "div_model",
-                num_events_key = "num_div_events",
-                )
-        generate_specific_model_plots(
-                results = var_only_results[sim_dir],
-                number_of_comparisons = 3,
-                show_all_models = True,
-                plot_title = None,
-                include_x_label = False,
-                include_y_label = False,
-                include_median = True,
-                include_cs = True,
-                include_prop_correct = True,
-                plot_width = plot_width * 0.94,
-                plot_height = plot_height,
-                xy_label_size = 16.0,
-                title_size = 16.0,
-                pad_left = pad_left - 0.04,
-                pad_right = 0.985,
-                pad_bottom = pad_bottom - 0.015,
-                pad_top = pad_top - 0.07,
-                lower_annotation_y = 0.01,
-                upper_annotation_y = 1.015,
-                plot_file_prefix = "var-only-demog-model-" + prefix,
-                model_key = "demog_model",
-                num_events_key = "num_demog_events",
-                )
+        if sim_dir in var_only_results:
+            generate_specific_model_plots(
+                    results = var_only_results[sim_dir],
+                    number_of_comparisons = 6,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = True,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.94,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.04,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-nevents-" + prefix)
+            generate_specific_model_plots(
+                    results = var_only_results[sim_dir],
+                    number_of_comparisons = 3,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = True,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.94,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.04,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-num-div-events-" + prefix,
+                    model_key = "div_model",
+                    num_events_key = "num_div_events",
+                    )
+            generate_specific_model_plots(
+                    results = var_only_results[sim_dir],
+                    number_of_comparisons = 3,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = True,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.94,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.04,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-num-demog-events-" + prefix,
+                    model_key = "demog_model",
+                    num_events_key = "num_demog_events",
+                    )
+            generate_specific_model_plots(
+                    results = var_only_results[sim_dir],
+                    number_of_comparisons = 3,
+                    show_all_models = True,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = True,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.94,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.04,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-div-model-" + prefix,
+                    model_key = "div_model",
+                    num_events_key = "num_div_events",
+                    )
+            generate_specific_model_plots(
+                    results = var_only_results[sim_dir],
+                    number_of_comparisons = 3,
+                    show_all_models = True,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = True,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.94,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.04,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-demog-model-" + prefix,
+                    model_key = "demog_model",
+                    num_events_key = "num_demog_events",
+                    )
 
 
     histograms_to_plot = {
@@ -3023,14 +3040,14 @@ def main_cli(argv = sys.argv):
         data = {}
         var_only_data = {}
         if p_info["mixed_comp_only"]:
-            for sim_dir, r in results_mixed_comps:
+            for sim_dir, r in results_mixed_comps.items():
                 data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
-            for sim_dir, r in var_only_results_mixed_comps:
+            for sim_dir, r in var_only_results_mixed_comps.items():
                 var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
         else:
-            for sim_dir, r in results:
+            for sim_dir, r in results.items():
                 data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
-            for sim_dir, r in var_only_results:
+            for sim_dir, r in var_only_results.items():
                 var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
 
         for sim_dir in data.keys():
@@ -3053,24 +3070,25 @@ def main_cli(argv = sys.argv):
                     bins = None,
                     range_key = "range",
                     number_of_digits = p_info["ndigits"])
-            generate_specific_histogram(
-                    data = var_only_data[sim_dir],
-                    plot_file_prefix = "var-only-" + parameter + "-" + prefix,
-                    title = None,
-                    title_size = 16.0,
-                    x_label = None,
-                    x_label_size = 16.0,
-                    y_label = None,
-                    y_label_size = 16.0,
-                    plot_width = plot_width,
-                    plot_height = plot_height,
-                    pad_left = pad_left,
-                    pad_right = pad_right,
-                    pad_bottom = pad_bottom,
-                    pad_top = pad_top,
-                    bins = None,
-                    range_key = "range",
-                    number_of_digits = p_info["ndigits"])
+            if sim_dir in var_only_data:
+                generate_specific_histogram(
+                        data = var_only_data[sim_dir],
+                        plot_file_prefix = "var-only-" + parameter + "-" + prefix,
+                        title = None,
+                        title_size = 16.0,
+                        x_label = None,
+                        x_label_size = 16.0,
+                        y_label = None,
+                        y_label_size = 16.0,
+                        plot_width = plot_width,
+                        plot_height = plot_height,
+                        pad_left = pad_left,
+                        pad_right = pad_right,
+                        pad_bottom = pad_bottom,
+                        pad_top = pad_top,
+                        bins = None,
+                        range_key = "range",
+                        number_of_digits = p_info["ndigits"])
 
 
     # root_gamma_labels_opt = []
