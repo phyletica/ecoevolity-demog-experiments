@@ -1,11 +1,307 @@
 \section{Introduction}
 
+Many processes that shape the distribution of biodiversity across a landscape
+are expected to affect multiple species.
+Examples include changes to the environment itself that can cause
+co-distributed species to contract or expand their ranges or become isolated.
+Furthermore, ecological interactions can also cause demographic changes in
+multiple species;
+for example, the expansion of one species may predict the expansion of its
+symbionts and the contraction of competitors.
+Such processes predict that population divergences or demographic changes will
+be temporally clustered across multiple species.
+As a result, statistical methods that infer such patterns from genetic data
+allow phylogeographers to test hypotheses about such processes.
+There has been a lot of work on methods that test for shared divergence times
+among pairs of populations
+\citep{Hickerson2006,Hickerson2007,Huang2011,Oaks2014dpp,Oaks2018ecoevolity}.
+Recently, there has also been a lot of work on methods that infer temporally
+clustered changes in population sizes among species
+\citep{Chan2014,Xue2015,Xue2017,Gehara2017}.
+
+Uses of ABC estimation of shared size changes \citep{Burbrink2016}
+
+To date, no method has allowed the co-estimation of both shared divergences
+and population-size changes.
+Given the overlap in the processes that can potentially cause divergence and
+demographic changes across multiple species, such a method would be useful for
+testing hypotheses about community-scale processes that shape biodiversity
+across landscapes.
+Here, we introduce a general, full-likelihood Bayesian method that can estimate
+shared times among an arbitrary mix of population divergences and population
+size changes (\fig{}~\ref{fig:modelCartoon}).
+
+Furthermore, there has been a lot of work on how well the divergence-time
+methods work
+\citep{Oaks2012,Hickerson2013,Oaks2014reply,Oaks2014dpp,Overcast2017,Oaks2018ecoevolity}.
+However, work on how well we can estimate shared population-size changes has
+been much more limited.
+There are theoretical reasons to suspect that estimating shared demographic
+changes is more difficult than divergence times.
+The parameter of interest can become unidentifiable in at least three ways.
+First, as the magnitude of a change in population becomes smaller,
+it becomes more difficult to estimate.
+Second, as the age of the size change gets older, we run out of
+genetic coalescent events that allow us to learn when it happened.
+Third, as the age of the size change approaches zero, we once again will fail
+to sample the coalescent events needed to inform us of the change.
+Thus, our second goal is to leverage our new method to assess how well we can
+infer shared population size changes among species.
+
 \ifembed{
-\input{fig-div-cartoon.tex}
+\input{fig-model-cartoon.tex}
 }{}
 
 
 \section{Methods}
+
+\subsection{The data}
+As described by \citet{Oaks2018ecoevolity},
+we assume we have orthologous, biallelic genetic characters collected from
+species we wish to compare.
+By biallelic we mean that each character has at most two states, so that
+constant characters are allowed.
+For each species, we either have these data from one or more individuals
+from a single population, in which case we infer the timing and extent
+of a population size change, or one or more individuals from two populations,
+in which case we infer the time when they diverged (\fig{}~\ref{fig:modelCartoon}).
+In either case, we assume each character evolved along a gene tree (\genetree)
+according to a finite-sites, continuous-time Markov chain (CTMC) model.
+We assume the gene tree of each character is independent of the others,
+conditional on the population history (i.e., the characters are effectively
+unlinked).
+As the marker evolves along the gene tree, forward in time, there is an
+instantaneous relative rate \rgmurate of mutating from the ``red'' state to the
+``green'' state, and a corresponding relative rate \grmurate of mutation from
+green to red \citep{Bryant2012,Oaks2018ecoevolity}.
+
+For each population and for each character we genotype \allelecount copies
+of the locus, \redallelecount of which are copies of the red allele and the
+remaining $\allelecount - \redallelecount$ are copies of the green allele.
+Thus, for each population of a pair, and for each locus, we have a count of the
+total sampled gene copies and how many of those are the red allele.
+
+\ifembed{
+\input{../../tables/notation.tex}
+}{}
+
+Following the notation of \citet{Oaks2018ecoevolity}
+we will use \leafallelecounts and \leafredallelecounts to denote allele counts
+for a locus from either one population if we are modeling population-size
+change or both populations of a pair if we are modeling a divergence; i.e., 
+$\leafallelecounts, \leafredallelecounts = (\allelecount, \redallelecount)$
+or
+$\leafallelecounts, \leafredallelecounts = (\allelecount[1],
+\redallelecount[1]), (\allelecount[2], \redallelecount[2])$
+(Fig.~\ref{fig:modelCartoon}
+and
+Table~\ref{table:notation}).
+For convenience will use \comparisondata[i] to denote these allele counts
+across all the loci from taxon $i$, which can be a single population
+or a pair of populations.
+Finally, we use \alldata to represent the data across all the taxa for which we
+wish to compare times of either divergence or population size change.
+Note, because the population of each compared taxon is modeled separately
+(Fig.~\labelcref{fig:modelCartoon,fig:dag}),
+characters do not have to be orthologous across taxa, only within them.
+
+
+% Below is from codiv ecoevolity paper
+
+
+\subsection{The model}
+
+\subsubsection{The evolution of markers}
+
+% We begin unpacking our model by first focusing on a single pair of populations.
+We assume a finite-sites, continuous-time Markov chain (CTMC) model for the
+evolution of the biallelic characters along a gene tree with branch lengths,
+\genetree.
+As the marker evolves along the gene tree, forward in time, there is an
+instantaneous relative rate \rgmurate of mutating from the red state to the
+green state, and a corresponding relative rate \grmurate of mutation from green
+to red.
+The stationary frequency of the red and green state is then
+$\grmurate / (\rgmurate + \grmurate)$
+and
+$\rgmurate / (\rgmurate + \grmurate)$, respectively.
+Thus, if given the stationary frequency of the green allele, \gfreq, we can
+obtain the relative rates of mutation between the two states.
+We will denote the overall rate of mutation as \murate.
+If a mutation rate per site per unit time is given, then branch lengths are in
+absolute time.
+Alternatively, if $\murate = 1$, the branch lengths of the gene tree are in
+units of expected substitutions per site.
+In such a case, for a given pair of populations, the \murate is 
+redundant, because it can be incorporated into the branch lengths of the gene
+tree.
+However, we introduce the notation here, because it will be useful later when
+we want to allow rate variation among pairs of populations.
+% For now, we will assume $\murate = 1$ so that the gene tree branch lengths, and
+% time in general, is in units of the expected substitutions per site.
+
+\subsubsection{The evolution of gene trees}
+
+We assume that each marker sampled from a pair of populations evolved within a
+simple ``species'' tree with one ancestral root population that diverged into
+two descendant (terminal) branches at time \comparisondivtime
+(Fig.~\ref{fig:modelCartoon}).
+Again, if the $\murate$ is given, \comparisondivtime is in units of absolute
+time; however, if $\murate$ is set to one, time is in units of expected
+substitutions per site.
+We will use
+\comparisonpopsizes{}
+to denote all three
+effective sizes of a population pair
+(\epopsize[\rootpopindex],
+\epopsize[\descendantpopindex{1}],
+and \epopsize[\descendantpopindex{2}]).
+We will also use
+\sptree{}
+as shorthand for the species tree, which comprises the population sizes and
+divergence time of a pair
+(\comparisonpopsizes{} and \comparisondivtime{}).
+
+\subsubsection{The likelihood}
+
+\begin{linenomath}
+% Given \murate, \gfreq, \comparisondivtime and \comparisonpopsizes,
+Given \murate, \gfreq, and \sptree{},
+the probability of the observed data at a locus (\leafallelecounts and
+\leafredallelecounts), is the probability of the character pattern given the
+gene tree multiplied by the probability of the gene tree given the species
+tree, summed over all possible gene tree topologies and integrated over all
+possible gene tree branch lengths,
+\begin{equation}
+    \pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)
+    =
+    \int_{\genetree}
+    \pr(\leafallelecounts, \leafredallelecounts \given \genetree, \murate, \gfreq)
+    \pr(\genetree, \murate, \gfreq \given \sptree)
+    \diff{\genetree}
+    \label{eq:markerlikelihood}
+\end{equation}
+\citep{Felsenstein1988,Nielsen2001,Rannala2003}.
+% We take advantage of the mathematical work of \citep{Bryant2012} to
+% analytically integrate over all possible gene trees and character
+% mutational histories along those gene trees.
+We take advantage of the mathematical work of \citep{Bryant2012} to
+analytically integrate over all possible gene trees and all possible character
+substitution histories along those gene trees.
+This allows us to compute the likelihood of the species tree directly from a
+biallelic character pattern under a coalescent model,
+i.e.,
+$\pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)$.
+We refer readers to
+\citet{Bryant2012}
+for the details of this likelihood and the algorithms to compute it.
+% \thought{For completeness, should I lay out the math and algorithm for
+%     calculating the likelihood in the supplemental materials?}
+\end{linenomath}
+
+\begin{linenomath}
+Assuming independence among loci (conditional on the species tree), we can
+calculate the probability of \nloci{} loci given the species tree by
+simply taking the product over them,
+\begin{equation}
+    \pr(\comparisondata \given \sptree, \murate, \gfreq)
+    =
+    \prod_{i=1}^{\nloci}
+    \pr(\leafallelecounts[i], \leafredallelecounts[i] \given \sptree, \murate, \gfreq).
+    \label{eq:comparisonlikelihood}
+\end{equation}
+Finally, the likelihood across all of our \ncomparisons{} pairs is simply the
+product of the likelihood of each pair,
+\begin{equation}
+    \pr(
+    \alldata
+    \given
+    \sptrees,
+    \murates,
+    \gfreqs)
+    =
+    \prod_{i=1}^{\ncomparisons}
+    \pr(\comparisondata[i] \given \sptree[i], \murate[i], \gfreq[i]),
+    \label{eq:collectionlikelihood}
+\end{equation}
+where
+$\alldata = \comparisondata[1], \comparisondata[2], \ldots, \comparisondata[\ncomparisons]$,
+$\sptrees = \sptree[1], \sptree[2], \ldots, \sptree[\ncomparisons]$,
+$\murates = \murate[1], \murate[2], \ldots, \murate[\ncomparisons]$,
+and
+$\gfreqs = \gfreq[1], \gfreq[2], \ldots, \gfreq[\ncomparisons]$.
+\end{linenomath}
+
+\subsubsection{Correcting for excluded constant characters}
+
+\begin{linenomath}
+If we exclude constant characters and only analyze variable characters, we need
+to correct the sample space for the excluded constant characters.
+We can correct the likelihood by simply dividing by the probability of a
+variable character, which is equal to one minus the probability of a constant
+character,
+\begin{equation}
+\begin{split}
+    \pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq, \textrm{variable})
+    & =
+    \frac{
+        \pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)
+    }{
+        \pr(\textrm{variable} \given \sptree, \murate, \gfreq)
+    } \\
+    & =
+    \frac{
+        \pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)
+    }{
+        1 - \pr(\textrm{constant} \given \sptree, \murate, \gfreq)
+    } \\
+    & =
+    \frac{
+        \pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)
+    }{
+        1 - \pr(\leafallelecounts \textrm{ all red} \given \sptree, \murate, \gfreq)
+        - \pr(\leafallelecounts \textrm{ all green} \given \sptree, \murate, \gfreq)
+    }.
+    \label{eq:variablemarkerlikelihood}
+\end{split}
+\end{equation}
+When we take the product over loci to get the probability of all the variable
+data collected from a pair of populations, we correct each character pattern to
+allow for different numbers of sampled gene copies among loci,
+\begin{equation}
+    \pr(\comparisondata \given \sptree, \murate, \gfreq, \textrm{variable})
+    =
+    \prod_{i=1}^{\nloci}
+    \frac{
+        \pr(\leafallelecounts[i], \leafredallelecounts[i] \given \sptree, \murate, \gfreq)
+    }{
+        1 - \pr(\leafallelecounts[i] \textrm{ all red} \given \sptree, \murate, \gfreq)
+        - \pr(\leafallelecounts[i] \textrm{ all green} \given \sptree, \murate, \gfreq)
+    }.
+    \label{eq:variablecomparisonlikelihood}
+\end{equation}
+This is a bit different than the correction done in the software SNAPP
+\citep{Bryant2012}.
+If we use \maxleafallelecounts to denote the maximum number of gene copies
+sampled from each population, then the correction in SNAPP is
+\begin{equation}
+    \pr_{\tiny SNAPP}(\comparisondata \given \sptree, \murate, \gfreq, \textrm{variable})
+    =
+    \frac{
+        \prod_{i=1}^{\nloci}
+        \pr(\leafallelecounts[i], \leafredallelecounts[i] \given \sptree, \murate, \gfreq).
+    }{
+        (1 - \pr(\maxleafallelecounts \textrm{ all red} \given \sptree, \murate, \gfreq)
+        - \pr(\maxleafallelecounts \textrm{ all green} \given \sptree, \murate, \gfreq))^{\nloci}
+    }.
+    \label{eq:snappvariablecomparisonlikelihood}
+\end{equation}
+These are equivalent if the same number of samples are collected across all
+variable loci for each population (i.e., no missing gene copies), but will
+deviate if fewer copies are sampled for at least one locus.
+Thus, identical likelihoods between SNAPP and our method should not be expected
+when analyzing variable-only data.
+\end{linenomath}
 
 \subsection{The data}
 
