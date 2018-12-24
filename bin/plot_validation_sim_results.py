@@ -42,6 +42,11 @@ sim_dir_to_priors = {
                 (5.0, 0.04, 0.05),
                 (4.0, 0.000475, 0.0001)
             ),
+        "03pops-dpp-root-0005-004-t0002-500k-diffuseprior":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
         "03pops-dpp-root-0005-004-t0002-500k-0100l":
             (
                 (5.0, 0.04, 0.05),
@@ -155,6 +160,8 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
         s += "-singletonprob-0_4"
     elif sim_dir_name.endswith("-060s"):
         s += "-singletonprob-0_6"
+    elif sim_dir_name.endswith("-diffuseprior"):
+        s += "-diffuseprior"
     if sim_dir_name.startswith("03pops-03pairs"):
         s += "-mixed-comps"
     return s
@@ -2289,6 +2296,7 @@ def main_cli(argv = sys.argv):
             ]
 
     sim_dirs = [
+            "03pops-dpp-root-0005-004-t0002-500k-diffuseprior",
             "03pops-dpp-root-0005-004-t0002-500k-0100l",
             "03pops-dpp-root-0005-004-t0002-500k-0100ul",
             "03pops-dpp-root-0005-004-t0002-500k-040s",
@@ -2771,7 +2779,7 @@ def main_cli(argv = sys.argv):
                 include_x_label = False,
                 include_y_label = False,
                 include_median = True,
-                include_cs = True,
+                include_cs = False,
                 include_prop_correct = True,
                 plot_width = plot_width * 0.94,
                 plot_height = plot_height,
@@ -2795,7 +2803,7 @@ def main_cli(argv = sys.argv):
                 include_x_label = False,
                 include_y_label = False,
                 include_median = True,
-                include_cs = True,
+                include_cs = False,
                 include_prop_correct = True,
                 plot_width = plot_width * 0.94,
                 plot_height = plot_height,
@@ -2886,7 +2894,7 @@ def main_cli(argv = sys.argv):
                     include_x_label = False,
                     include_y_label = False,
                     include_median = True,
-                    include_cs = True,
+                    include_cs = False,
                     include_prop_correct = True,
                     plot_width = plot_width * 0.94,
                     plot_height = plot_height,
@@ -2910,7 +2918,7 @@ def main_cli(argv = sys.argv):
                     include_x_label = False,
                     include_y_label = False,
                     include_median = True,
-                    include_cs = True,
+                    include_cs = False,
                     include_prop_correct = True,
                     plot_width = plot_width * 0.94,
                     plot_height = plot_height,
