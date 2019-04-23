@@ -39,7 +39,7 @@ for datatype in "allsites" "snps"
 do
     for dpp in "2_22543"
     do
-        for t in "1_0-0_0005-0_0" "1_0-0_005-0_0"
+        for t in "1_0-0_0005-0_0" "1_0-0_005-0_0" "1_0-0_01-0_0"
         do
             for root in "1_0-1_0-0_0"
             do
