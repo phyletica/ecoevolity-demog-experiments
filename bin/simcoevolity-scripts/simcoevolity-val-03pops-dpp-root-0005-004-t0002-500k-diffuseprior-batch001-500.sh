@@ -16,10 +16,20 @@ fi
 
 simname="03pops-dpp-root-0005-004-t0002-500k"
 cfgpath="../../configs/config-${simname}.yml"
-priorcfgpath="../../configs/config-03pops-dpp-root-0001-100-t0005-500k.yml"
+priorcfgpath="../../configs/config-03pops-diffuse-prior-500k.yml"
 outputdir="../../simulations/validation/${simname}-diffuseprior/batch001"
 rngseed=47990657
-nreps=500
+nreps=100
+
+mkdir -p "$outputdir"
+
+simcoevolity --seed="$rngseed" -p "$priorcfgpath" -n "$nreps" -o "$outputdir" "$cfgpath"
+
+
+simname="03pops-dpp-root-0005-004-3_8-t0002-500k"
+cfgpath="../../configs/config-${simname}.yml"
+outputdir="../../simulations/validation/${simname}-diffuseprior/batch001"
+rngseed=873266114
 
 mkdir -p "$outputdir"
 
