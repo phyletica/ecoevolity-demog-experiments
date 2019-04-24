@@ -205,23 +205,194 @@ $\murates = \murate[1], \murate[2], \ldots, \murate[\ncomparisons]$,
 and
 $\gfreqs = \gfreq[1], \gfreq[2], \ldots, \gfreq[\ncomparisons]$.
 \end{linenomath}
-As described in \citet{Oaks2018ecoevolity}, we condition the likelihood
-for taxa for which we only sample variable characters.
+As described in \citet{Oaks2018ecoevolity},
+if constant characters are not sampled for a taxon, we condition the likelihood
+for that taxon on only having sampled variable characters.
 
 
 \subsection{Bayesian inference}
 
+\begin{linenomath}
+As described by \citet{Oaks2018ecoevolity},
+we treat the number of events (population-size changes and/or divergences)
+and the assignment of taxa to tose events as
+random variables under a Dirichlet process \citep{Ferguson1973,
+    Antoniak1974}.
+We use \etimesets to represent the partitioning of taxa to events,
+which we will also refer to as the ``event model.''
+The concentration parameter, \concentration, controls how clustered the
+Dirichlet process is, and determines the probability of all possible \etimesets
+(i.e., all possible set partitions of taxa to 1--\ncomparisons events).
+We use \etimes to represent the times of the unique events in \etimesets.
+Using this notation, the posterior distribution of our 
+Dirichlet-process model is
+\begin{equation}
+    \pr(
+    \concentration,
+    \divtimes,
+    \divtimesets,
+    \collectionpopsizes,
+    \murates,
+    \gfreqs
+    \given
+    \alldata,
+    \basedistribution
+    )
+    =
+    \frac{
+        \pr(
+        \alldata
+        \given
+        \divtimes,
+        \divtimesets,
+        \collectionpopsizes,
+        \murates,
+        \gfreqs
+        )
+        \pr(\divtimesets \given \concentration)
+        \pr(\divtimes \given \divtimesets, \basedistribution)
+        \pr(\concentration)
+        \pr(\collectionpopsizes)
+        \pr(\murates)
+        \pr(\gfreqs)
+    }{
+        \pr(
+        \alldata,
+        \basedistribution
+        )
+    }.
+    \label{eq:bayesruleexpanded}
+\end{equation}
+where
+\collectionpopsizes
+is the collection of the effective population sizes (\comparisonpopsizes{})
+across all of the pairs.
+
 \subsubsection{Priors}
 
 \paragraph{Prior on the concentration parameter}
+Our implementation allows for a hierarchical approach to accommodeate
+uncertainty in the concentration parameter of the Dirichlet process
+by specifying a gamma distribution as a hyperprior on
+\concentration \citep{Escobar1995,Heath2011}.
+Alternatively, \concentration can also be fixed to a particular value,
+which is likely sufficient when the number of pairs is small.
 
-\paragraph{Prior on the event times}
+\paragraph{Prior on the divergence times}
+Given the partitioning of taxa to events, we use a gamma
+distribution for the prior on the time of each event,
+$\divtime \given \divtimesets \sim \distgamma(\cdot, \cdot)$.
+
+\paragraph{Prior on the effective population sizes}
+We use a gamma distribution as the prior on the 
+the effective size of each descendant population of each taxon.
+Following \citet{Oaks2018ecoevolity},
+we use a gamma distribution on the effective size of the ancestral population
+\emph{relative} to the size of the descendant population(s), which we
+denote as \rootrelativepopsize.
+For a taxon with two descendant population (i.e., a divergence model), the
+ancestral population size is relative to the mean of the descendant
+populations.
+For a taxon with only one descendant population (i.e., a size-change model),
+the ancestral populations is relative to the size of that descendant.
+% The goal of this approach is to allow more informative priors on the root
+% population size; we often have stronger prior expectations for the relative
+% size of the ancestral population than the absolute size.
+% This is important, because the effective size of the ancestral population is a
+% difficult nuisance parameter to estimate and can be strongly correlated with
+% the divergence time.
+% For example, if the divergence time is so old such that all the gene copies
+% of a locus coalesce within the descendant populations, the locus
+% provides very little information about the size of the ancestral
+% population.
+% As a result, a larger ancestral population and more recent divergence will have
+% a very similar likelihood to a small ancestral population and an older
+% divergence.
+% Thus, placing more prior density on reasonable values of the ancestral
+% population size can help improve the precision of divergence-time estimates.
 
 \paragraph{Prior on mutation rates}
+We follow the same approach explained by \citet{Oaks2018ecoevolity} to model
+mutation rates across taxa.
+The decision about how to model mutation rates is extremely important for any
+comparative phylogeographic approach that models taxa as disconnected
+species trees
+\citep[\fig{}~\ref{fig:divCartoon}; e.g.,][]{Hickerson2006,Hickerson2007,Huang2011,Chan2014,Oaks2014dpp,Xue2015,Burbrink2016,Xue2017,Gehara2017,Oaks2018ecoevolity}.
+Here, we quote \citet{Oaks2018ecoevolity} directly:
+\begin{quotation}
+Uses of ABC estimation of shared size changes \citep{Burbrink2016}
+In the model presented above, for each population pair, the divergence time
+(\divtime) and mutation rate (\murate) are inextricably linked.
+For a single pair of populations, if little is known about the mutation rate,
+this problem is easily solved by setting it to one ($\murate[1] = 1$) such
+that time is in units of expected substitutions per site and the effective
+population sizes are scaled by \murate.
+However, what about the second pair of populations for which we wish to compare
+the divergence time to the first?
+Because the species trees in our model are disconnected
+\ldots,
+we cannot learn about
+the relative rates of mutation across the population pairs from the data.
+As a result, we need strong prior information about the relative rates of
+mutation across population pairs for this model to work.
+
+If the second pair of populations is closely related to the first, and shares a
+similar life history, we could assume they share the same mutation rate and
+set the mutation rate of the second pair to one as well ($\murate[1] = \murate[2] = 1$).
+Alternatively, we could relax that assumption and put a prior on \murate[2].
+However, this should be a strongly informative prior.
+Placing a weakly informative prior on \murate[2] would mean that we can no
+longer estimate its divergence time relative to the first pair,
+which is our primary goal.
+So, while it is possible to incorporate uncertainty in relative mutation rates,
+it is important to keep in mind that the data cannot inform these parameters,
+and thus the prior uncertainty in rates will be directly reflected in the
+posterior of divergence times.
+\end{quotation}
 
 \paragraph{Prior on the equilibrium-state frequency}
+Recoding four-state nucleotides to two states requires some arbitrary
+decisions, and whenever $\gfreq \neq 0.5$, these decisions can affect
+the likelihood of the model \citep{Oaks2018ecoevolity}.
+Because DNA is the dominant character type for genomic data, we assume that
+$\gfreq = 0.5$ in this paper.
+The makes the CTMC model of character-state substitution a two-state analog of
+the ``JC69'' model \citep{JC1969}.
+However, if the genetic markers collected for one or more taxa are  naturally
+biallelic, the frequencies of the two states can be meaningfully estimated, and
+our implementation allows for a beta prior on \gfreq in such cases.
+This makes the CTMC model of character-state substitution a two-state general
+time-reversible model \citep{Tavare1986}.
+
+\subsubsection{Approximating the posterior with MCMC}
+
+We use Markov chain Monte Carlo (MCMC) algorithms to sample from the joint
+posterior in Equation~\ref{eq:bayesruleexpanded}.
+To sample across event models (\etimesets) during the MCMC chain, we use the
+Gibbs sampling algorithm (Algorithm 8) of \citet{Neal2000}.
+We also use univariate and multivariate Metropolis-Hastings algorithms
+\citep{Metropolis1953,Hastings1970} to update the model,
+the latter of which are detailed in \citet{Oaks2018ecoevolity}.
 
 \subsection{Software implementation}
+The model and Bayesian estimattion outlined above has been incorporated into
+the open-source software package, \ecoevolity, written in the \cpp language.
+The source code is freely available from
+\url{https://github.com/phyletica/ecoevolity} and
+includes an extensive test suite.
+Documentation for how to install and use the software is available at
+\url{http://phyletica.org/ecoevolity/}.
+We have incorporated help in preprocessing data and postprocessing posterior
+samples collectd by \ecoevolity into the Python package \pycoevolity, which is
+available at
+\url{https://github.com/phyletica/pycoevolity}.
+
+We used Version 0.3.1 
+(commit 9284417)
+of the \ecoevolity software package for all of our analyses.
+A detailed history of this project, including all of the data and scripts
+needed to produce our results, is available at
+\url{https://github.com/phyletica/ecoevolity-demog-experiments}.
 
 \subsection{Analyses of simulated data}
 
