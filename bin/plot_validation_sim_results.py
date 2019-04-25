@@ -47,6 +47,11 @@ sim_dir_to_priors = {
                 (5.0, 0.04, 0.05),
                 (4.0, 0.000475, 0.0001)
             ),
+        "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior":
+            (
+                (5.0, 0.04, 3.8),
+                (4.0, 0.000475, 0.0001)
+            ),
         "03pops-dpp-root-0005-004-t0002-500k-0100l":
             (
                 (5.0, 0.04, 0.05),
@@ -160,8 +165,10 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
         s += "-singletonprob-0_4"
     elif sim_dir_name.endswith("-060s"):
         s += "-singletonprob-0_6"
-    elif sim_dir_name.endswith("-diffuseprior"):
-        s += "-diffuseprior"
+    elif sim_dir_name == "03pops-dpp-root-0005-004-t0002-500k-diffuseprior":
+        s += "-diffuseprior-4increase"
+    elif sim_dir_name == "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior":
+        s += "-diffuseprior-4decrease"
     if sim_dir_name.startswith("03pops-03pairs"):
         s += "-mixed-comps"
     return s
@@ -2176,18 +2183,20 @@ def main_cli(argv = sys.argv):
 
     # Plot relative root priors
     root_gamma_parameters = (
-            (5.0, 0.04, 0.05, 8.0),
-            (5.0, 0.09, 0.05, 8.0),
-            (5.0, 0.19, 0.05, 8.0),
-            (5.0, 0.79, 0.05, 8.0),
-            (50.0, 0.02, 0.0, 8.0),
-            (500.0, 0.002, 0.0, 8.0),
-            (10.0, 0.025, 0.0, 4.0),
-            (10.0, 0.05, 0.0, 4.0),
-            (10.0, 0.1, 0.0, 4.0),
-            (10.0, 0.2, 0.0, 4.0),
-            (100.0, 0.01, 0.0, 4.0),
-            (1000.0, 0.001, 0.0, 4.0),
+            (5.0, 0.04, 0.05, 8.0, False),
+            (5.0, 0.09, 0.05, 8.0, False),
+            (5.0, 0.19, 0.05, 8.0, False),
+            (5.0, 0.79, 0.05, 8.0, False),
+            (50.0, 0.02, 0.0, 8.0, False),
+            (500.0, 0.002, 0.0, 8.0, False),
+            (10.0, 0.025, 0.0, 4.0, False),
+            (10.0, 0.05, 0.0, 4.0, False),
+            (10.0, 0.1, 0.0, 4.0, False),
+            (10.0, 0.2, 0.0, 4.0, False),
+            (100.0, 0.01, 0.0, 4.0, False),
+            (1000.0, 0.001, 0.0, 4.0, False),
+            (5.0, 0.04, 0.05, 4.5, True),
+            (5.0, 0.04, 3.8, 4.5, True),
             )
     # x_max = float("-inf")
     # for shape, scale, offset in root_gamma_parameters:
@@ -2195,11 +2204,17 @@ def main_cli(argv = sys.argv):
     #     q += offset
     #     if q > x_max:
     #         x_max = q
-    for i, (shape, scale, offset, x_max) in enumerate(root_gamma_parameters):
+    for i, (shape, scale, offset, x_max, include_x_max_in_name) in enumerate(root_gamma_parameters):
         shape_str = str(shape).replace(".", "_")
         scale_str = str(scale).replace(".", "_")
         offset_str = str(offset).replace(".", "_")
-        plot_file_prefix = "prior-relative-root-{0}-{1}-{2}".format(shape_str, scale_str, offset_str)
+        x_max_str = str(x_max).replace(".", "_")
+        if include_x_max_in_name:
+            plot_file_prefix = "prior-relative-root-{0}-{1}-{2}-{3}".format(
+                    shape_str, scale_str, offset_str, x_max_str)
+        else:
+            plot_file_prefix = "prior-relative-root-{0}-{1}-{2}".format(
+                    shape_str, scale_str, offset_str)
         include_y_label = False
         if i == 0:
             include_y_label = True
@@ -2297,6 +2312,7 @@ def main_cli(argv = sys.argv):
 
     sim_dirs = [
             "03pops-dpp-root-0005-004-t0002-500k-diffuseprior",
+            "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior",
             "03pops-dpp-root-0005-004-t0002-500k-0100l",
             "03pops-dpp-root-0005-004-t0002-500k-0100ul",
             "03pops-dpp-root-0005-004-t0002-500k-040s",

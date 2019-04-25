@@ -1,0 +1,50 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}ccc@{}}
+        & \multirow{1}{0.15\textwidth}{\LARGE\centering All sites}
+        & \multirow{1}{0.15\textwidth}{\LARGE\centering Unlinked SNPs} \\[2.5ex]
+        \multirow{1}{*}[8em]{\begin{sideways}\large Estimated time\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/event-time-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-allsites-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/event-time-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-unlinkedsnps-scatter.pdf} \\
+        & \multicolumn{2}{c}{\large True event time} \\
+        \multirow{1}{*}[7.5em]{\begin{sideways}\large MAP model\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-allsites-nevents.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-unlinkedsnps-nevents.pdf} \\
+        & \multicolumn{2}{c}{\large True model} \\
+        \multirow{1}{*}[8em]{\begin{sideways}\large Estimated size\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/ancestor-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-allsites-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/ancestor-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-unlinkedsnps-scatter.pdf} \\
+        & \multicolumn{2}{c}{\large True ancestral population size} \\
+        \multirow{1}{*}[8em]{\begin{sideways}\large Estimated size\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-allsites-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-loci-100-unlinkedsnps-scatter.pdf} \\
+        & \multicolumn{2}{c}{\large True descendant population size} \\
+    \end{tabular}
+\end{figure}
+
+\end{document}
