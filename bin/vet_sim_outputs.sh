@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for qsub_path in ../simulations/validation/03pops-*/batch*/*simcoevolity-sim-*-config-run-*-qsub.sh
+for qsub_path in ../simulations/validation/03p*/batch*/*simcoevolity-sim-*-config-run-*-qsub.sh
 do
     to_run="${qsub_path/-qsub.sh/}"
     run_number="${to_run##*-}"
