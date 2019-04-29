@@ -4,7 +4,7 @@ set -e
 
 bin_dir="$(pwd)"
 
-for sim_dir in ../simulations/validation/03pops*/batch*
+for sim_dir in ../simulations/validation/03p*/batch*
 do
     cd "$sim_dir"
     if [ -e "simcoevolity-model-used-for-sims.yml" ]
