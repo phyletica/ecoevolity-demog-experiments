@@ -24,7 +24,8 @@ def line_count(path):
     return count
 
 def get_parameter_names(number_of_comparisons, dpp = True,
-        mixed_comparisons = False):
+        mixed_comparisons = False,
+        comparison_number_offset = 0):
     p = ["ln_likelihood"]
     if dpp:
         p.append("concentration")
@@ -35,17 +36,18 @@ def get_parameter_names(number_of_comparisons, dpp = True,
         p.append("number_of_div_events")
         p.append("number_of_demog_events")
     for i in range(number_of_comparisons):
-        p.append("ln_likelihood_c{0}sp1".format(i + 1))
-        p.append("root_height_c{0}sp1".format(i + 1))
-        p.append("coal_root_height_c{0}sp1".format(i + 1))
-        p.append("mutation_rate_c{0}sp1".format(i + 1))
-        p.append("freq_1_c{0}sp1".format(i + 1))
-        p.append("pop_size_c{0}sp1".format(i + 1))
-        p.append("pop_size_root_c{0}sp1".format(i + 1))
+        p.append("ln_likelihood_c{0}sp1".format(i + 1 + comparison_number_offset))
+        p.append("root_height_c{0}sp1".format(i + 1 + comparison_number_offset))
+        p.append("coal_root_height_c{0}sp1".format(i + 1 + comparison_number_offset))
+        p.append("mutation_rate_c{0}sp1".format(i + 1 + comparison_number_offset))
+        p.append("freq_1_c{0}sp1".format(i + 1 + comparison_number_offset))
+        p.append("pop_size_c{0}sp1".format(i + 1 + comparison_number_offset))
+        p.append("pop_size_root_c{0}sp1".format(i + 1 + comparison_number_offset))
     return p
 
 def get_results_header(number_of_comparisons, dpp = True,
-        mixed_comparisons = False):
+        mixed_comparisons = False,
+        comparison_number_offset = 0):
     h = [
             "batch",
             "sim",
@@ -87,10 +89,11 @@ def get_results_header(number_of_comparisons, dpp = True,
         h.append("num_events_{0}_p".format(i+1))
 
     for i in range(number_of_comparisons):
-        h.append("n_var_sites_c{0}".format(i+1))
+        h.append("n_var_sites_c{0}".format(i+1+comparison_number_offset))
 
     for p in get_parameter_names(number_of_comparisons, dpp = dpp,
-            mixed_comparisons = mixed_comparisons):
+            mixed_comparisons = mixed_comparisons,
+            comparison_number_offset = comparison_number_offset):
         h.append("true_{0}".format(p))
         h.append("true_{0}_rank".format(p))
         h.append("mean_{0}".format(p))
@@ -106,9 +109,11 @@ def get_results_header(number_of_comparisons, dpp = True,
     return h
 
 def get_empty_results_dict(number_of_comparisons, dpp = True,
-        mixed_comparisons = False):
+        mixed_comparisons = False,
+        comparison_number_offset = 0):
     h = get_results_header(number_of_comparisons, dpp = dpp,
-            mixed_comparisons = mixed_comparisons)
+            mixed_comparisons = mixed_comparisons,
+            comparison_number_offset = comparison_number_offset)
     return dict(zip(h, ([] for i in range(len(h)))))
 
 def get_results_from_sim_rep(
@@ -121,7 +126,8 @@ def get_results_from_sim_rep(
         sim_number,
         expected_number_of_samples = 1501,
         burnin = 401,
-        mixed_comparisons = False):
+        mixed_comparisons = False,
+        comparison_number_offset = 0):
     posterior_paths = sorted(posterior_paths)
     stdout_paths = sorted(stdout_paths)
     nchains = len(posterior_paths)
@@ -163,13 +169,13 @@ def get_results_from_sim_rep(
     assert(number_of_comparisons == stdout.number_of_comparisons)
     results["mean_n_var_sites"] = stdout.get_mean_number_of_variable_sites()
     for i in range(number_of_comparisons):
-        results["n_var_sites_c{0}".format(i + 1)] = stdout.get_number_of_variable_sites(i)
+        results["n_var_sites_c{0}".format(i + 1 + comparison_number_offset)] = stdout.get_number_of_variable_sites(i)
     run_times = [stdout.run_time]
     for i in range(1, len(stdout_paths)):
         so = pycoevolity.parsing.EcoevolityStdOut(stdout_paths[i])
         run_times.append(so.run_time)
         for j in range(number_of_comparisons):
-            assert(results["n_var_sites_c{0}".format(j + 1)] == so.get_number_of_variable_sites(j))
+            assert(results["n_var_sites_c{0}".format(j + 1 + comparison_number_offset)] == so.get_number_of_variable_sites(j))
     results["mean_run_time"] = sum(run_times) / float(len(run_times))
     
     true_model = tuple(int(true_values[h][0]) for h in post_sample.height_index_keys)
@@ -300,7 +306,8 @@ def parse_simulation_results(
         expected_number_of_runs = 2,
         expected_number_of_samples = 1501,
         burnin = 401,
-        mixed_comparisons = False):
+        mixed_comparisons = False,
+        comparison_number_offset = 0):
     batch_number_pattern = re.compile(r'batch(?P<batch_number>\d+)')
     sim_number_pattern = re.compile(r'-sim-(?P<sim_number>\d+)-')
     # val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '0*'))
@@ -308,9 +315,11 @@ def parse_simulation_results(
         dpp = True
         sim_name = os.path.basename(val_sim_dir)
         parameter_names = get_parameter_names(number_of_comparisons, dpp = dpp,
-                mixed_comparisons = mixed_comparisons)
+                mixed_comparisons = mixed_comparisons,
+                comparison_number_offset = comparison_number_offset)
         header = get_results_header(number_of_comparisons, dpp = dpp,
-                mixed_comparisons = mixed_comparisons)
+                mixed_comparisons = mixed_comparisons,
+                comparison_number_offset = comparison_number_offset)
 
         batch_dirs = glob.glob(os.path.join(val_sim_dir, "batch*"))
         for batch_dir in sorted(batch_dirs):
@@ -340,9 +349,11 @@ def parse_simulation_results(
             if ((skipping_sim) and (not var_only_present)):
                 continue
             results = get_empty_results_dict(number_of_comparisons, dpp = dpp,
-                    mixed_comparisons = mixed_comparisons)
+                    mixed_comparisons = mixed_comparisons,
+                    comparison_number_offset = comparison_number_offset)
             var_only_results = get_empty_results_dict(number_of_comparisons, dpp = dpp,
-                    mixed_comparisons = mixed_comparisons)
+                    mixed_comparisons = mixed_comparisons,
+                    comparison_number_offset = comparison_number_offset)
 
             posterior_paths = glob.glob(os.path.join(batch_dir,
                     "run-1-simcoevolity-sim-*-config-state-run-1.log*"))
@@ -382,7 +393,8 @@ def parse_simulation_results(
                             sim_number = sim_number,
                             expected_number_of_samples = expected_number_of_samples,
                             burnin = burnin,
-                            mixed_comparisons = mixed_comparisons)
+                            mixed_comparisons = mixed_comparisons,
+                            comparison_number_offset = comparison_number_offset)
                     for k, v in rep_results.items():
                         results[k].append(v)
                 if var_only_present:
@@ -408,9 +420,10 @@ def parse_simulation_results(
                             sim_number = sim_number,
                             expected_number_of_samples = expected_number_of_samples,
                             burnin = burnin,
-                            mixed_comparisons = mixed_comparisons)
+                            mixed_comparisons = mixed_comparisons,
+                            comparison_number_offset = comparison_number_offset)
                     if not skipping_sim:
-                        assert(rep_results["n_var_sites_c1"] == var_only_rep_results["n_var_sites_c1"])
+                        assert(rep_results["n_var_sites_c{0}".format(1+comparison_number_offset)] == var_only_rep_results["n_var_sites_c{0}".format(1+comparison_number_offset)])
                     for k, v in var_only_rep_results.items():
                         var_only_results[k].append(v)
 
@@ -459,6 +472,7 @@ def main_cli(argv = sys.argv):
 
     val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-dpp-root-*'))
     four_run_val_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-dpp-root-*-t0002-*'))
+    pair_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pairs-dpp-root-*'))
     three_run_val_sim_dirs = [d for d in val_sim_dirs if d not in four_run_val_sim_dirs]
     mixed_comparison_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-03pairs-dpp-root-*'))
     parse_simulation_results(
@@ -480,6 +494,14 @@ def main_cli(argv = sys.argv):
             expected_number_of_samples = args.expected_number_of_samples,
             burnin = args.burnin,
             mixed_comparisons = True)
+    parse_simulation_results(
+            pair_sim_dirs,
+            number_of_comparisons = 3,
+            expected_number_of_runs = 4,
+            expected_number_of_samples = args.expected_number_of_samples,
+            burnin = args.burnin,
+            mixed_comparisons = False,
+            comparison_number_offset = 3)
 
 
 if __name__ == "__main__":
