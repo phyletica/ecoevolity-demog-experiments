@@ -52,6 +52,11 @@ sim_dir_to_priors = {
                 (5.0, 0.04, 3.8),
                 (4.0, 0.000475, 0.0001)
             ),
+        "03pairs-dpp-root-0005-004-t0002-500k-diffuseprior":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
         "03pops-dpp-root-0005-004-t0002-500k-0100l":
             (
                 (5.0, 0.04, 0.05),
@@ -167,6 +172,8 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
         s += "-singletonprob-0_6"
     elif sim_dir_name == "03pops-dpp-root-0005-004-t0002-500k-diffuseprior":
         s += "-diffuseprior-4increase"
+    elif sim_dir_name == "03pairs-dpp-root-0005-004-t0002-500k-diffuseprior":
+        s += "-diffuseprior-pairs-4increase"
     elif sim_dir_name == "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior":
         s += "-diffuseprior-4decrease"
     if sim_dir_name.startswith("03pops-03pairs"):
@@ -2197,6 +2204,7 @@ def main_cli(argv = sys.argv):
             (1000.0, 0.001, 0.0, 4.0, False),
             (5.0, 0.04, 0.05, 4.5, True),
             (5.0, 0.04, 3.8, 4.5, True),
+            (1.0, 2.0, 0.0, 4.5, True),
             )
     # x_max = float("-inf")
     # for shape, scale, offset in root_gamma_parameters:
@@ -2310,6 +2318,10 @@ def main_cli(argv = sys.argv):
             "03pops-03pairs-dpp-root-0005-009-t0002-500k",
             ]
 
+    sim_dirs_pairs = [
+            "03pairs-dpp-root-0005-004-t0002-500k-diffuseprior",
+            ]
+
     sim_dirs = [
             "03pops-dpp-root-0005-004-t0002-500k-diffuseprior",
             "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior",
@@ -2350,6 +2362,20 @@ def main_cli(argv = sys.argv):
         results_mixed_comps[sim_dir] = results[sim_dir]
         if sim_dir in var_only_results:
             var_only_results_mixed_comps[sim_dir] = var_only_results[sim_dir]
+
+    results_pairs = {}
+    var_only_results_pairs = {}
+    for sim_dir in sim_dirs_pairs:
+        results_pairs[sim_dir] = parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+                        sim_dir,
+                        "batch00?",
+                        "results.csv.gz")))
+        var_only_results_pairs_paths = glob.glob(os.path.join(project_util.VAL_DIR,
+                        sim_dir,
+                        "batch00?",
+                        "var-only-results.csv.gz"))
+        if var_only_results_pairs_paths:
+            var_only_results_pairs[sim_dir] = parse_results(var_only_results_pairs_paths)
 
 
     height_parameters = [
@@ -2407,6 +2433,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "div-time": {
                     "headers": div_height_parameters,
@@ -2417,6 +2444,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
             "div-demog-time": {
                     "headers": height_parameters + div_height_parameters,
@@ -2427,6 +2455,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": True,
             },
             "event-coal-time": {
                     "headers": coal_height_parameters,
@@ -2436,6 +2465,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": None,
                     "pad_left": pad_left - 0.02,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "event-div-coal-time": {
                     "headers": div_coal_height_parameters,
@@ -2445,6 +2475,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": None,
                     "pad_left": pad_left - 0.02,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
             "event-div-demog-coal-time": {
                     "headers": coal_height_parameters + div_coal_height_parameters,
@@ -2454,6 +2485,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": None,
                     "pad_left": pad_left - 0.02,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": True,
             },
             "ancestor-size": {
                     "headers": root_size_parameters,
@@ -2463,6 +2495,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": None,
                     "pad_left": pad_left + 0.01,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "div-ancestor-size": {
                     "headers": div_root_size_parameters,
@@ -2472,6 +2505,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": None,
                     "pad_left": pad_left + 0.01,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
             "div-demog-ancestor-size": {
                     "headers": root_size_parameters + div_root_size_parameters,
@@ -2481,6 +2515,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": None,
                     "pad_left": pad_left + 0.01,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": True,
             },
             "descendant-size": {
                     "headers": leaf_size_parameters,
@@ -2491,6 +2526,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "div-descendant-size": {
                     "headers": div_leaf_size_parameters,
@@ -2501,6 +2537,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
             "div-demog-descendant-size": {
                     "headers": leaf_size_parameters + div_leaf_size_parameters,
@@ -2511,6 +2548,7 @@ def main_cli(argv = sys.argv):
                     "xy_limits": "calc_by_time_prior",
                     "pad_left": pad_left,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": True,
             },
     }
 
@@ -2518,7 +2556,18 @@ def main_cli(argv = sys.argv):
     for parameter, p_info in parameters_to_plot.items():
         data = {}
         var_only_data = {}
-        if p_info["mixed_comp_only"]:
+        if not p_info["exclude_pairs_only"]:
+            for sim_dir, r in results_pairs.items():
+                data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
+            for sim_dir, r in var_only_results_pairs.items():
+                var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
+        elif p_info["mixed_comp_only"]:
             for sim_dir, r in results_mixed_comps.items():
                 data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
@@ -3068,6 +3117,11 @@ def main_cli(argv = sys.argv):
             for sim_dir, r in results_mixed_comps.items():
                 data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
             for sim_dir, r in var_only_results_mixed_comps.items():
+                var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+            # Include analyses with div pairs only
+            for sim_dir, r in results_pairs.items():
+                data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+            for sim_dir, r in var_only_results_pairs.items():
                 var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
         else:
             for sim_dir, r in results.items():
