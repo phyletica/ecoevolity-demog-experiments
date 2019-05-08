@@ -57,6 +57,11 @@ sim_dir_to_priors = {
                 (5.0, 0.04, 0.05),
                 (4.0, 0.000475, 0.0001)
             ),
+        "03pairs-dpp-root-0005-004-t0002-500k":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
         "03pops-dpp-root-0005-004-t0002-500k-0100l":
             (
                 (5.0, 0.04, 0.05),
@@ -174,6 +179,8 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
         s += "-diffuseprior-4increase"
     elif sim_dir_name == "03pairs-dpp-root-0005-004-t0002-500k-diffuseprior":
         s += "-diffuseprior-pairs-4increase"
+    elif sim_dir_name == "03pairs-dpp-root-0005-004-t0002-500k":
+        s += "-pairs"
     elif sim_dir_name == "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior":
         s += "-diffuseprior-4decrease"
     if sim_dir_name.startswith("03pops-03pairs"):
@@ -2312,6 +2319,8 @@ def main_cli(argv = sys.argv):
             "03pops-dpp-root-0005-019-t0002-500k",
             "03pops-dpp-root-0050-002-t0002-500k",
             "03pops-dpp-root-0500-0002-t0002-500k",
+            "03pops-dpp-root-0005-004-t0002-500k-diffuseprior",
+            "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior",
     ]
 
     sim_dirs_mixed_comparisons = [
@@ -2320,11 +2329,10 @@ def main_cli(argv = sys.argv):
 
     sim_dirs_pairs = [
             "03pairs-dpp-root-0005-004-t0002-500k-diffuseprior",
+            "03pairs-dpp-root-0005-004-t0002-500k",
             ]
 
     sim_dirs = [
-            "03pops-dpp-root-0005-004-t0002-500k-diffuseprior",
-            "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior",
             "03pops-dpp-root-0005-004-t0002-500k-0100l",
             "03pops-dpp-root-0005-004-t0002-500k-0100ul",
             "03pops-dpp-root-0005-004-t0002-500k-040s",
@@ -2556,18 +2564,7 @@ def main_cli(argv = sys.argv):
     for parameter, p_info in parameters_to_plot.items():
         data = {}
         var_only_data = {}
-        if not p_info["exclude_pairs_only"]:
-            for sim_dir, r in results_pairs.items():
-                data[sim_dir] = ScatterData.init(r, p_info["headers"],
-                        highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
-                        )
-            for sim_dir, r in var_only_results_pairs.items():
-                var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
-                        highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
-                        )
-        elif p_info["mixed_comp_only"]:
+        if p_info["mixed_comp_only"]:
             for sim_dir, r in results_mixed_comps.items():
                 data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
@@ -2585,6 +2582,17 @@ def main_cli(argv = sys.argv):
                         highlight_threshold = 1.1,
                         )
             for sim_dir, r in var_only_results.items():
+                var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
+        if not p_info["exclude_pairs_only"]:
+            for sim_dir, r in results_pairs.items():
+                data[sim_dir] = ScatterData.init(r, p_info["headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = 1.1,
+                        )
+            for sim_dir, r in var_only_results_pairs.items():
                 var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
                         highlight_threshold = 1.1,
@@ -2682,10 +2690,11 @@ def main_cli(argv = sys.argv):
 
 
     # Generate individual model plots
-    for sim_dir in sim_dirs:
+    for sim_dir in sim_dirs + sim_dirs_pairs:
         prefix = get_prefix_from_sim_dir_name(sim_dir)
+        r = results.get(sim_dir, results_pairs.get(sim_dir))
         generate_specific_model_plots(
-                results = results[sim_dir],
+                results = r,
                 number_of_comparisons = 3,
                 plot_title = None,
                 include_x_label = False,
@@ -2705,7 +2714,7 @@ def main_cli(argv = sys.argv):
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "nevents-" + prefix)
         generate_specific_model_plots(
-                results = results[sim_dir],
+                results = r,
                 number_of_comparisons = 3,
                 show_all_models = True,
                 plot_title = None,
@@ -2725,9 +2734,10 @@ def main_cli(argv = sys.argv):
                 lower_annotation_y = 0.01,
                 upper_annotation_y = 1.015,
                 plot_file_prefix = "model-" + prefix)
-        if sim_dir in var_only_results:
+        if (sim_dir in var_only_results) or (sim_dir in var_only_results_pairs):
+            vor = var_only_results.get(sim_dir, var_only_results_pairs.get(sim_dir))
             generate_specific_model_plots(
-                    results = var_only_results[sim_dir],
+                    results = vor,
                     number_of_comparisons = 3,
                     plot_title = None,
                     include_x_label = False,
@@ -2747,7 +2757,7 @@ def main_cli(argv = sys.argv):
                     upper_annotation_y = 1.015,
                     plot_file_prefix = "var-only-nevents-" + prefix)
             generate_specific_model_plots(
-                    results = var_only_results[sim_dir],
+                    results = vor,
                     number_of_comparisons = 3,
                     show_all_models = True,
                     plot_title = None,
@@ -3012,6 +3022,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "No. variable sites",
                     "ndigits": 0,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "div-n-var-sites": {
                     "headers": [
@@ -3023,6 +3034,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "No. variable sites",
                     "ndigits": 0,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
             "ess-ln-likelihood": {
                     "headers": [
@@ -3032,6 +3044,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "ESS of lnL",
                     "ndigits": 1,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": False,
             },
             "ess-event-time": {
                     "headers": [
@@ -3043,6 +3056,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "ESS of time",
                     "ndigits": 1,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "ess-div-time": {
                     "headers": [
@@ -3054,6 +3068,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "ESS of time",
                     "ndigits": 1,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
             "ess-root-pop-size": {
                     "headers": [
@@ -3065,6 +3080,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "ESS of ancestral size",
                     "ndigits": 1,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "ess-div-root-pop-size": {
                     "headers": [
@@ -3076,6 +3092,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "ESS of ancestral size",
                     "ndigits": 1,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
             "psrf-ln-likelihood": {
                     "headers": [
@@ -3085,6 +3102,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "PSRF of lnL",
                     "ndigits": 2,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": False,
             },
             "psrf-event-time": {
                     "headers": [
@@ -3096,6 +3114,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "PSRF of time",
                     "ndigits": 2,
                     "mixed_comp_only": False,
+                    "exclude_pairs_only": True,
             },
             "psrf-div-time": {
                     "headers": [
@@ -3107,6 +3126,7 @@ def main_cli(argv = sys.argv):
                     "short_label": "PSRF of time",
                     "ndigits": 2,
                     "mixed_comp_only": True,
+                    "exclude_pairs_only": False,
             },
     }
 
@@ -3118,15 +3138,16 @@ def main_cli(argv = sys.argv):
                 data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
             for sim_dir, r in var_only_results_mixed_comps.items():
                 var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
-            # Include analyses with div pairs only
-            for sim_dir, r in results_pairs.items():
-                data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
-            for sim_dir, r in var_only_results_pairs.items():
-                var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
         else:
             for sim_dir, r in results.items():
                 data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
             for sim_dir, r in var_only_results.items():
+                var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+
+        if not p_info["exclude_pairs_only"]:
+            for sim_dir, r in results_pairs.items():
+                data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+            for sim_dir, r in var_only_results_pairs.items():
                 var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
 
         for sim_dir in data.keys():

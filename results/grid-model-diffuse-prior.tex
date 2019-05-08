@@ -24,37 +24,51 @@
 \begin{document}
 
 \begin{figure}
+    \setlength\arrayrulewidth{2pt}
     \centering
-    \begin{tabular}{@{}ccccc@{}}
+    \begin{tabular}{@{}cccccccc@{}}
         & \multirow{1}{0.15\textwidth}{\centering\Large Distribution on relative size of ancestral population}
         & \multirow{1}{0.15\textwidth}{\centering\Large Prior on relative size of ancestral population}
         &
         & \multirow{1}{0.15\textwidth}{\centering\Large All sites analyzed}
-        & \multirow{1}{0.15\textwidth}{\centering\Large Only variable sites analyzed} \\[9ex]
-        \multirow{5}{*}[2em]{\begin{sideways}\large Density\end{sideways}}
+        & \multirow{1}{0.15\textwidth}{\centering\Large Only variable sites analyzed}
+        & 
+        & \\[9ex]
+        \multirow{5}{*}[-8em]{\begin{sideways}\large Density\end{sideways}}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
-        & \multirow{5}{*}[8em]{\begin{sideways}\large Estimated demographic event time\end{sideways}}
+        & \multirow{5}{*}[-6em]{\begin{sideways}\large MAP model\end{sideways}}
         & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-nevents.pdf}
-        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-nevents.pdf} \\
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-nevents.pdf} 
+        & \multicolumn{1}{c|}{} 
+        & \\
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-1_0-2_0-0_0-4_5-gamma.pdf}
         &
         & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-4increase-nevents.pdf}
-        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-4increase-nevents.pdf} \\
-        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-3_8-4_5-gamma.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-4increase-nevents.pdf}
+        & \multicolumn{1}{c|}{} 
+        & \multirow{5}{*}[17em]{\begin{sideways}\Large Demographic comparisons\end{sideways}} \\
+        & & & & & & & \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-pairs-nevents.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-pairs-nevents.pdf}
+        & \multicolumn{1}{c|}{}
+        & \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-1_0-2_0-0_0-4_5-gamma.pdf}
         &
-        & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-3_8-t-4_0-0_000475-0_0001-diffuseprior-4decrease-nevents.pdf}
-        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-3_8-t-4_0-0_000475-0_0001-diffuseprior-4decrease-nevents.pdf} \\
-        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-3_8-4_5-gamma.pdf}
-        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-1_0-2_0-0_0-4_5-gamma.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-pairs-4increase-nevents.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-pairs-4increase-nevents.pdf}
+        & \multicolumn{1}{c|}{}
+        & \multirow{5}{*}[16.5em]{\begin{sideways}\Large Divergence comparisons\end{sideways}} \\
+        & \multicolumn{2}{c}{\large Relative population size}
         &
-        & \includegraphics[width=0.15\textwidth]{plots/model-a-5_0-0_04-3_8-t-4_0-0_000475-0_0001-diffuseprior-pairs-4decrease-nevents.pdf}
-        & \includegraphics[width=0.15\textwidth]{plots/var-only-model-a-5_0-0_04-3_8-t-4_0-0_000475-0_0001-diffuseprior-pairs-4decrease-nevents.pdf} \\
-        & \multirow{1}{0.15\textwidth}{\centering\large Relative population size}
+        & \multicolumn{2}{c}{\large True model}
         &
-        & \multicolumn{2}{c}{\large True demographic event time} \\
+        & \\
     \end{tabular}
 \end{figure}
 
