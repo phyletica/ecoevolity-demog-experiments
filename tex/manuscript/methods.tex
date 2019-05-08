@@ -1,0 +1,93 @@
+\input{model.tex}
+
+\subsection{Analyses of simulated data}
+
+\subsubsection{Assessing ability to estimate timing and sharing of demographic changes}
+
+Settings used for all simulations include:
+\begin{itemize}
+    \item 3 pairs
+    \item 500k characters
+    \item 20 gene copies per population (10 diploid individuals)
+    \item Concentration of DP 1.414216 (mean nevents of 2)
+\end{itemize}
+
+Settings used for all analyses include:
+\begin{itemize}
+    \item MCMC chain length of 75,000 sampled every 50 generations.
+\end{itemize}
+
+Initial pass. motivation: distribute event times to span values that are easy and hard.
+
+Event times (in units of expected subsitutions per site) were exponentially
+distributed with a mean of 0.01.
+Considering the expected population size was 0.002, this puts our expectaction
+for the event times in units of $4N_e$ generations at 1.25.
+Thus, we expected to get a mix of demographic-change time that occurred more recently
+than the gene trees coalesced and thus would be easy to estimate,
+and those that occurred when few or no gene lineages were left to coalesce, and thus would
+be difficult to estimate.
+
+Results were quite poor across all conditions, but slightly better for the most dramatic pop expansions.
+In an effort to find conditions where we could estimate demographic change times reasonble, we next simulated conditions where strong population expansions (relative root size gamma(10, mean = 0.25) and gamma(10, mean = 0.5)) occurred very recently (exponential with mean 0.001).
+
+The improved performance was quite modest, and we ran into numerical issues when the
+population expansion so recent that it was difficult to identify.
+In these cases, the data were well explained by no expansion, which could be achieved in two ways: an expansion time of zero and an ancestral population size that matched the true ancestral population size, or an old expansion and a ldescendant population size that matched the true ancestral population size. The latter explained the data equally well when the divergence time was older than gene tree coalescences. This lead to MCMC chains converging to these different regions of parameter space.
+
+This lead us to try tighter distribution on times with an offest to avoid
+near-zero values, as well as offsest on the size of descendant populations and
+ancestral relative sizes to avoid near-zero values (which cause rapid
+coalescence, and thus no signal). The prior conditions we simulted under are:
+
+
+\subsubsection{But what about under realistic prior information (diffuseprior)}
+
+It was a lot of work to find conditions where we could reasonably estimate
+the timing and number of demographic change events.
+These condtions include quite informative distributions on parameters,
+especially the relative size of the ancestral population.
+We used the same distribution as the prior, and thus the informative priors
+could be why the behavior is better (as opposed to the data containing a strong
+signal of what happened).
+To determine this, we simulated data under the best conditions,
+but then analyzed these data under diffuse priors to see how
+well we can expect to estimate.
+This is important because in real world applications we usually know very
+little about the timing and magnitude (and direction) of size changes.
+
+Sim disributions:
+
+Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
+
+relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
+
+relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 3.8); mean 4.0
+
+descendant size ~ gamma(4.0, scale=0.0005, offset = 0.0001); mean 0.0021
+
+Priors:
+
+Event time ~ exponential(mean = 0.005)
+
+relative root size ~ Exponential(mean = 2.0)
+
+descendant size ~ gamma(2.0, scale 0.001); mean 0.002
+
+
+\subsection{Simulating a mix of divergence and pop-size-change comparisons}
+What if we have a mix of pairs?
+
+
+\subsection{Simulating linked sites}
+Should we analyze all the sites or just unlinked SNPs?
+
+
+\subsection{Data-acquisition bias?}
+
+
+\subsection{Empirical application}
+Stickleback data.
+
+
+

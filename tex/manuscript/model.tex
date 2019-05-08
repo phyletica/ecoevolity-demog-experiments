@@ -1,0 +1,337 @@
+\subsection{The data}
+As described by \citet{Oaks2018ecoevolity},
+we assume we have orthologous, biallelic genetic characters collected from
+taxa we wish to compare.
+By biallelic, we mean that each character has at most two states,
+which we refer to as ``red'' and ``green'' following \citet{Bryant2012}.
+For each taxon, we either have these data from one or more individuals from a
+single population, in which case we infer the timing and extent of a population
+size change, or one or more individuals from two populations or species,
+in which case we infer the time when they diverged (\fig{}~\ref{fig:modelCartoon}).
+
+For each population and for each character we genotype \allelecount copies
+of the locus, \redallelecount of which are copies of the red allele and the
+remaining $\allelecount - \redallelecount$ are copies of the green allele.
+Thus, for each population of a pair, and for each locus, we have a count of the
+total sampled gene copies and how many of those are the red allele.
+
+\ifembed{
+\input{../../tables/notation.tex}
+}{}
+
+Following the notation of \citet{Oaks2018ecoevolity}
+we will use \leafallelecounts and \leafredallelecounts to denote allele counts
+for a locus from either one population if we are modeling population-size
+change or both populations of a pair if we are modeling a divergence; i.e., 
+$\leafallelecounts, \leafredallelecounts = (\allelecount, \redallelecount)$
+or
+$\leafallelecounts, \leafredallelecounts = (\allelecount[1],
+\redallelecount[1]), (\allelecount[2], \redallelecount[2])$
+(\fig{}~\ref{fig:modelCartoon}
+and
+Table~\ref{table:notation}).
+For convenience will use \comparisondata[i] to denote these allele counts
+across all the loci from taxon $i$, which can be a single population
+or a pair of populations.
+Finally, we use \alldata to represent the data across all the taxa for which we
+wish to compare times of either divergence or population-size change.
+Note, because the population of each compared taxon is modeled separately
+(\fig{}~\labelcref{fig:modelCartoon,fig:dag}),
+characters do not have to be orthologous across taxa, only within them.
+
+
+\subsubsection{The evolution of markers}
+
+We assume each character evolved along a gene tree (\genetree)
+according to a finite-sites, continuous-time Markov chain (CTMC) model.
+We assume the gene tree of each character is independent of the others,
+conditional on the population history (i.e., the characters are effectively
+unlinked).
+As the marker evolves along the gene tree, forward in time, there is an
+instantaneous relative rate \rgmurate of mutating from the red state to the
+green state, and a corresponding relative rate \grmurate of mutation from
+green to red \citep{Bryant2012,Oaks2018ecoevolity}.
+
+As the marker evolves along the gene tree, forward in time, there is an
+instantaneous relative rate \rgmurate of mutating from the red state to the
+green state, and a corresponding relative rate \grmurate of mutation from green
+to red.
+The stationary frequency of the green state is then
+$\gfreq = \rgmurate / (\rgmurate + \grmurate)$.
+We will use \murate to denote the overall rate of mutation.
+If $\murate = 1$, time is measured in
+units of expected substitutions per site.
+Alternatively, if a mutation rate per site per unit time is given, then time is
+absolute.
+
+\subsubsection{The evolution of gene trees}
+
+We assume that the gene tree of each locus evolved within a simple
+``species'' tree with one ancestral root population, which either
+left one or two descendant branches with different effective population sizes
+at time \comparisondivtime
+(\fig{}~\ref{fig:modelCartoon}).
+We will use
+\comparisonpopsizes{}
+to denote all the effective population sizes of a species tree;
+\epopsize[\rootpopindex] and 
+\epopsize[\descendantpopindex{1}] when modeling a population-size change, and
+(\epopsize[\rootpopindex],
+\epopsize[\descendantpopindex{1}],
+and \epopsize[\descendantpopindex{2}] when modeling a divergence.
+Following \citet{Oaks2018ecoevolity}, we use
+\sptree{}
+as shorthand for the species tree, which comprises the population sizes and
+divergence time of a pair
+(\comparisonpopsizes{} and \comparisondivtime{}).
+
+
+\subsubsection{The likelihood}
+
+As in \citet{Oaks2018ecoevolity},
+we use the work of \citet{Bryant2012}
+to analytically integrate over all possible gene trees and
+character substitution histories to compute the likelihood
+of the species tree directly from 
+a biallelic character pattern under a coalescent model;
+$\pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)$.
+The only difference that is necessary is for population-size-change models that
+have a species tree with only one descendant population.
+Equation 19 of \citet{Bryant2012} shows how to obtain the partial likelihoods
+at the bottom of an ancestral branch from the partial likelihoods at the top of
+its two descendant branches.
+When there is only one descendant branch, this is simplified, and the partial
+likelihoods at the bottom of the ancestral branch are equal to the partial
+likelihoods at the top of its sole descendant branch.
+Other than this small change, the probability of a biallelic character pattern
+given the species tree, mutation rate, and equilibrium state frequencies
+($\pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)$)
+is calculated the same as in \citet{Bryant2012} and \citet{Oaks2018ecoevolity}.
+
+
+\begin{linenomath}
+For a given taxon, we can calculate the probability of all \nloci{} loci
+from which we have data given the species tree and other parameters by
+assuming independence among loci (conditional on the species tree) and
+taking the product over them,
+\begin{equation}
+    \pr(\comparisondata \given \sptree, \murate, \gfreq)
+    =
+    \prod_{i=1}^{\nloci}
+    \pr(\leafallelecounts[i], \leafredallelecounts[i] \given \sptree, \murate, \gfreq).
+    \label{eq:comparisonlikelihood}
+\end{equation}
+We assume we biallelic data from \ncomparisons{} taxa, which can be an
+arbitrary mix of
+(1) two populations or species for which \comparisondivtime represents
+the time they diverged, or
+(2) one population for which \comparisondivtime represents the time
+of a change in population size.
+The likelihood across all \ncomparisons{} taxa is simply the product of the
+likelihood of each taxon,
+\begin{equation}
+    \pr(
+    \alldata
+    \given
+    \sptrees,
+    \murates,
+    \gfreqs)
+    =
+    \prod_{i=1}^{\ncomparisons}
+    \pr(\comparisondata[i] \given \sptree[i], \murate[i], \gfreq[i]),
+    \label{eq:collectionlikelihood}
+\end{equation}
+where
+$\alldata = \comparisondata[1], \comparisondata[2], \ldots, \comparisondata[\ncomparisons]$,
+$\sptrees = \sptree[1], \sptree[2], \ldots, \sptree[\ncomparisons]$,
+$\murates = \murate[1], \murate[2], \ldots, \murate[\ncomparisons]$,
+and
+$\gfreqs = \gfreq[1], \gfreq[2], \ldots, \gfreq[\ncomparisons]$.
+\end{linenomath}
+As described in \citet{Oaks2018ecoevolity},
+if constant characters are not sampled for a taxon, we condition the likelihood
+for that taxon on only having sampled variable characters.
+
+
+\subsection{Bayesian inference}
+
+\begin{linenomath}
+As described by \citet{Oaks2018ecoevolity},
+we treat the number of events (population-size changes and/or divergences)
+and the assignment of taxa to tose events as
+random variables under a Dirichlet process \citep{Ferguson1973,
+    Antoniak1974}.
+We use \etimesets to represent the partitioning of taxa to events,
+which we will also refer to as the ``event model.''
+The concentration parameter, \concentration, controls how clustered the
+Dirichlet process is, and determines the probability of all possible \etimesets
+(i.e., all possible set partitions of taxa to 1--\ncomparisons events).
+We use \etimes to represent the times of the unique events in \etimesets.
+Using this notation, the posterior distribution of our 
+Dirichlet-process model is
+\begin{equation}
+    \pr(
+    \concentration,
+    \divtimes,
+    \divtimesets,
+    \collectionpopsizes,
+    \murates,
+    \gfreqs
+    \given
+    \alldata,
+    \basedistribution
+    )
+    =
+    \frac{
+        \pr(
+        \alldata
+        \given
+        \divtimes,
+        \divtimesets,
+        \collectionpopsizes,
+        \murates,
+        \gfreqs
+        )
+        \pr(\divtimesets \given \concentration)
+        \pr(\divtimes \given \divtimesets, \basedistribution)
+        \pr(\concentration)
+        \pr(\collectionpopsizes)
+        \pr(\murates)
+        \pr(\gfreqs)
+    }{
+        \pr(
+        \alldata,
+        \basedistribution
+        )
+    }.
+    \label{eq:bayesruleexpanded}
+\end{equation}
+where
+\collectionpopsizes
+is the collection of the effective population sizes (\comparisonpopsizes{})
+across all of the pairs.
+
+\subsubsection{Priors}
+
+\paragraph{Prior on the concentration parameter}
+Our implementation allows for a hierarchical approach to accommodeate
+uncertainty in the concentration parameter of the Dirichlet process
+by specifying a gamma distribution as a hyperprior on
+\concentration \citep{Escobar1995,Heath2011}.
+Alternatively, \concentration can also be fixed to a particular value,
+which is likely sufficient when the number of pairs is small.
+
+\paragraph{Prior on the divergence times}
+Given the partitioning of taxa to events, we use a gamma
+distribution for the prior on the time of each event,
+$\divtime \given \divtimesets \sim \distgamma(\cdot, \cdot)$.
+
+\paragraph{Prior on the effective population sizes}
+We use a gamma distribution as the prior on the 
+the effective size of each descendant population of each taxon.
+Following \citet{Oaks2018ecoevolity},
+we use a gamma distribution on the effective size of the ancestral population
+\emph{relative} to the size of the descendant population(s), which we
+denote as \rootrelativepopsize.
+For a taxon with two descendant population (i.e., a divergence model), the
+ancestral population size is relative to the mean of the descendant
+populations.
+For a taxon with only one descendant population (i.e., a size-change model),
+the ancestral populations is relative to the size of that descendant.
+% The goal of this approach is to allow more informative priors on the root
+% population size; we often have stronger prior expectations for the relative
+% size of the ancestral population than the absolute size.
+% This is important, because the effective size of the ancestral population is a
+% difficult nuisance parameter to estimate and can be strongly correlated with
+% the divergence time.
+% For example, if the divergence time is so old such that all the gene copies
+% of a locus coalesce within the descendant populations, the locus
+% provides very little information about the size of the ancestral
+% population.
+% As a result, a larger ancestral population and more recent divergence will have
+% a very similar likelihood to a small ancestral population and an older
+% divergence.
+% Thus, placing more prior density on reasonable values of the ancestral
+% population size can help improve the precision of divergence-time estimates.
+
+\paragraph{Prior on mutation rates}
+We follow the same approach explained by \citet{Oaks2018ecoevolity} to model
+mutation rates across taxa.
+The decision about how to model mutation rates is extremely important for any
+comparative phylogeographic approach that models taxa as disconnected
+species trees
+\citep[\fig{}~\ref{fig:divCartoon}; e.g.,][]{Hickerson2006,Hickerson2007,Huang2011,Chan2014,Oaks2014dpp,Xue2015,Burbrink2016,Xue2017,Gehara2017,Oaks2018ecoevolity}.
+Here, we quote \citet{Oaks2018ecoevolity} directly:
+\begin{quotation}
+In the model presented above, for each population pair, the divergence time
+(\divtime) and mutation rate (\murate) are inextricably linked.
+For a single pair of populations, if little is known about the mutation rate,
+this problem is easily solved by setting it to one ($\murate[1] = 1$) such
+that time is in units of expected substitutions per site and the effective
+population sizes are scaled by \murate.
+However, what about the second pair of populations for which we wish to compare
+the divergence time to the first?
+Because the species trees in our model are disconnected
+[\ldots],
+we cannot learn about
+the relative rates of mutation across the population pairs from the data.
+As a result, we need strong prior information about the relative rates of
+mutation across population pairs for this model to work.
+
+If the second pair of populations is closely related to the first, and shares a
+similar life history, we could assume they share the same mutation rate and
+set the mutation rate of the second pair to one as well ($\murate[1] = \murate[2] = 1$).
+Alternatively, we could relax that assumption and put a prior on \murate[2].
+However, this should be a strongly informative prior.
+Placing a weakly informative prior on \murate[2] would mean that we can no
+longer estimate its divergence time relative to the first pair,
+which is our primary goal.
+So, while it is possible to incorporate uncertainty in relative mutation rates,
+it is important to keep in mind that the data cannot inform these parameters,
+and thus the prior uncertainty in rates will be directly reflected in the
+posterior of divergence times.
+\end{quotation}
+
+\paragraph{Prior on the equilibrium-state frequency}
+Recoding four-state nucleotides to two states requires some arbitrary
+decisions, and whenever $\gfreq \neq 0.5$, these decisions can affect
+the likelihood of the model \citep{Oaks2018ecoevolity}.
+Because DNA is the dominant character type for genomic data, we assume that
+$\gfreq = 0.5$ in this paper.
+The makes the CTMC model of character-state substitution a two-state analog of
+the ``JC69'' model \citep{JC1969}.
+However, if the genetic markers collected for one or more taxa are  naturally
+biallelic, the frequencies of the two states can be meaningfully estimated, and
+our implementation allows for a beta prior on \gfreq in such cases.
+This makes the CTMC model of character-state substitution a two-state general
+time-reversible model \citep{Tavare1986}.
+
+\subsubsection{Approximating the posterior with MCMC}
+
+We use Markov chain Monte Carlo (MCMC) algorithms to sample from the joint
+posterior in Equation~\ref{eq:bayesruleexpanded}.
+To sample across event models (\etimesets) during the MCMC chain, we use the
+Gibbs sampling algorithm (Algorithm 8) of \citet{Neal2000}.
+We also use univariate and multivariate Metropolis-Hastings algorithms
+\citep{Metropolis1953,Hastings1970} to update the model,
+the latter of which are detailed in \citet{Oaks2018ecoevolity}.
+
+\subsection{Software implementation}
+The model and Bayesian estimattion outlined above has been incorporated into
+the open-source software package, \ecoevolity, written in the \cpp language.
+The source code is freely available from
+\url{https://github.com/phyletica/ecoevolity} and
+includes an extensive test suite.
+Documentation for how to install and use the software is available at
+\url{http://phyletica.org/ecoevolity/}.
+We have incorporated help in preprocessing data and postprocessing posterior
+samples collectd by \ecoevolity into the Python package \pycoevolity, which is
+available at
+\url{https://github.com/phyletica/pycoevolity}.
+
+We used Version 0.3.1 
+(commit 9284417)
+of the \ecoevolity software package for all of our analyses.
+A detailed history of this project, including all of the data and scripts
+needed to produce our results, is available at
+\url{https://github.com/phyletica/ecoevolity-demog-experiments}.
