@@ -1,0 +1,75 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \setlength\arrayrulewidth{2pt}
+    \centering
+    \begin{tabular}{@{}cccccccc@{}}
+        & \multirow{1}{0.15\textwidth}{\centering\Large Distribution on relative size of ancestral population}
+        & \multirow{1}{0.15\textwidth}{\centering\Large Prior on relative size of ancestral population}
+        &
+        & \multirow{1}{0.15\textwidth}{\centering\Large All sites analyzed}
+        & \multirow{1}{0.15\textwidth}{\centering\Large Only variable sites analyzed}
+        & 
+        & \\[9ex]
+        \multirow{5}{*}[-8em]{\begin{sideways}\large Density\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        & \multirow{5}{*}[-8em]{\begin{sideways}\large Estimated descendant population size\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf} 
+        & \multicolumn{1}{c|}{} 
+        & \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-1_0-2_0-0_0-4_5-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-4increase-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-4increase-scatter.pdf}
+        & \multicolumn{1}{c|}{} 
+        & \multirow{5}{*}[17em]{\begin{sideways}\Large Demographic comparisons\end{sideways}} \\
+        & & & & & & & \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/div-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-pairs-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-div-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-pairs-scatter.pdf}
+        & \multicolumn{1}{c|}{}
+        & \\
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-1_0-2_0-0_0-4_5-gamma.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/div-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-pairs-4increase-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-div-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-pairs-4increase-scatter.pdf}
+        & \multicolumn{1}{c|}{}
+        & \multirow{5}{*}[16.5em]{\begin{sideways}\Large Divergence comparisons\end{sideways}} \\
+        & \multicolumn{2}{c}{\large Relative population size}
+        &
+        & \multicolumn{2}{c}{\large True descendant population size}
+        &
+        & \\
+    \end{tabular}
+\end{figure}
+
+\end{document}
