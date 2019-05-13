@@ -60,6 +60,14 @@
 \newcommand{\embedWidthFigure}[4]{\widthFigure{#1}{#2}{listformat=figList}{#3}{#4}}
 \newcommand{\siFigure}[3]{\smartFigure{#1}{name=Figure S, labelformat=noSpace, listformat=sFigList}{#2}{#3}\clearpage}
 
+\newcommand{\validationsimsthreecolumndescription}{The left column of plots
+    shows the gamma distribution from which the relative size of the ancestral
+    population was drawn; this was also used as the prior when each simulated
+    \dataset was analyzed.
+    The center and right column of plots show the true versus estimated
+    (posterior mean) value of the time of the population size change when using
+    all characters (center) or only variable characters (right).
+}
 \newcommand{\validationfiguregriddescription}{The first four columns show the
     results from different distributions on the relative effective size of the
     ancestral population, decreasing in variance from left to right.
@@ -110,6 +118,20 @@
     the proportion of \datasets for which the true divergence model was
     included in the 95\% credible set---$p(\nevents \in
     \textrm{CS})$---is shown in the lower right.
+}
+\newcommand{\modelplotannotations}{Each model is represented along the plot
+    axes by three integers that indicate the divergence category of each
+    pair of populations (e.g., 011 represents the model in which the second and
+    third pair diverge at the same time, but separately from the first).
+    The estimates are based on the model with the maximum \textit{a posteriori}
+    probability (MAP).
+    For each plot,
+    the proportion of \datasets for which the model with the largest
+    posterior probability matched the true model---$p(\hat{\etimesets}
+    = \etimesets)$---is shown in the upper left corner, and
+    the median posterior probability of the correct model across all
+    \datasets---$\widetilde{p(\etimesets|\alldata)}$---is shown in the upper
+    right corner.
 }
 \newcommand{\accuracyscatterplotannotations}[1]{For each plot, the
     root-mean-square error (RMSE) and the proportion of estimates for which the
