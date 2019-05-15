@@ -1,0 +1,81 @@
+\begin{table}[htbp]
+    \sffamily
+    \small
+    \rowcolors{2}{}{mygray}
+    \addtolength{\tabcolsep}{-0.1cm}
+\caption{
+    A key to some of the notation used in the text.
+}
+    \centering
+    \begin{tabular}{ l >{\raggedright\hangindent=0.5cm}m{14cm} }
+        \toprule
+        \textbf{Symbol} & \textbf{Description} \tn
+        \midrule
+        \ncomparisons{} & The number of comparisons (or taxa); can be an
+        arbitrary mix of populations (comparing timing of demographic change)
+        and/or pairs of population (comparing timing of divergence).
+        \tn
+        \nevents{} & The number of events (unique times) across the population
+        pairs being compared.
+        \tn
+        \comparisonetime[i] & The time in the past when either a population $i$
+        had a change in effective size or population pair $i$ diverged.
+        \tn
+        \etime & A unique event time at which one or more comparisons
+        experienced a demographic change or divergence.
+        \tn
+        \etimemodel & The event-time model, which comprises the event
+        times and the mapping of comparisons to those times.
+        \tn
+        \etimes & All of the unique event times in the model
+            ($\etimes = \etime[1], \ldots, \etime[\nevents]$).
+        \tn
+        \etimesets & The mapping of comparisons to events.
+        \tn
+        % \basedistribution & The base distribution of the Dirichlet process.
+        % \tn
+        \concentration & The concentration parameter of the Dirichlet process.
+        \tn
+        \allelecount, \redallelecount & The number of copies of a locus sampled
+            from a population, and the number of those copies that are the ``red''
+            allele.
+            \tn
+        \leafallelecounts, \leafredallelecounts & The allele counts from 
+        a comparison (one or two populations).
+            \tn
+        \comparisondata[i] & The allele counts across all characters from
+            comparison $i$. I.e., all of the characters being analyzed for
+            comparison $i$.
+            \tn
+        \nloci & The number of characters collected from a taxon (comparison).
+        \tn
+        \alldata & All of the data being analyzed, i.e., the
+            character matrices from all population pairs.
+        \tn
+        \genetree & A gene tree with branch lengths.
+        \tn
+        \murate & The rate of mutation.
+        \tn
+        \rgmurate & Relative rate of mutating from the ``red'' to ``green'' state.
+        \tn
+        \grmurate & Relative rate of mutating from the ``green'' to ``red'' state.
+        \tn
+        \gfreq & The stationary frequency of the ``green'' state.
+        \tn
+        \epopsize[\rootpopindex] & The effective size of the ancestral population.
+        \tn
+        \epopsize[\descendantpopindex{}] &
+            The effective size of a descendant population.
+        \tn
+        \comparisonpopsizes & Shorthand notation for all effective population
+        sizes for a comparison (ancestral and one or two descendant
+        populations).
+        \tn
+        \sptree & The species tree for a pair of populations. This comprises
+        the effective population sizes and the time of demographic change or
+        divergence.
+            \tn
+        \bottomrule
+    \end{tabular}
+    \label{table:notation}
+\end{table}
