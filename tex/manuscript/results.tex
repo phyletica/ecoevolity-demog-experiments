@@ -230,9 +230,22 @@ is high and largely unchanged under the diffuse priors
 
 
 \subsection{Inferring a mix of shared divergences and demographic changes}
-Next, we simulated datasets with six comparisons, comprising a mix of three
-populations that experienced a demographic change and thre pairs of populations
-that diverged.
+
+When demographic and divergence comparisons are analyzed separately, the
+performance of estimates of the timing and sharing of demographic changes and
+divergences is dramatically different with the latter being much more accurate
+and precise than the former
+(e.g., see
+\figs
+\ref{fig:valsimsmodeldiffuse}
+and
+\ref{fig:valsimsetimesdiffuse}).
+Perhaps, if we analyze a mix of demographic and divergence comparisons,
+the informativeness of the divergence times can help ``anchor'' and
+improve the estimates of shared demographic changes.
+To explore this possibility, we simulated datasets with six comparisons,
+comprising a mix of three populations that experienced a demographic change and
+three pairs of populations that diverged.
 For these mixed-comparison simulations, we used a gamma distribution on event
 times with a shape of 4, offset of 0.0001, and a mean of 0.002 subsitutions per
 site (accounting for the offset; 0.25 units of $4N_e$ generations on average).
@@ -245,18 +258,17 @@ These are the same distributions used for the second row of
 and
 \ref{fig:valsimsmodelopt}.
 
-We summarized the timing and sharing of the demographic changes
-separately from the divergences so that we could determine whether the
-divergence-time estimates could help improve the estimates of the
-times of the demographic changes.
-We confirm that the ability to infer the timing and sharing of
-demographic changes remains poor, while estimates of
-shared divergences remain accurate and precise
+% We summarized the timing and sharing of the demographic changes
+% separately from the divergences so that we could determine whether the
+% divergence-time estimates could help improve the estimates of the
+% times of the demographic changes.
+When analyzing a mix of demographic and divergence comparisons, the ability to
+infer the timing and sharing of demographic changes remains poor, while
+estimates of shared divergences remain accurate and precise
 (\fig{}~\ref{fig:mixsims}).
-The estimates of the timing and sharing of demographic
-events are very similar to when we simulated and
-analzyed only three demographic comparisons under the
-same distributions
+The estimates of the timing and sharing of demographic events are very similar
+to when we simulated and analzyed only three demographic comparisons under the
+same distributions on event times and population sizes
 (compare left column of \fig{}~\ref{fig:mixsims}
 to the second row of \figs
 \ref{fig:valsimsetimesopt}
@@ -269,7 +281,12 @@ and
 
 
 \subsection{Simulating linked sites}
+
 Should we analyze all the sites or just unlinked SNPs?
+
+\ifembed{
+\input{fig-sims-loci.tex}
+}{}
 
 
 \subsection{Data-acquisition bias?}
