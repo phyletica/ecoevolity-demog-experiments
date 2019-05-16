@@ -16,7 +16,7 @@ Thus, for each population of a pair, and for each locus, we have a count of the
 total sampled gene copies and how many of those are the red allele.
 
 \ifembed{
-\input{../../tables/notation.tex}
+\input{../utils/notation-table.tex}
 }{}
 
 Following the notation of \citet{Oaks2018ecoevolity}
@@ -36,7 +36,7 @@ or a pair of populations.
 Finally, we use \alldata to represent the data across all the taxa for which we
 wish to compare times of either divergence or population-size change.
 Note, because the population of each compared taxon is modeled separately
-(\fig{}~\labelcref{fig:modelCartoon,fig:dag}),
+(\fig{}~\ref{fig:modelCartoon}),
 characters do not have to be orthologous across taxa, only within them.
 
 
@@ -69,7 +69,7 @@ absolute.
 We assume that the gene tree of each locus evolved within a simple
 ``species'' tree with one ancestral root population, which either
 left one or two descendant branches with different effective population sizes
-at time \comparisondivtime
+at time \comparisonetime
 (\fig{}~\ref{fig:modelCartoon}).
 We will use
 \comparisonpopsizes{}
@@ -83,7 +83,7 @@ Following \citet{Oaks2018ecoevolity}, we use
 \sptree{}
 as shorthand for the species tree, which comprises the population sizes and
 divergence time of a pair
-(\comparisonpopsizes{} and \comparisondivtime{}).
+(\comparisonpopsizes{} and \comparisonetime{}).
 
 
 \subsubsection{The likelihood}
@@ -123,9 +123,9 @@ taking the product over them,
 \end{equation}
 We assume we biallelic data from \ncomparisons{} taxa, which can be an
 arbitrary mix of
-(1) two populations or species for which \comparisondivtime represents
+(1) two populations or species for which \comparisonetime represents
 the time they diverged, or
-(2) one population for which \comparisondivtime represents the time
+(2) one population for which \comparisonetime represents the time
 of a change in population size.
 The likelihood across all \ncomparisons{} taxa is simply the product of the
 likelihood of each taxon,
@@ -147,10 +147,10 @@ $\sptrees = \sptree[1], \sptree[2], \ldots, \sptree[\ncomparisons]$,
 $\murates = \murate[1], \murate[2], \ldots, \murate[\ncomparisons]$,
 and
 $\gfreqs = \gfreq[1], \gfreq[2], \ldots, \gfreq[\ncomparisons]$.
-\end{linenomath}
 As described in \citet{Oaks2018ecoevolity},
 if constant characters are not sampled for a taxon, we condition the likelihood
 for that taxon on only having sampled variable characters.
+\end{linenomath}
 
 
 \subsection{Bayesian inference}
@@ -172,8 +172,8 @@ Dirichlet-process model is
 \begin{equation}
     \pr(
     \concentration,
-    \divtimes,
-    \divtimesets,
+    \etimes,
+    \etimesets,
     \collectionpopsizes,
     \murates,
     \gfreqs
@@ -186,14 +186,14 @@ Dirichlet-process model is
         \pr(
         \alldata
         \given
-        \divtimes,
-        \divtimesets,
+        \etimes,
+        \etimesets,
         \collectionpopsizes,
         \murates,
         \gfreqs
         )
-        \pr(\divtimesets \given \concentration)
-        \pr(\divtimes \given \divtimesets, \basedistribution)
+        \pr(\etimesets \given \concentration)
+        \pr(\etimes \given \etimesets, \basedistribution)
         \pr(\concentration)
         \pr(\collectionpopsizes)
         \pr(\murates)
@@ -210,6 +210,7 @@ where
 \collectionpopsizes
 is the collection of the effective population sizes (\comparisonpopsizes{})
 across all of the pairs.
+\end{linenomath}
 
 \subsubsection{Priors}
 
@@ -224,7 +225,7 @@ which is likely sufficient when the number of pairs is small.
 \paragraph{Prior on the divergence times}
 Given the partitioning of taxa to events, we use a gamma
 distribution for the prior on the time of each event,
-$\divtime \given \divtimesets \sim \distgamma(\cdot, \cdot)$.
+$\etime \given \etimesets \sim \distgamma(\cdot, \cdot)$.
 
 \paragraph{Prior on the effective population sizes}
 We use a gamma distribution as the prior on the 
@@ -260,11 +261,11 @@ mutation rates across taxa.
 The decision about how to model mutation rates is extremely important for any
 comparative phylogeographic approach that models taxa as disconnected
 species trees
-\citep[\fig{}~\ref{fig:divCartoon}; e.g.,][]{Hickerson2006,Hickerson2007,Huang2011,Chan2014,Oaks2014dpp,Xue2015,Burbrink2016,Xue2017,Gehara2017,Oaks2018ecoevolity}.
+\citep[\fig{}~\ref{fig:modelCartoon}; e.g.,][]{Hickerson2006,Hickerson2007,Huang2011,Chan2014,Oaks2014dpp,Xue2015,Burbrink2016,Xue2017,Gehara2017,Oaks2018ecoevolity}.
 Here, we quote \citet{Oaks2018ecoevolity} directly:
 \begin{quotation}
 In the model presented above, for each population pair, the divergence time
-(\divtime) and mutation rate (\murate) are inextricably linked.
+(\etime) and mutation rate (\murate) are inextricably linked.
 For a single pair of populations, if little is known about the mutation rate,
 this problem is easily solved by setting it to one ($\murate[1] = 1$) such
 that time is in units of expected substitutions per site and the effective
