@@ -118,7 +118,7 @@ effective size of the ancestral population.
 Four of these had a shape of 5, an offset of 0.05, and a mean
 of
 0.25 (4-fold increase),
-0.4 (2-fold increase),
+0.5 (2-fold increase),
 4 (4-fold decrease),
 and
 1 (no change on average).
@@ -157,61 +157,115 @@ and
 }{}
 
 
-\subsubsection{But what about under realistic prior information}
+\subsubsection{Simulations to assess sensitivity to prior assumptions}
 
-We only observe decent estimates of the timing and sharing of demographic
+We observe the best estimates of the timing and sharing of demographic
 events under narrow distributions on the relative effective size of the
 ancestral distribution
 (top row of \figs
-\labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsetimesopt,fig:valsimsmodelopt}).
-These distributions are unrealistically informative for empirical studies, for
-which there is usually little prior information about past population sizes.
-To determine whether the improved performance under these distributions
-was caused by more informative data or priors, we simulated
-\datasets under a narrow distribution on the relative ancestral
-population size, and analyzed these \datasets under
-more realistic, ``diffuse'' prior distributions on populations sizes
-and event times.
+\labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsetimesopt,fig:valsimsmodelopt}),
+which were used to both simulate the data and as the prior
+when those data were analzyed.
+These distributions are unrealistically informative priors for empirical
+studies, for which there is usually little \emph{a priori} information about
+past population sizes.
+To determine whether the better performance under these distributions was
+caused by more informative data or priors, we simulated \datasets under a
+narrow distribution on the relative ancestral population size, and analyzed
+these \datasets under more realistic, ``diffuse'' prior distributions on
+populations sizes and event times.
+This will also us to assess how sensitive the inference of the timing
+and sharing of demographic events is to prior assumptions.
 For comparison, we repeated the same simulations for pairs of populations for
 which we estimated the timing and sharing of their divergences (the same total
 number of gene copies were sampled from each pair).
 
-The only conditions under which we obtained moderately good estimates of the
-timing and sharing of demographic events
-It was a lot of work to find conditions where we could reasonably estimate
-the timing and number of demographic change events.
-These condtions include quite informative distributions on parameters,
-especially the relative size of the ancestral population.
-We used the same distribution as the prior, and thus the informative priors
-could be why the behavior is better (as opposed to the data containing a strong
-signal of what happened).
-To determine this, we simulated data under the best conditions,
-but then analyzed these data under diffuse priors to see how
-well we can expect to estimate.
-This is important because in real world applications we usually know very
-little about the timing and magnitude (and direction) of size changes.
+% Sim disributions:
+% Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
+% relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
+% relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 3.8); mean 4.0
+% descendant size ~ gamma(4.0, scale=0.0005, offset = 0.0001); mean 0.0021
+% Priors:
+% Event time ~ exponential(mean = 0.005)
+% relative root size ~ Exponential(mean = 2.0)
+% descendant size ~ gamma(2.0, scale 0.001); mean 0.002
 
-Sim disributions:
+We find that the inference of shared demographic events is quite sensitive to
+the priors, and we see a stronger bias toward underestimating the number of
+events under the more realistic diffuse priors
+(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+Under the diffuse priors, the probability of inferring the correct model of
+demographic events decreases from 0.57 to 0.434 when all characters are used,
+and from 0.36 to 0.284 when only variable characters are used.
+The median posterior probability of the correct model also decreases from
+0.422 to 0.292 when all characters are used,
+and from 0.231 to 0.178 when only variable characters are used
+(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+In comparison, the inference of shared divergences is much more
+accurate and precise than shared demographic changes, and
+the former is much more robust to the diffuse priors
+(bottom two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+When all characters are used, under both the correct and diffuse
+priors, the correct model is preferred over 91\% of the time,
+and the median posterior probability of the correct model is over
+0.93.
 
-Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
+\ifembed{
+\input{fig-sims-model-diffuse.tex}
+}{}
 
-relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
+The results are similar when we look at the estimates of the timing of
+demographic changes and divergences
+(top versus bottom two rows of \fig{}~\ref{fig:valsimsetimesdiffuse}).
+The precision of time estimates of demographic changes decreases
+substantially under the diffuse priors
+(top two rows of \fig{}~\ref{fig:valsimsetimesdiffuse}),
+whereas the precision of the divergence-time estimates
+is high and largely unchanged under the diffuse priors
+(bottom two rows of \fig{}~\ref{fig:valsimsetimesdiffuse}).
 
-relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 3.8); mean 4.0
-
-descendant size ~ gamma(4.0, scale=0.0005, offset = 0.0001); mean 0.0021
-
-Priors:
-
-Event time ~ exponential(mean = 0.005)
-
-relative root size ~ Exponential(mean = 2.0)
-
-descendant size ~ gamma(2.0, scale 0.001); mean 0.002
+\ifembed{
+\input{fig-sims-event-times-diffuse.tex}
+}{}
 
 
-\subsection{Simulating a mix of divergence and pop-size-change comparisons}
-What if we have a mix of pairs?
+\subsection{Inferring a mix of shared divergences and demographic changes}
+Next, we simulated datasets with six comparisons, comprising a mix of three
+populations that experienced a demographic change and thre pairs of populations
+that diverged.
+For these mixed-comparison simulations, we used a gamma distribution on event
+times with a shape of 4, offset of 0.0001, and a mean of 0.002 subsitutions per
+site (accounting for the offset; 0.25 units of $4N_e$ generations on average).
+For the distribution on the relative size of the ancestral population,
+we used a gamma distribution with a shape of 5, an offset of 0.05, and a mean
+of 0.5; a 2-fold population size increase on average.
+These are the same distributions used for the second row of
+\figs
+\ref{fig:valsimsetimesopt}
+and
+\ref{fig:valsimsmodelopt}.
+
+We summarized the timing and sharing of the demographic changes
+separately from the divergences so that we could determine whether the
+divergence-time estimates could help improve the estimates of the
+times of the demographic changes.
+We confirm that the ability to infer the timing and sharing of
+demographic changes remains poor, while estimates of
+shared divergences remain accurate and precise
+(\fig{}~\ref{fig:mixsims}).
+The estimates of the timing and sharing of demographic
+events are very similar to when we simulated and
+analzyed only three demographic comparisons under the
+same distributions
+(compare left column of \fig{}~\ref{fig:mixsims}
+to the second row of \figs
+\ref{fig:valsimsetimesopt}
+and
+\ref{fig:valsimsmodelopt}).
+
+\ifembed{
+\input{fig-sims-mix.tex}
+}{}
 
 
 \subsection{Simulating linked sites}
@@ -223,6 +277,3 @@ Should we analyze all the sites or just unlinked SNPs?
 
 \subsection{Empirical application}
 Stickleback data.
-
-
-

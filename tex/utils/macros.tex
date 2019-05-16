@@ -44,29 +44,35 @@
     \end{center}
     \end{figure}}
 
-\newcommand{\smartFigure}[4]{%
+\newcommand{\smartFigure}[5]{%
     \begin{figure}[htbp]
         \begin{center}
-            \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{#1}
-            \captionsetup{#2}
-            \caption{#3}
-            \label{#4}
+            \includegraphics[width=\textwidth,height=#1\textheight,keepaspectratio]{#2}
+            \captionsetup{#3}
+            \caption{#4}
+            \label{#5}
         \end{center}
     \end{figure}
 }
 
-\newcommand{\mFigure}[3]{\smartFigure{#1}{listformat=figList}{#2}{#3}\clearpage}
+\newcommand{\mFigure}[4]{\smartFigure{#1}{#2}{listformat=figList}{#3}{#4}\clearpage}
 \newcommand{\embedHeightFigure}[4]{\heightFigure{#1}{#2}{listformat=figList}{#3}{#4}}
 \newcommand{\embedWidthFigure}[4]{\widthFigure{#1}{#2}{listformat=figList}{#3}{#4}}
-\newcommand{\siFigure}[3]{\smartFigure{#1}{name=Figure S, labelformat=noSpace, listformat=sFigList}{#2}{#3}\clearpage}
+\newcommand{\siFigure}[4]{\smartFigure{#1}{#2}{name=Figure S, labelformat=noSpace, listformat=sFigList}{#3}{#4}\clearpage}
 
 \newcommand{\validationsimsthreecolumndescription}{The left column of plots
     shows the gamma distribution from which the relative size of the ancestral
     population was drawn; this was also used as the prior when each simulated
     \dataset was analyzed.
-    The center and right column of plots show the true versus estimated
-    (posterior mean) value of the time of the population size change when using
-    all characters (center) or only variable characters (right).
+    The center and right column of plots show true versus estimated values when
+    using all characters (center) or only variable characters (right).
+}
+\newcommand{\diffusesimsfourcolumndescription}{The first and second columns of
+    plots show the distribution on the relative effective size of the ancestral
+    population for simulating the data (first column) and for the prior when
+    analyzing the simulated data (second column).
+    The third and fourth columns of plots show true versus estimated values
+    when using all characters (center) or only variable characters (right).
 }
 \newcommand{\validationfiguregriddescription}{The first four columns show the
     results from different distributions on the relative effective size of the
