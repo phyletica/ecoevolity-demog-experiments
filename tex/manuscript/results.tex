@@ -78,6 +78,12 @@ rather than only variable characters
 \ref{fig:valsimsetimesinitial}
 and
 \ref{fig:valsimsmodelinitial}).
+Likewise, we see better estimates of effective population sizes when using the
+invariant characters
+(\figs
+S\ref{fig:valsimsasizesinitial}
+and
+S\ref{fig:valsimsdsizesinitial})
 
 
 We observed numerical problems when the change in population size was
@@ -142,11 +148,17 @@ Under the most extreme population retraction scenario (4-fold, on average),
 posterior probability of the correct model of only 0.26
 (middle row of \fig{}~\ref{fig:valsimsmodelopt}).
 Estimates are especially poor when using only variable characters,
-so we focus on the results using all characters.
+so we focus on the results using all characters
 (second versus third column of \figs
 \ref{fig:valsimsetimesinitial}
 and
-\ref{fig:valsimsmodelinitial}).
+\ref{fig:valsimsmodelinitial});
+we also see better estimates of population sizes when including invariant
+characters
+(\figs
+S\ref{fig:valsimsasizesopt}
+and 
+S\ref{fig:valsimsdsizesopt}).
 
 \ifembed{
 \input{fig-sims-event-times-opt.tex}
@@ -165,7 +177,7 @@ ancestral distribution
 (top row of \figs
 \labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsetimesopt,fig:valsimsmodelopt}),
 which were used to both simulate the data and as the prior
-when those data were analzyed.
+when those data were analyzed.
 These distributions are unrealistically informative priors for empirical
 studies, for which there is usually little \emph{a priori} information about
 past population sizes.
@@ -183,7 +195,6 @@ number of gene copies were sampled from each pair).
 % Sim disributions:
 % Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
 % relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
-% relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 3.8); mean 4.0
 % descendant size ~ gamma(4.0, scale=0.0005, offset = 0.0001); mean 0.0021
 % Priors:
 % Event time ~ exponential(mean = 0.005)
@@ -223,6 +234,11 @@ substantially under the diffuse priors
 whereas the precision of the divergence-time estimates
 is high and largely unchanged under the diffuse priors
 (bottom two rows of \fig{}~\ref{fig:valsimsetimesdiffuse}).
+We see the same patterns in the estimates of population sizes
+(\figs
+S\ref{fig:valsimsasizesdiffuse}
+and
+S\ref{fig:valsimsdsizesdiffuse})
 
 \ifembed{
 \input{fig-sims-event-times-diffuse.tex}
@@ -263,7 +279,7 @@ and
 % divergence-time estimates could help improve the estimates of the
 % times of the demographic changes.
 When analyzing a mix of demographic and divergence comparisons, the ability to
-infer the timing and sharing of demographic changes remains poor, while
+infer the timing and sharing of demographic changes remains poor, whereas
 estimates of shared divergences remain accurate and precise
 (\fig{}~\ref{fig:mixsims}).
 The estimates of the timing and sharing of demographic events are very similar
@@ -274,6 +290,8 @@ to the second row of \figs
 \ref{fig:valsimsetimesopt}
 and
 \ref{fig:valsimsmodelopt}).
+The same is true for the estimates of population sizes
+(\fig{}~S\ref{fig:mixsimsfull}).
 
 \ifembed{
 \input{fig-sims-mix.tex}
@@ -282,15 +300,110 @@ and
 
 \subsection{Simulating linked sites}
 
-Should we analyze all the sites or just unlinked SNPs?
+Most reduced-representation genomic datasets are comprised of loci of
+contiguous, linked nucleotides.
+Thus, when using the method presented here that assumes each character is
+effectively unlinked (i.e., evolved along a gene tree that is independent from
+other characters, conditional on the populatoin history), one either has to
+violate this assumption, or discard all but (at most) one site per locus.
+Given that all the results above indicate better estimates when all
+characters are used (compared to using only variable characters), we
+performed simulations to determine which strategy is better:
+analyzing all linked sites and violating the assumption of unlinked characters,
+or discarding all but (at most) one variable character per locus.
+
+To do this, we repeated the most favorable simulation conditions (on average
+4-fold population expansion; see first row of
+\figs
+\ref{fig:valsimsetimesopt}
+and
+\ref{fig:valsimsmodelopt}),
+except that the 100 characters were simulated along 5000
+simulated gene trees.
+In other words, the simulated \datasets comprised 5000
+100-base-pair loci.
+The results are almost identical to when all the sites were unlinked
+(compare first row of
+\figs
+\ref{fig:valsimsetimesopt}
+and
+\ref{fig:valsimsmodelopt}
+to
+\fig{}~\ref{fig:locisims},
+and the first row of
+\figs
+S\ref{fig:valsimsasizesopt}
+and
+S\ref{fig:valsimsdsizesopt}
+to the bottom two rows of
+\fig{}~S\ref{fig:locisimsfull}).
+Thus, violating the assumption of unlinked sites has little
+affect on the estimation of the timing and sharing of
+demographic changes;
+this is also true for estimates of population sizes
+(\fig{}~S\ref{fig:locisimsfull}).
+This is consistent with the findings of
+\citet{Oaks2018ecoevolity} and
+\citet{Oaks2018paic}
+that the violation of linked sites had little affect on the estimation of
+shared divergence times.
 
 \ifembed{
 \input{fig-sims-loci.tex}
 }{}
 
 
-\subsection{Data-acquisition bias?}
+% \subsection{Data-acquisition bias?}
 
 
-\subsection{Empirical application}
-Stickleback data.
+\subsection{Reassessing the co-expansion of stickleback populations}
+
+Using an ABC analog to the model of shared demographic changes
+developed here, \citet{Xue2015} found very strong support that
+five populations of sticklebacks from south central Alaska 
+recently co-expanded.
+This inference was based on the publicly available RADseq data collected by
+\citet{Hohenlohe2010}
+(\url{https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP001747};
+NCBI Short Read Archive accession numbers SRX015871--SRX015877).
+We re-assembled and analyzed these data under our full-likelihood
+Bayesian framework, both using all sites from assembled loci,
+and only SNPs.
+
+When analyzing all sites from the assembled sticklback
+RADseq data, we find strong support for five independent
+population expansions (no shared demographic events;
+\fig{}~\ref{fig:sticklesummary}).
+In sharp contrast, when analyzing only SNPs, we find
+support for a single, shared, extremely recent population expansion
+(\fig{}~\ref{fig:sticklesummary}).
+The support for a single, shared event is consistent with the results from our
+simulations using diffuse priors and only SNPs,
+which showed consistent, spurious support for a single event
+(Row 2 of \fig{}~{fig:valsimsmodeldiffuse}).
+These results are relatively robust to broad range of prior
+assumptions
+(\figs
+S\labelcref{%
+fig:sticklebydppevents,fig:sticklebydpptimes,fig:sticklebydppsizes,%
+fig:sticklebytimeevents,fig:sticklebytimetimes,fig:sticklebytimesizes,%
+fig:sticklebysizeevents,fig:sticklebysizetimes,fig:sticklebysizesizes,%
+}).
+
+\ifembed{
+\input{fig-sticklebacks.tex}
+}{}
+
+When using only SNPs, the estimates of the shared demographic event time are
+essentially at the minimum of zero, suggesting that there is little information
+about the timing of any demographic changes in the SNP data alone.
+This is consistent with results of \citet{Xue2015} where the single, shared
+event was also estimated to have occurred at the minimum (1000 generations) of
+their uniform prior on the timing of demographic changes.
+Their and our results based solely on SNPs seem to be an artifact of the lack
+of information in these data.
+Based on our simulation results, our estimates using all of the sites
+in the stickleback RADseq loci should be the most accurate.
+However, the unifying theme of our simulation results is that all estimates of
+shared demographic events tend to be poor and should be treated with
+a lot of skepticism.

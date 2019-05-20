@@ -4,90 +4,160 @@
 
 \subsubsection{Assessing ability to estimate timing and sharing of demographic changes}
 
-Settings used for all simulations include:
+We used the \simcoevolity and \eceovlity tools within the \ecoevolity software
+package (Version 0.3.1 Commit 9284417) to simulate and analyze \datasets,
+respectively, under a variety of conditions.
+Each simulated \datasest comprised 10 diploid individuals (20 genomes) sampled
+from each of three populations (demographic comparisons), and 500,000
+characters.
+We specified the concentration parameter of the Dirichlet process so that
+the mean number of events was 2 ($\concentration = 1.414216$).
+We assumed the mutation rate of all three populations was equal and 1, such
+that time and effective population sizes were scaled by the mutation rate.
+When analyzing each simulated \dataset, we ran four MCMC chains run for 75,000
+generations with a sample taken every 50 generations; we combined and
+summarized the last 1000 samples of each of the four chains (the first 501
+samples discarded from each chain).
+
+\paragraph{Initial simulation conditions}
+
+For the initial set of conditions we explored, we used an exponential
+distribution on the time of demographic changes with a mean of 0.01.
+For the mutation-scaled effective size ($\epopsize\murate$) of the descendant
+population (i.e., after the demographic change), we used a gamma distribution
+with a shape of 5 and mean of 0.002.
+We used five different distributions on the relative effective
+size of the ancestral population (see left column of
+\figs
+\labelcref{fig:valsimsmodelinitial,fig:valsimsetimesinitial}):
+\begin{enumerate}[label=A.\arabic*]
+    \item \dgamma{10}{0.25} 
+    \item \dgamma{10}{0.5} 
+    \item \dgamma{10}{2} 
+    \item \dgamma{10}{1} 
+    \item \dgamma{100}{1} 
+\end{enumerate}
+We generated 500 \datasets under each of these five distributions, all of which
+were analyzed using the same simulated distributions as priors.
+
+\paragraph{Simulation conditions designed to improve performance}
+
+For our next set of conditions, we used an offset gamma distribution on times
+with a shape of 4.0, offset of 0.0001, and mean of 0.002 (after accounting for
+the offset).
+For the mutation-scaled effective size ($\epopsize\murate$) of the descendant
+population, we used an offset gamma distribution with a shape of 4, offset of
+0.0001, and mean of 0.0021.
+Again, we used five different distributions on the relative effective size of
+the ancestral population (see left column of
+\figs
+\labelcref{fig:valsimsmodelopt,fig:valsimsetimesopt}):
+\begin{enumerate}[label=B.\arabic*]
+    \item \dogamma{5}{0.25}{0.05} \label{sims:optimal}
+    \item \dogamma{5}{0.5}{0.05} \label{sims:optimaltwofoldincrease}
+    \item \dogamma{5}{4}{0.05}
+    \item \dogamma{5}{1}{0.05}
+    \item \dogamma{50}{1}{0}
+\end{enumerate}
+We generated 500 \datasets under each of these five distributions, all of which
+were analyzed under priors that matched the generating distributions.
+
+\subsubsection{Simulations to assess sensitivity to prior assumptions}
+
+% Sim disributions:
+% Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
+% relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
+% descendant size ~ gamma(4.0, scale=0.0005, offset = 0.0001); mean 0.0021
+% Priors:
+% Event time ~ exponential(mean = 0.005)
+% relative root size ~ Exponential(mean = 2.0)
+% descendant size ~ gamma(2.0, scale 0.001); mean 0.002
+Next, we simulated an additional 500 \datasets under the conditions
+specified by Item~\ref{sims:optimal} above.
+We then analyzed each of these \datasets under ``diffuse'' prior
+distributions:
 \begin{itemize}
-    \item 3 pairs
-    \item 500k characters
-    \item 20 gene copies per population (10 diploid individuals)
-    \item Concentration of DP 1.414216 (mean nevents of 2)
+    \item $\etime \sim \dexponential{0.005}$
+    \item $\rootrelativepopsize \sim \dexponential{2}$
+    \item $\epopsize[\descendantpopindex{}] \sim \dgamma{2}{0.002}$
+\end{itemize}
+These distributions were chosen to reflect realistic amounts of prior
+uncertainty about the timing of demographic changes and past and present
+effective population sizes when analyzing empirical data.
+
+
+\subsubsection{Simulating a mix of divergence and pop-size-change comparisons}
+
+To how well our method can infer a mix of shared demographic changes and
+divergence times, we simulated 500 \datasets comprised of 6 comparisons:
+3 demographic comparisons and
+3 divergence comparisons.
+20 genomes (10 diploid individuals) were sampled from each comparison; for
+divergence comparisons, 10 genomes were sampled from each of the two
+populations.
+We used the same simulation conditions described above for
+\ref{sims:optimaltwofoldincrease}.
+All simulated \datasets were analyzed under priors that matched
+the generating distributions.
+
+
+\subsubsection{Simulating linked sites}
+To assess the effect of linked sites on the inference
+of the timing and sharing of demographic changes,
+we simulated \datasets comprising 5000 100-base-pair
+loci (500,000 total characters).
+The distributions on parameters were the same
+as the conditions described for \ref{sims:optimal} above.
+These same distributions were used as priors when
+analyzing the simulated \datasets.
+
+% \subsection{Data-acquisition bias?}
+
+\subsection{Empirical application to stickleback data}
+
+\subsubsection{Assembly of loci}
+We used stacks Version XXXX \citationNeeded.
+To maximize the number of loci and minimize paralogy, we assembled each
+population separately;
+because \ecoevolity models each population separately
+(\fig{}~\ref{fig:modelCartoon}),
+the characters do not need to be orthologous across populations, only within
+them.
+
+\subsubsection{Inferring shared demographic changes with \ecoevolity}
+
+We ran 10 MCMC chains for 150,000 generations, sampling every 100 generations.
+We used a value for the concentration parameter of the Dirichlet process
+that corresponds to a mean number of events of three
+($\concentration = 2.22543$).
+\begin{itemize}
+    \item $\concentration = 2.22543$
+    \item $\etime \sim \dexponential{0.001}$
+    \item $\rootrelativepopsize \sim \dexponential{1}$
+    \item $\epopsize[\descendantpopindex{}] \sim \dgamma{2}{0.002}$
+\end{itemize}
+To assess the sensitivity of the results to our prior assumptions,
+we also analyzed the data under two additional priors on
+the concentration parameter, event times, and relative
+effective population size of the ancestral population:
+\begin{itemize}
+    \item $\concentration = 13$ (half of prior on 5 events)
+    \item $\concentration = 0.3725$ (half of prior on 1 events)
+    \item $\etime \sim \dexponential{0.0005}$
+    \item $\etime \sim \dexponential{0.01}$
+    \item $\rootrelativepopsize \sim \dexponential{0.5}$
+    \item $\rootrelativepopsize \sim \dexponential{0.1}$
 \end{itemize}
 
-Settings used for all analyses include:
-\begin{itemize}
-    \item MCMC chain length of 75,000 sampled every 50 generations.
-\end{itemize}
-
-Initial pass. motivation: distribute event times to span values that are easy and hard.
-
-Event times (in units of expected subsitutions per site) were exponentially
-distributed with a mean of 0.01.
-Considering the expected population size was 0.002, this puts our expectaction
-for the event times in units of $4N_e$ generations at 1.25.
-Thus, we expected to get a mix of demographic-change time that occurred more recently
-than the gene trees coalesced and thus would be easy to estimate,
-and those that occurred when few or no gene lineages were left to coalesce, and thus would
-be difficult to estimate.
-
-Results were quite poor across all conditions, but slightly better for the most dramatic pop expansions.
-In an effort to find conditions where we could estimate demographic change times reasonble, we next simulated conditions where strong population expansions (relative root size gamma(10, mean = 0.25) and gamma(10, mean = 0.5)) occurred very recently (exponential with mean 0.001).
-
-The improved performance was quite modest, and we ran into numerical issues when the
-population expansion so recent that it was difficult to identify.
-In these cases, the data were well explained by no expansion, which could be achieved in two ways: an expansion time of zero and an ancestral population size that matched the true ancestral population size, or an old expansion and a ldescendant population size that matched the true ancestral population size. The latter explained the data equally well when the divergence time was older than gene tree coalescences. This lead to MCMC chains converging to these different regions of parameter space.
-
-This lead us to try tighter distribution on times with an offest to avoid
-near-zero values, as well as offsest on the size of descendant populations and
-ancestral relative sizes to avoid near-zero values (which cause rapid
-coalescence, and thus no signal). The prior conditions we simulted under are:
-
-
-\subsubsection{But what about under realistic prior information (diffuseprior)}
-
-It was a lot of work to find conditions where we could reasonably estimate
-the timing and number of demographic change events.
-These condtions include quite informative distributions on parameters,
-especially the relative size of the ancestral population.
-We used the same distribution as the prior, and thus the informative priors
-could be why the behavior is better (as opposed to the data containing a strong
-signal of what happened).
-To determine this, we simulated data under the best conditions,
-but then analyzed these data under diffuse priors to see how
-well we can expect to estimate.
-This is important because in real world applications we usually know very
-little about the timing and magnitude (and direction) of size changes.
-
-Sim disributions:
-
-Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
-
-relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
-
-relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 3.8); mean 4.0
-
-descendant size ~ gamma(4.0, scale=0.0005, offset = 0.0001); mean 0.0021
-
-Priors:
-
-Event time ~ exponential(mean = 0.005)
-
-relative root size ~ Exponential(mean = 2.0)
-
-descendant size ~ gamma(2.0, scale 0.001); mean 0.002
-
-
-\subsection{Simulating a mix of divergence and pop-size-change comparisons}
-What if we have a mix of pairs?
-
-
-\subsection{Simulating linked sites}
-Should we analyze all the sites or just unlinked SNPs?
-
-
-\subsection{Data-acquisition bias?}
-
-
-\subsection{Empirical application}
-Stickleback data.
-
-
+We assessed convergence and mixing of the chains by calculating the potential
+scale reduction factor \citep[PSRF; the square root of Equation 1.1 in][]{Brooks1998}
+and effective sample size \citep{Gong2014} of all continuous parameters and the
+log likelihood using the \texttt{pyco-sumchains} tool of \pycoevolity
+(Version 0.1.2 Commit 89d90a1).
+We also visually inspected the sampled log likelihood and parameters values
+over generations with the program Tracer Version 1.6 \citep{Tracer16}.
+The MCMC chains for all analyses converged almost immediatley; we
+conservatively removed the first 101 samples from each chain, resulting in
+14,000 samples from the posterior (1400 samples from 10 chains) for each
+analysis.
 

@@ -1,0 +1,45 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}lll@{}}
+        & \multicolumn{1}{c}{\LARGE All sites analyzed} & \multicolumn{1}{c}{\LARGE Only variable sites analyzed} \\[1ex]
+        \multirow{2}{*}[8em]{\begin{sideways}\large Probability\end{sideways}}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-allsites-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumevents-bare-stickleback-snps-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-nevents.pdf} \\
+        & \multicolumn{2}{c}{\large Number of demographic events} \\[1ex]
+        \multirow{2}{*}[8em]{\begin{sideways}\large Population\end{sideways}}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-allsites-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumtimes-bare-stickleback-snps-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-times.pdf} \\
+        & \multicolumn{2}{c}{\large Time of demographic change ($t$)} \\[1ex]
+        \multirow{2}{*}[8em]{\begin{sideways}\large Population\end{sideways}}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumsizes-bare-stickleback-allsites-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-sizes.pdf}
+        & \includegraphics[width=0.23\textwidth]{./pyco-sumsizes-bare-stickleback-snps-dpp-2_22543-root-1_0-1_0-0_0-time-1_0-0_001-0_0-pycoevolity-sizes.pdf} \\
+        & \multicolumn{2}{c}{\large Effective population size ($N_e\mu$)}
+    \end{tabular}
+\end{figure}
+
+\end{document}
