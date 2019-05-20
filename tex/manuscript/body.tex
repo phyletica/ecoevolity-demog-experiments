@@ -7,46 +7,57 @@ co-distributed species to contract or expand their ranges or become isolated.
 Furthermore, ecological interactions can also cause demographic changes in
 multiple species;
 for example, the expansion of one species may predict the expansion of its
-symbionts and the contraction of competitors.
+symbionts and the contraction of its competitors.
 Such processes predict that population divergences or demographic changes will
 be temporally clustered across multiple species.
 As a result, statistical methods that infer such patterns from genetic data
 allow phylogeographers to test hypotheses about such processes.
-There has been a lot of work on methods that test for shared divergence times
+
+There has been a lot of work on methods that infer shared divergence times
 among pairs of populations
 \citep{Hickerson2006,Hickerson2007,Huang2011,Oaks2014dpp,Oaks2018ecoevolity}.
-Recently, there has also been a lot of work on methods that infer temporally
-clustered changes in population sizes among species
-\citep{Chan2014,Xue2015,Xue2017,Gehara2017}.
-
-Uses of ABC estimation of shared size changes \citep{Burbrink2016}
-
-To date, no method has allowed the co-estimation of both shared divergences
+and shared demographic changes across populations
+\citep{Chan2014,Xue2015,Burbrink2016,Xue2017,Gehara2017}.
+To date, no method has allowed the co-inference of both shared divergences
 and population-size changes.
-Given the overlap in the processes that can potentially cause divergence and
-demographic changes across multiple species, such a method would be useful for
-testing hypotheses about community-scale processes that shape biodiversity
-across landscapes.
+Given the overlap in the processes that can potentially cause isolation and
+demographic changes of populations across multiple species, such a method would
+be useful for testing hypotheses about community-scale processes that shape
+biodiversity across landscapes.
 Here, we introduce a general, full-likelihood Bayesian method that can estimate
 shared times among an arbitrary mix of population divergences and population
 size changes (\fig{}~\ref{fig:modelCartoon}).
 
-Furthermore, there has been a lot of work on how well the divergence-time
-methods work
-\citep{Oaks2012,Hickerson2013,Oaks2014reply,Oaks2014dpp,Overcast2017,Oaks2018ecoevolity}.
-However, work on how well we can estimate shared population-size changes has
-been much more limited.
+Whereas the theory and performance of methods that estimate shared divergence
+times has been well-explored
+\citep[e.g.,][]{Oaks2012,Hickerson2013,Oaks2014reply,Oaks2014dpp,Overcast2017,Oaks2018ecoevolity},
+exploration into the estimation of shared demographic changes has been much
+more limited.
 There are theoretical reasons to suspect that estimating shared demographic
 changes is more difficult than divergence times.
-The parameter of interest can become unidentifiable in at least three ways.
+The parameter of interest, the timing of a demographic change, can become
+unidentifiable in three ways.
 First, as the magnitude of a change in population becomes smaller,
 it becomes more difficult to estimate.
-Second, as the age of the size change gets older, we run out of
-genetic coalescent events that allow us to learn when it happened.
-Third, as the age of the size change approaches zero, we once again will fail
-to sample the coalescent events needed to inform us of the change.
-Thus, our second goal is to leverage our new method to assess how well we can
-infer shared population size changes among species.
+Second, as the age of the size change gets older, fewer of the genetic
+coalescent events occur prior to the change, resulting in less information
+about the timing and magnitude of the change.
+Third, as the age of the demographic change approaches zero, fewer coalescent
+events occur after the change, again limiting information about the timing and
+magnitude of the change.
+Thus, we take advantage of our full-likelihood method to assess how well we can
+infer shared demographic changes among populations when using all the
+information in genomic data.
+We apply our method to restriction-site-associated DNA sequence (RADseq) data
+from five populations of three-spine stickleback that were previously estimated
+to have co-expanded with an approximate Bayesian computation (ABC) approach.
+
+We find that estimating the timing and sharing of demographic changes is much
+more challenging than divergence times.
+Even under the most favorable simulation conditions, the ability to infer
+shared demographic events is quite limited.
+Our results also suggest that previous estimates of co-expansion among
+stickleback populations are likely caused by lack of information in the data.
 
 \ifembed{
 \input{fig-model-cartoon.tex}
