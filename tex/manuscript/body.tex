@@ -1,5 +1,6 @@
 \section{Introduction}
 
+\jcomment{Need more background, context, and citations}
 Many processes that shape the distribution of biodiversity across a landscape
 are expected to affect multiple species.
 Examples include changes to the environment itself that can cause
@@ -11,7 +12,7 @@ symbionts and the contraction of its competitors.
 Such processes predict that population divergences or demographic changes will
 be temporally clustered across multiple species.
 As a result, statistical methods that infer such patterns from genetic data
-allow phylogeographers to test hypotheses about such processes.
+allow phylogeographers to test hypotheses about such community-scale processes.
 
 There has been a lot of work on methods that infer shared divergence times
 among pairs of populations
@@ -35,11 +36,12 @@ exploration into the estimation of shared demographic changes has been much
 more limited.
 There are theoretical reasons to suspect that estimating shared demographic
 changes is more difficult than divergence times.
-The parameter of interest, the timing of a demographic change, can become
-unidentifiable in three ways.
+The parameter of interest, the timing of a demographic change, is informed by
+differing rates of genetic coalescence before and after the change, and can
+become unidentifiable in three ways.
 First, as the magnitude of a change in population becomes smaller,
 it becomes more difficult to estimate.
-Second, as the age of the size change gets older, fewer of the genetic
+Second, as the age of the demographic change gets older, fewer of the genetic
 coalescent events occur prior to the change, resulting in less information
 about the timing and magnitude of the change.
 Third, as the age of the demographic change approaches zero, fewer coalescent
@@ -57,7 +59,8 @@ more challenging than divergence times.
 Even under the most favorable simulation conditions, the ability to infer
 shared demographic events is quite limited.
 Our results also suggest that previous estimates of co-expansion among
-stickleback populations are likely caused by lack of information in the data.
+stickleback populations are likely caused by lack of information in
+single-nucleotide polymorphism (SNP) data that ignores invariant sites.
 
 \ifembed{
 \input{fig-model-cartoon.tex}
@@ -70,29 +73,44 @@ stickleback populations are likely caused by lack of information in the data.
 
 \section{Conclusions}
 
-We are threading a needle.
-There is a very narrow window within which we can reasonably estimate
-time of a demographic change.
+% We are threading a needle.
+There is a very narrow window within which we can reasonably estimate the time
+of a demographic change.
 This window is determined by how deep in the past the change occurred
 in coalescent units (i.e., relative to the current effective size
 of the population).
 Too recent and we lack enough coalescence events after the change, and too old
 and we lack enough coalscence events before the change.
-Even within this window, however, estimates of sharing of demographic
-changes among populations are still quite poor.
-This is in stark contrast to inferring sharing of divergences
-among taxa.
+Even within this window, however, estimates of the number of demographic events
+and the assignment of populations to those events are still quite poor.
+This is in stark contrast to inferring shared divergence times among taxa.
 
-Even when all of the information is used from allele count
-data, we can't do it.
-Caution should be taken from any inference of shared demographic changes.
-Perhaps there is hope if we model alignments of contiguous sequences.
-Longer loci can contain much more information about the lengths
-of branches in the gene tree, which are critically informative
-about the size of the population at any point in time.
+Given the poor estimates of co-demographic changes, even when all
+the information in the data are leveraged by a full-likelihood method, any
+inference of shared demographic changes should be treated with caution.
+This is especially true when only only variable sites are analyzed.
+Our estimates of the timing and sharing of demographic changes were
+consistently poor across all the conditions we simulated when only variable
+sites were used.
+Furthermore, when the prior is more diffuse than the distributions that
+generated the data (which is usually the case in empirical applications),
+excluding constant sites makes the method strongly biased toward
+inferring shared demographic events
+(second row of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+These results help explain the stark contrast we see in our results from the
+stickleback RADseq data when including versus excluding constant sites
+(\fig{}~\ref{fig:sticklesummary}).
 
-The stark contrast in results using all the data and SNPs only
-for the sticklebacks is alarming.
+Perhaps modelling contiguous, linked sequence loci could help
+improve estimates of shared demographic changes.
+Longer loci can contain much more information about the lengths of branches in
+the gene tree, which are critically informative about the size of the
+population at any point in time.
+With loci from across the genome, each with more information about the gene
+tree they evolved along,
+perhaps more information can be captured about changes in the rate of
+coalescence through time.
+\jcomment{cite and discuss ``Bayesian skyline''/``phylodynamic'' methods here}
 
 
 \section{Methods}

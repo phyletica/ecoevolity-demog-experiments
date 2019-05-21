@@ -165,7 +165,7 @@ We use \etimesets to represent the partitioning of taxa to events,
 which we will also refer to as the ``event model.''
 The concentration parameter, \concentration, controls how clustered the
 Dirichlet process is, and determines the probability of all possible \etimesets
-(i.e., all possible set partitions of taxa to 1--\ncomparisons events).
+(i.e., all possible set partitions of taxa to $1, 2, \ldots, \ncomparisons$ events).
 We use \etimes to represent the times of the unique events in \etimesets.
 Using this notation, the posterior distribution of our 
 Dirichlet-process model is
@@ -178,8 +178,8 @@ Dirichlet-process model is
     \murates,
     \gfreqs
     \given
-    \alldata,
-    \basedistribution
+    \alldata
+    % \basedistribution
     )
     =
     \frac{
@@ -192,8 +192,8 @@ Dirichlet-process model is
         \murates,
         \gfreqs
         )
+        \pr(\etimes \given \etimesets)%, \basedistribution)
         \pr(\etimesets \given \concentration)
-        \pr(\etimes \given \etimesets, \basedistribution)
         \pr(\concentration)
         \pr(\collectionpopsizes)
         \pr(\murates)
@@ -331,7 +331,7 @@ available at
 \url{https://github.com/phyletica/pycoevolity}.
 
 We used Version 0.3.1 
-(commit 9284417)
+(Commit 9284417)
 of the \ecoevolity software package for all of our analyses.
 A detailed history of this project, including all of the data and scripts
 needed to produce our results, is available at

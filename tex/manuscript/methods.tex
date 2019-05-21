@@ -123,32 +123,35 @@ because \ecoevolity models each population separately
 (\fig{}~\ref{fig:modelCartoon}),
 the characters do not need to be orthologous across populations, only within
 them.
+\highLight{Insert stacks details here}
 
 \subsubsection{Inferring shared demographic changes with \ecoevolity}
 
-We ran 10 MCMC chains for 150,000 generations, sampling every 100 generations.
 We used a value for the concentration parameter of the Dirichlet process
 that corresponds to a mean number of events of three
 ($\concentration = 2.22543$).
+We used the following prior distributions on the timing of events and effective
+sizes of populations:
 \begin{itemize}
-    \item $\concentration = 2.22543$
     \item $\etime \sim \dexponential{0.001}$
     \item $\rootrelativepopsize \sim \dexponential{1}$
     \item $\epopsize[\descendantpopindex{}] \sim \dgamma{2}{0.002}$
 \end{itemize}
-To assess the sensitivity of the results to our prior assumptions,
+To assess the sensitivity of the results to these prior assumptions,
 we also analyzed the data under two additional priors on
 the concentration parameter, event times, and relative
 effective population size of the ancestral population:
 \begin{itemize}
-    \item $\concentration = 13$ (half of prior on 5 events)
-    \item $\concentration = 0.3725$ (half of prior on 1 events)
+    \item $\concentration = 13$ (half of prior probability on 5 events)
+    \item $\concentration = 0.3725$ (half of prior probability on 1 event)
     \item $\etime \sim \dexponential{0.0005}$
     \item $\etime \sim \dexponential{0.01}$
     \item $\rootrelativepopsize \sim \dexponential{0.5}$
     \item $\rootrelativepopsize \sim \dexponential{0.1}$
 \end{itemize}
 
+For each prior setting, we ran 10 MCMC chains for 150,000 generations, sampling
+every 100 generations.
 We assessed convergence and mixing of the chains by calculating the potential
 scale reduction factor \citep[PSRF; the square root of Equation 1.1 in][]{Brooks1998}
 and effective sample size \citep{Gong2014} of all continuous parameters and the
@@ -160,4 +163,3 @@ The MCMC chains for all analyses converged almost immediatley; we
 conservatively removed the first 101 samples from each chain, resulting in
 14,000 samples from the posterior (1400 samples from 10 chains) for each
 analysis.
-
