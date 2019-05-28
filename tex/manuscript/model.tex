@@ -158,7 +158,7 @@ for that taxon on only having sampled variable characters.
 \begin{linenomath}
 As described by \citet{Oaks2018ecoevolity},
 we treat the number of events (population-size changes and/or divergences)
-and the assignment of taxa to tose events as
+and the assignment of taxa to those events as
 random variables under a Dirichlet process \citep{Ferguson1973,
     Antoniak1974}.
 We use \etimesets to represent the partitioning of taxa to events,
@@ -201,7 +201,7 @@ Dirichlet-process model is
     }{
         \pr(
         \alldata,
-        \basedistribution
+        % \basedistribution
         )
     }.
     \label{eq:bayesruleexpanded}
@@ -299,9 +299,9 @@ decisions, and whenever $\gfreq \neq 0.5$, these decisions can affect
 the likelihood of the model \citep{Oaks2018ecoevolity}.
 Because DNA is the dominant character type for genomic data, we assume that
 $\gfreq = 0.5$ in this paper.
-The makes the CTMC model of character-state substitution a two-state analog of
+This makes the CTMC model of character-state substitution a two-state analog of
 the ``JC69'' model \citep{JC1969}.
-However, if the genetic markers collected for one or more taxa are  naturally
+However, if the genetic markers collected for one or more taxa are naturally
 biallelic, the frequencies of the two states can be meaningfully estimated, and
 our implementation allows for a beta prior on \gfreq in such cases.
 This makes the CTMC model of character-state substitution a two-state general

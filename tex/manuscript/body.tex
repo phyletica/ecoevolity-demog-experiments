@@ -1,27 +1,33 @@
 \section{Introduction}
 
 \jcomment{Need more background, context, and citations}
-Many processes that shape the distribution of biodiversity across a landscape
-are expected to affect multiple species.
-Examples include changes to the environment itself that can cause
+A primary goal of ecology and evolutionary biology is to understand the
+processes influencing the distribution, abundance, and diversification of
+species.
+Many biotic and abiotic factors that shape the distribution of biodiversity
+across a landscape are expected to affect multiple species.
+Abiotic mechanisms include changes to the environment that can cause
 co-distributed species to contract or expand their ranges or become isolated.
-Furthermore, ecological interactions can also cause demographic changes in
-multiple species;
-for example, the expansion of one species may predict the expansion of its
-symbionts and the contraction of its competitors.
-Such processes predict that population divergences or demographic changes will
-be temporally clustered across multiple species.
+Biotic factors include inter-specific ecological interactions such as the range
+expansion of one species causing the expansion of its symbionts and the range
+contraction and/or fragmentation of its competitors.
+Such processes predict that evolutionary events, such as population divergences
+or demographic changes,
+will be temporally clustered across multiple species.
 As a result, statistical methods that infer such patterns from genetic data
-allow phylogeographers to test hypotheses about such community-scale processes.
+allow ecologists and evolutionary biologists to test hypotheses about such
+community-scale processes.
 
-There has been a lot of work on methods that infer shared divergence times
+Recent research has developed methods to infer shared divergence times
 among pairs of populations
-\citep{Hickerson2006,Hickerson2007,Huang2011,Oaks2014dpp,Oaks2018ecoevolity}.
-and shared demographic changes across populations
+\citep{Hickerson2006,Hickerson2007,Huang2011,Oaks2014dpp,Oaks2018ecoevolity}
+and shared changes in effective population size across populations
 \citep{Chan2014,Xue2015,Burbrink2016,Xue2017,Gehara2017}.
+For convenience, we use demography to refer to the effective size of
+populations and distinguish it from population divergences.
 To date, no method has allowed the co-inference of both shared divergences
-and population-size changes.
-Given the overlap in the processes that can potentially cause isolation and
+and demographic changes.
+Given overlap among processes that can potentially cause isolation and
 demographic changes of populations across multiple species, such a method would
 be useful for testing hypotheses about community-scale processes that shape
 biodiversity across landscapes.
@@ -51,16 +57,10 @@ Thus, we take advantage of our full-likelihood method to assess how well we can
 infer shared demographic changes among populations when using all the
 information in genomic data.
 We apply our method to restriction-site-associated DNA sequence (RADseq) data
-from five populations of three-spine stickleback that were previously estimated
-to have co-expanded with an approximate Bayesian computation (ABC) approach.
-
-We find that estimating the timing and sharing of demographic changes is much
-more challenging than divergence times.
-Even under the most favorable simulation conditions, the ability to infer
-shared demographic events is quite limited.
-Our results also suggest that previous estimates of co-expansion among
-stickleback populations are likely caused by lack of information in
-single-nucleotide polymorphism (SNP) data that ignores invariant sites.
+from five populations of three-spine stickleback
+\citep[(\spp{Gasterosteus aculeatus});][]{Hohenlohe2010}
+that were previously estimated to have co-expanded with an approximate Bayesian
+computation (ABC) approach \citep{Xue2015}.
 
 \ifembed{
 \input{fig-model-cartoon.tex}
@@ -74,8 +74,8 @@ single-nucleotide polymorphism (SNP) data that ignores invariant sites.
 \section{Conclusions}
 
 % We are threading a needle.
-There is a very narrow window within which we can reasonably estimate the time
-of a demographic change.
+There is a very narrow temporal window within which we can reasonably estimate
+the time of a demographic change.
 This window is determined by how deep in the past the change occurred
 in coalescent units (i.e., relative to the current effective size
 of the population).

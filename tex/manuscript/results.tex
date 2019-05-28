@@ -33,8 +33,8 @@ This distribution was chosen to span times of demographic change from very
 recent (i.e., most gene lineages coalesce before the change) to old (i.e., most
 gene lineages coalesce after the change).
 The assignment of three simulated populations to these events was controlled by
-a Dirichlet process with a mean number of 2 demographic events across the 3
-populations.
+a Dirichlet process with a mean number of 2.0 demographic events across the
+three populations.
 % Our motivation for this distribution of times was to span values
 % that were ``easy'' and ``hard'' to estimate;
 % i.e., a mix of size changes that occurred more recently
@@ -59,13 +59,13 @@ our method is unable to identify the timing or model of demographic change.
 As expected, our method returns the prior on the timing of events 
 (bottom row of \fig{}~\ref{fig:valsimsetimesinitial})
 and almost always prefers either a model with a single, shared demographic
-event (model "000") or independent demographic changes (model "012").
-(bottom row of \fig{}~\ref{fig:valsimsmodelinitial}).
+event (model "000") or independent demographic changes (model "012";
+bottom row of \fig{}~\ref{fig:valsimsmodelinitial}).
 This is expected behavior, because there is essentially no information in the
 data about the timing of demographic changes, and a Dirichlet process with a
-mean of 2 demographic events, puts approximately 0.24 of the prior probability
-on the models with one and three events, and 0.515 prior probability on the
-three models with two events (approximately 0.17 each).
+mean of 2.0 demographic events, puts approximately 0.24 of the prior
+probability on the models with one and three events, and 0.515 prior
+probability on the three models with two events (approximately 0.17 each).
 Thus, with little information, the method samples from the prior distribution
 on the timing of events, and prefers one of the two models with larger prior
 probability.
@@ -79,7 +79,7 @@ was preferred only exceeded 50\% for the large population
 expansions
 (top three rows of \fig{}~\ref{fig:valsimsmodelinitial}).
 The median posterior support for the correct model was very small (less than
-0.58) under all conditions
+0.58) under all conditions.
 Under all simulation conditions, estimates of the timing and sharing of
 demographic events are better when using all characters, rather than only
 variable characters
@@ -95,9 +95,9 @@ and
 S\ref{fig:valsimsdsizesinitial}).
 
 
-We observed numerical problems when the change in population size was
-either very recent or old relative to the effective size of the
-population after the demographic change;
+We observed numerical problems when the timing of the demographic change was
+either very recent or old relative to the effective size of the population
+following the change;
 we refer to the population before the change as ``ancestral'' and after as
 ``descendant''.
 In such cases, either very few or almost all of the gene lineages coalesce
@@ -155,6 +155,7 @@ change
 (top row of \fig{}~\ref{fig:valsimsetimesopt}),
 but the ability to identify the correct number of events and the assignment of
 the populations to those events remains quite poor;
+\jcomment{\ecoevolity is being used for the first time out of nowhere}
 \ecoevolity only prefers the correct model 57\% of the time, with
 a median posterior probability of the correct model of 0.42
 (top row of \fig{}~\ref{fig:valsimsmodelopt}).
@@ -264,7 +265,7 @@ S\ref{fig:valsimsdsizesdiffuse})
 
 When demographic and divergence comparisons are analyzed separately, the
 performance of estimates of the timing and sharing of demographic changes and
-divergences is dramatically different with the latter being much more accurate
+divergences is dramatically different, with the latter being much more accurate
 and precise than the former
 (e.g., see
 \figs
@@ -403,7 +404,7 @@ support for a single, shared, extremely recent population expansion
 The support for a single, shared event is consistent with the results from our
 simulations using diffuse priors and only including SNPs, which showed
 consistent, spurious support for a single event
-(Row 2 of \fig{}~{fig:valsimsmodeldiffuse}).
+(Row 2 of \fig{}~\ref{fig:valsimsmodeldiffuse}).
 These results are relatively robust to a broad range of prior
 assumptions
 (\figs
@@ -417,9 +418,9 @@ fig:sticklebysizeevents,fig:sticklebysizetimes,fig:sticklebysizesizes,%
 \input{fig-sticklebacks.tex}
 }{}
 
-When using only SNPs, the estimates of the shared demographic event time are
-essentially at the minimum of zero, suggesting that there is little information
-about the timing of any demographic changes in the SNP data alone.
+When using only SNPs, estimates of the timing of the single, shared demographic
+event are essentially at the minimum of zero, suggesting that there is little
+information about the timing of any demographic changes in the SNP data alone.
 This is consistent with results of \citet{Xue2015} where the single, shared
 event was also estimated to have occurred at the minimum (1000 generations) of
 their uniform prior on the timing of demographic changes.
