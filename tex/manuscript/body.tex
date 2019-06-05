@@ -22,10 +22,10 @@ Recent research has developed methods to infer shared divergence times
 among pairs of populations
 \citep{Hickerson2006,Hickerson2007,Huang2011,Oaks2014dpp,Oaks2018ecoevolity}
 and shared changes in effective population size across populations
-\citep{Chan2014,Xue2015,Burbrink2016,Xue2017,Gehara2017}.
-For convenience, we use demography to refer to the effective size of
-populations and distinguish it from population divergences.
-To date, no method has allowed the co-inference of both shared divergences
+\citep{Chan2014,Xue2015,Burbrink2016,Xue2017,Gehara2017}
+from comparative genetic data.
+We use ``demography'' to refer to the effective size of populations.
+To date, no method has allowed the joint inference of both shared divergences
 and demographic changes.
 Given overlap among processes that can potentially cause isolation and
 demographic changes of populations across multiple species, such a method would
@@ -34,6 +34,7 @@ biodiversity across landscapes.
 Here, we introduce a general, full-likelihood Bayesian method that can estimate
 shared times among an arbitrary mix of population divergences and population
 size changes (\fig{}~\ref{fig:modelCartoon}).
+We implemented this method in the software package \ecoevolity.
 
 Whereas the theory and performance of methods that estimate shared divergence
 times has been well-explored
