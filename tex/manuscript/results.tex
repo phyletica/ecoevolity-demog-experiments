@@ -2,57 +2,19 @@
 
 \subsubsection{Estimating timing and sharing of demographic changes}
 
-We initially simulated data under distributions we hoped comprised a mix of
-conditions that were favorable and challenging for estimating the timing and
-sharing of demographic changes.
-However, estimates of the timing
+% Under our initial simulation conditions,
+% that we 
+% selected to comprise a mix of conditions both favorable and challenging
+% for estimating the timing and sharing of demographic changes
+Despite our attempt to capture a mix of favorable and challenging parameter
+values,
+estimates of the timing
 (\fig{}~\ref{fig:valsimsetimesinitial})
 and sharing
 (\fig{}~\ref{fig:valsimsmodelinitial})
-of demographic events was quite poor across all the simulation conditions.
-For these initial conditions, we simulated \datasets with three populations
-that underwent a demographic change, under a variety of distributions on the
-relative size of the ancestral population.
-These included four gamma probability distributions with a shape of 10 and a
-mean of
-0.25 (4-fold population increase),
-0.5 (2-fold population increase),
-2.0 (2-fold population decrease), and
-1.0 (no change on average, but a fair amount of variance).
-We also used a gamma distribution with a shape of 100 and mean of 1.0
-to mimic ``worst-case'' conditions when there was almost no demographic
-change in the history of the populations.
-The timing of the demographic events was exponentially distributed with a mean
-of 0.01 expected substitutions per site;
-the expected descendant population size
-(scaled by the mutation rate; \epopsize\murate)
-was 0.002,
-which puts our expectation for the size-change times in units of $4N_e$
-generations at 1.25.
-This distribution was chosen to span times of demographic change from very
-recent (i.e., most gene lineages coalesce before the change) to old (i.e., most
-gene lineages coalesce after the change).
-The assignment of three simulated populations to these events was controlled by
-a Dirichlet process with a mean number of 2.0 demographic events across the
-three populations.
-% Our motivation for this distribution of times was to span values
-% that were ``easy'' and ``hard'' to estimate;
-% i.e., a mix of size changes that occurred more recently
-% than the gene copies coalesced and thus would be generate data with information
-% about when the change happened,
-% and those that occurred when few or no gene lineages were left to coalesce, and
-% thus would generate data with limited information about the timing of the
-% event.
-
-\ifembed{
-\input{fig-sims-event-times-initial.tex}
-}{}
-
-\ifembed{
-\input{fig-sims-model-initial.tex}
-}{}
-
-Under the ``worst-case'' scenario of essentially no population-size change
+of demographic events were quite poor across all the simulation conditions
+we initially explored.
+Under the ``worst-case'' scenario of very little population-size change
 (bottom row of \figs \ref{fig:valsimsetimesinitial} and
 \ref{fig:valsimsmodelinitial}),
 our method is unable to identify the timing or model of demographic change.
@@ -70,7 +32,15 @@ Thus, with little information, the method samples from the prior distribution
 on the timing of events, and prefers one of the two models with larger prior
 probability.
 
-Under considerable changes in population size, the method only faired
+\ifembed{
+\input{fig-sims-event-times-initial.tex}
+}{}
+
+\ifembed{
+\input{fig-sims-model-initial.tex}
+}{}
+
+Under considerable changes in population size, the method only fared
 moderately better at estimating the timing of demographic events
 (top three rows of \fig{}~\ref{fig:valsimsetimesinitial}).
 The ability to identify the model improved under these
@@ -95,59 +65,59 @@ and
 S\ref{fig:valsimsdsizesinitial}).
 
 
-We observed numerical problems when the timing of the demographic change was
+We observed numerical problems when the time of the demographic change was
 either very recent or old relative to the effective size of the population
-following the change;
-we refer to the population before the change as ``ancestral'' and after as
-``descendant''.
-In such cases, either very few or almost all of the gene lineages coalesce
-after the demographic change,
+following the change
+(\epopsize[\descendantpopindex{}]; the descendant population).
+In such cases, either very few or almost all of the sampled gene copies
+coalesce after the demographic change,
 providing almost no information about the magnitude or
 timing of the population-size change.
-In these cases, the data were well-explained by no change in population size,
-which could be achieved in three ways:
+In these cases, the data are well-explained by a constant population size,
+which can be achieved by the model in three ways:
 (1) an expansion time of zero and an ancestral population
 size that matched the true population size,
 (2) an old expansion and a descendant population size that matched the true
 population size,
 or (3) an intermediate expansion time and both the ancestral and descendant
-sizes matched the true time.
-The true population size being matched was that of the descendant or ancestral
-population if the expansion was old or recent, respectively.
+sizes matched the true size.
+The true population size being matched in these modelling conditions is that of
+the descendant or ancestral population if the expansion was old or recent,
+respectively.
 This caused MCMC chains to converge to different regions of parameter
 space
 (highlighted in orange in \fig{}~\ref{fig:valsimsetimesinitial}).
 
-In an effort to find conditions under which the timing and sharing of
-demographic changes could be better estimated, and avoid combinations
-of parameter values that caused identifiability problems,
-we next explored simulations under distributions on times and population sizes
-offset from zero, but with much more recent demographic event times.
+% In an effort to find conditions under which the timing and sharing of
+% demographic changes could be better estimated, and avoid combinations
+% of parameter values that caused identifiability problems,
+% we next explored simulations under distributions on times and population sizes
+% offset from zero, but with much more recent demographic event times.
 % Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
 % relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
 % relative root size ~ gamma(shape=5.0, scale = 0.09, offset = 0.05); mean 0.5
 % relative root size ~ gamma(shape=5.0, scale = 0.79, offset = 0.05); mean 4
 % relative root size ~ gamma(shape=5.0, scale = 0.19, offset = 0.05); mean 1
 % relative root size ~ gamma(shape=50.0, scale = 0.02, offset = 0.0); mean 1
-For the distribution of event times, we used a gamma distribution
-with a shape of 4, offset of 0.0001, and a mean of 0.002 (accounting
-for the offset; 0.25 units of $4N_e$ generations, on average).
-In combination with this distribution on event times,
-we used five different gamma distributions on the relative
-effective size of the ancestral population.
-Four of these had a shape of 5, an offset of 0.05, and a mean
-of
-0.25 (4-fold increase),
-0.5 (2-fold increase),
-4 (4-fold decrease),
-and
-1 (no change on average).
-The last gamma distribution on the relative ancestral size had a shape of 50
-and a mean of 1.
+% For the distribution of event times, we used a gamma distribution
+% with a shape of 4, offset of 0.0001, and a mean of 0.002 (accounting
+% for the offset; 0.25 units of $4N_e$ generations, on average).
+% In combination with this distribution on event times,
+% we used five different gamma distributions on the relative
+% effective size of the ancestral population.
+% Four of these had a shape of 5, an offset of 0.05, and a mean
+% of
+% 0.25 (4-fold increase),
+% 0.5 (2-fold increase),
+% 4 (4-fold decrease),
+% and
+% 1 (no change on average).
+% The last gamma distribution on the relative ancestral size had a shape of 50
+% and a mean of 1.
 
-Even when trying to select simulation conditions that are favorable for
-identifying the event times, the ability to infer the correct timing and
-sharing of demographic events remains quite poor
+Even after we tried selecting simulation conditions that are more favorable for
+identifying the event times, estimates of the timing and
+sharing of demographic events remain quite poor
 (\figs \ref{fig:valsimsetimesopt} and \ref{fig:valsimsmodelopt}).
 Under the recent (but not too recent) 4-fold population-size increase (on
 average) scenario, we do see better estimates of the times of the demographic
@@ -155,13 +125,12 @@ change
 (top row of \fig{}~\ref{fig:valsimsetimesopt}),
 but the ability to identify the correct number of events and the assignment of
 the populations to those events remains quite poor;
-\jcomment{\ecoevolity is being used for the first time out of nowhere}
-\ecoevolity only prefers the correct model 57\% of the time, with
-a median posterior probability of the correct model of 0.42
+the correct model is preferred only 57\% of the time, and the
+median posterior probability of the correct model is only 0.42
 (top row of \fig{}~\ref{fig:valsimsmodelopt}).
 Under the most extreme population retraction scenario (4-fold, on average),
-\ecoevolity only estimates the correct model 40\% of the time, with a median
-posterior probability of the correct model of only 0.26
+the correct model is preferred only 40\% of the time, and the median
+posterior probability of the correct model is only 0.26
 (middle row of \fig{}~\ref{fig:valsimsmodelopt}).
 Estimates are especially poor when using only variable characters,
 so we focus on the results using all characters
@@ -187,7 +156,7 @@ S\ref{fig:valsimsdsizesopt}).
 
 \subsubsection{Simulations to assess sensitivity to prior assumptions}
 
-We observe the best estimates of the timing and sharing of demographic
+Above, we observe the best estimates of the timing and sharing of demographic
 events under narrow distributions on the relative effective size of the
 ancestral population
 (top row of \figs
@@ -197,17 +166,21 @@ when those data were analyzed.
 These distributions are unrealistically informative priors for empirical
 studies, for which there is usually little \emph{a priori} information about
 past population sizes.
-To determine whether the better performance under these distributions was
-caused by more informative data or priors, we simulated \datasets under a
-narrow distribution on the relative ancestral population size, and analyzed
-these \datasets under more realistic, ``diffuse'' prior distributions on
-populations sizes and event times.
-This will also allow us to assess how sensitive estimates of the timing and
-sharing of demographic events are to prior assumptions.
-For comparison, we repeated the same simulations for pairs of populations for
-which we estimated the timing and sharing of their divergences (the same total
-number of gene copies were sampled from each pair).
-
+Our results show that the better performance under these distributions was at
+least partially caused by greater prior information, and that
+inference of shared demographic events is much more sensitive to
+prior assumptions than shared divergences
+(\figs \labelcref{fig:valsimsmodeldiffuse,fig:valsimsetimesdiffuse}).
+% To determine whether the better performance under these distributions was
+% caused by more informative data or priors, we simulated \datasets under a
+% narrow distribution on the relative ancestral population size, and analyzed
+% these \datasets under more realistic, ``diffuse'' prior distributions on
+% populations sizes and event times.
+% This will also allow us to assess how sensitive estimates of the timing and
+% sharing of demographic events are to prior assumptions.
+% For comparison, we repeated the same simulations for pairs of populations for
+% which we estimated the timing and sharing of their divergences (the same total
+% number of gene copies were sampled from each pair).
 % Sim disributions:
 % Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
 % relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
@@ -217,23 +190,24 @@ number of gene copies were sampled from each pair).
 % relative root size ~ Exponential(mean = 2.0)
 % descendant size ~ gamma(2.0, scale 0.001); mean 0.002
 
-We find that the inference of shared demographic events is quite sensitive to
-the priors, and we see a strong bias toward underestimating the number of
-events under the more realistic diffuse priors
+Under more realistic, diffuse priors, the probability of inferring the correct
+model of demographic events decreases from 0.57 to 0.434 when all characters
+are used, and from 0.36 to 0.284 when only variable characters are used
 (top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-Under the diffuse priors, the probability of inferring the correct model of
-demographic events decreases from 0.57 to 0.434 when all characters are used,
-and from 0.36 to 0.284 when only variable characters are used.
 The median posterior probability of the correct model also decreases from
 0.422 to 0.292 when all characters are used,
 and from 0.231 to 0.178 when only variable characters are used
 (top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-In comparison, the inference of shared divergences is much more
-accurate and precise than shared demographic changes, and
-the former is much more robust to the diffuse priors
+\emph{Most importantly, we see a strong bias toward underestimating the number
+    of events under the more realistic diffuse priors}
+(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+
+In comparison, the inference of shared divergences is much more accurate and
+precise than shared demographic changes, and is much more robust to the diffuse
+priors
 (bottom two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
 When all characters are used, under both the correct and diffuse
-priors, the correct model is preferred over 91\% of the time,
+priors, the correct divergence model is preferred over 91\% of the time,
 and the median posterior probability of the correct model is over
 0.93.
 
@@ -264,7 +238,7 @@ S\ref{fig:valsimsdsizesdiffuse})
 \subsection{Inferring a mix of shared divergences and demographic changes}
 
 When demographic and divergence comparisons are analyzed separately, the
-performance of estimates of the timing and sharing of demographic changes and
+performance of estimating the timing and sharing of demographic changes and
 divergences is dramatically different, with the latter being much more accurate
 and precise than the former
 (e.g., see
@@ -272,23 +246,26 @@ and precise than the former
 \ref{fig:valsimsmodeldiffuse}
 and
 \ref{fig:valsimsetimesdiffuse}).
-Perhaps, if we analyze a mix of demographic and divergence comparisons,
+One might hope that
+if we analyze a mix of demographic and divergence comparisons,
 the informativeness of the divergence times can help ``anchor'' and
 improve the estimates of shared demographic changes.
-To explore this possibility, we simulated datasets with six comparisons,
-comprising a mix of three populations that experienced a demographic change and
-three pairs of populations that diverged.
-For these mixed-comparison simulations, we used a gamma distribution on event
-times with a shape of 4, offset of 0.0001, and a mean of 0.002 substitutions per
-site (accounting for the offset; 0.25 units of $4N_e$ generations on average).
-For the distribution on the relative size of the ancestral population,
-we used a gamma distribution with a shape of 5, an offset of 0.05, and a mean
-of 0.5; a 2-fold population size increase on average.
-These are the same distributions used for the second row of
-\figs
-\ref{fig:valsimsetimesopt}
-and
-\ref{fig:valsimsmodelopt}.
+However, our results from simulating \datasets comprising a mix of three
+demographic and three divergence comparisons rule out this possibility.
+% To explore this possibility, we simulated datasets with six comparisons,
+% comprising a mix of three populations that experienced a demographic change and
+% three pairs of populations that diverged.
+% For these mixed-comparison simulations, we used a gamma distribution on event
+% times with a shape of 4, offset of 0.0001, and a mean of 0.002 substitutions per
+% site (accounting for the offset; 0.25 units of $4N_e$ generations on average).
+% For the distribution on the relative size of the ancestral population,
+% we used a gamma distribution with a shape of 5, an offset of 0.05, and a mean
+% of 0.5; a 2-fold population size increase on average.
+% These are the same distributions used for the second row of
+% \figs
+% \ref{fig:valsimsetimesopt}
+% and
+% \ref{fig:valsimsmodelopt}.
 
 % We summarized the timing and sharing of the demographic changes
 % separately from the divergences so that we could determine whether the
@@ -308,9 +285,9 @@ and
 \ref{fig:valsimsmodelopt}).
 The same is true for the estimates of population sizes
 (\fig{}~S\ref{fig:mixsimsfull}).
-Thus, there is no mechanism by which the more informative divergence-time
-estimates ``rescue'' the estimates of the timing and sharing of the demographic
-changes.
+Thus, there does not appear to be any mechanism by which the more informative
+divergence-time estimates ``rescue'' the estimates of the timing and sharing of
+the demographic changes.
 
 \ifembed{
 \input{fig-sims-mix.tex}
@@ -327,20 +304,20 @@ other characters, conditional on the population history), one either has to
 violate this assumption, or discard all but (at most) one site per locus.
 Given that all the results above indicate better estimates when all
 characters are used (compared to using only variable characters), we
-performed simulations to determine which strategy is better:
+simulated linked sites to determine which strategy is better:
 analyzing all linked sites and violating the assumption of unlinked characters,
 or discarding all but (at most) one variable character per locus.
 
-To do this, we repeated the most favorable simulation conditions (on average
-4-fold population expansion; see first row of
-\figs
-\ref{fig:valsimsetimesopt}
-and
-\ref{fig:valsimsmodelopt}),
-except that 100 characters were simulated along 5000
-simulated gene trees.
-In other words, the simulated \datasets comprised 5000
-100-base-pair loci, rather than 500,000 unlinked sites.
+% To do this, we repeated the most favorable simulation conditions (on average
+% 4-fold population expansion; see first row of
+% \figs
+% \ref{fig:valsimsetimesopt}
+% and
+% \ref{fig:valsimsmodelopt}),
+% except that 100 characters were simulated along 5000
+% simulated gene trees.
+% In other words, the simulated \datasets comprised 5000
+% 100-base-pair loci, rather than 500,000 unlinked sites.
 The results are almost identical to when all the sites were unlinked
 (compare first row of
 \figs
@@ -391,7 +368,7 @@ This inference was based on the publicly available RADseq data collected by
 (\url{https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP001747};
 NCBI Short Read Archive accession numbers SRX015871--SRX015877).
 We re-assembled and analyzed these data under our full-likelihood
-Bayesian framework, both using all sites from assembled loci,
+Bayesian framework, both using all sites from assembled loci
 and only SNPs.
 
 When analyzing all sites from the assembled stickleback
@@ -431,7 +408,7 @@ in the stickleback RADseq loci should be the most accurate.
 However, the unifying theme of our simulation results is that all estimates of
 shared demographic events tend to be poor and should be treated with
 a lot of skepticism.
-Given our results when using all the information in data simulated under
+Given our results when using all the information from data simulated under
 conditions favorable for estimating the timing of demographic changes, support
 of 0.99 posterior probability for any particular scenario is almost certainly
 spurious.

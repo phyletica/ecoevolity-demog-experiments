@@ -1,15 +1,69 @@
-\input{model.tex}
+% \input{model.tex}
+\subsection{The model}
+
+We extended the software package, \ecoevolity, to accommodate two types of
+temporal comparisons:
+\begin{enumerate}
+    \item A population that experienced a change from effective population size
+        \epopsize[\rootpopindex]
+        to effective size
+        \epopsize[\descendantpopindex{}]
+        at time \comparisonetime in the past.
+        We will refer to this as a \emph{demographic comparison}
+        (\fig{}~\ref{fig:modelCartoon}),
+        and refer to the population before and after the change in population
+        size as ``ancestral'' and ``descendant'', respectively.
+    \item A population that diverged at time \comparisonetime in the past into
+        two descendant populations, each with unique effective population
+        sizes.
+        We will refer to this as a \emph{divergence comparison}
+        (\fig{}~\ref{fig:modelCartoon}).
+\end{enumerate}
+This allowed us to infer shared times of divergence and/or demographic change
+across an arbitrary mix of demographic and divergence comparisons in a
+full-likelihood, Bayesian framework.
+During an ``event'' at time \etime, one or more demographic changes and/or
+divergences can occur.
+We estimate the number and timing of events and the assignment of comparisons
+to those events under a Dirichlet-process \citep{Ferguson1973,Antoniak1974}
+prior model.
+The \emph{a priori} tendency for comparisons to share events is controlled by
+the concentration parameter (\concentration) of the Dirichlet process.
+We use Markov chain Monte Carlo (MCMC) algorithms
+\citep{Metropolis1953,Hastings1970,Neal2000}
+to sample from the joint posterior of the model.
+See Appendix~\ref{appendix:model} for a full description of the model, and
+Table~\ref{table:notation} for a key to the notation we use throughout this
+paper.
+
+\subsection{Software implementation}
+The \cpp source code for \ecoevolity is freely available from
+\url{https://github.com/phyletica/ecoevolity} and includes an extensive test
+suite.
+Documentation for how to install and use the software is available at
+\url{http://phyletica.org/ecoevolity/}.
+We have incorporated help in pre-processing data and post-processing posterior
+samples collected by \ecoevolity into the Python package \pycoevolity, which is
+available at
+\url{https://github.com/phyletica/pycoevolity}.
+We used Version 0.3.1 
+(Commit 9284417)
+of the \ecoevolity software package for all of our analyses.
+A detailed history of this project, including all of the data and scripts
+needed to produce our results, is available at
+\url{https://github.com/phyletica/ecoevolity-demog-experiments}.
+
 
 \subsection{Analyses of simulated data}
 
 \subsubsection{Assessing ability to estimate timing and sharing of demographic changes}
 
 We used the \simcoevolity and \ecoevolity tools within the \ecoevolity software
-package (Version 0.3.1 Commit 9284417) to simulate and analyze \datasets,
+package to simulate and analyze \datasets,
 respectively, under a variety of conditions.
-Each simulated \dataset comprised 10 diploid individuals (20 genomes) sampled
-from each of three populations (demographic comparisons), and 500,000
-characters.
+Each simulated \dataset comprised 500,000 characters collected from 10 diploid
+individuals (20 genomes) sampled per population from each of three demographic
+comparisons.
 We specified the concentration parameter of the Dirichlet process so that
 the mean number of events was 2 ($\concentration = 1.414216$).
 We assumed the mutation rate of all three populations was equal and 1, such
@@ -21,43 +75,75 @@ samples discarded from each chain).
 
 \paragraph{Initial simulation conditions}
 
-For the initial set of conditions we explored, we used an exponential
-distribution on the time of demographic changes with a mean of 0.01.
-For the mutation-scaled effective size ($\epopsize\murate$) of the descendant
-population (i.e., after the demographic change), we used a gamma distribution
-with a shape of 5 and mean of 0.002.
-We used five different distributions on the relative effective
-size of the ancestral population (see left column of
+We initially simulated data under distributions we hoped comprised a mix of
+conditions that were favorable and challenging for estimating the timing and
+sharing of demographic changes.
+For these initial conditions, we simulated \datasets with three populations
+that underwent a demographic change, under five different distributions on the
+relative effective size of the ancestral population
+(\rootrelativepopsize; see left column of
 \figs
 \labelcref{fig:valsimsmodelinitial,fig:valsimsetimesinitial}):
 \begin{enumerate}[label=A.\arabic*]
-    \item \dgamma{10}{0.25} 
-    \item \dgamma{10}{0.5} 
-    \item \dgamma{10}{2} 
-    \item \dgamma{10}{1} 
-    \item \dgamma{100}{1} 
+    \item \dgamma{10}{0.25} (4-fold population increase) \label{sims:initialFourFoldIncrease}
+    \item \dgamma{10}{0.5} (2-fold population increase)  \label{sims:initialTwoFoldIncrease}
+    \item \dgamma{10}{2} (2-fold population decrease)    \label{sims:initialTwoFoldDecrease}
+    \item \dgamma{10}{1} (no change on average, but a fair amount of variance) \label{sims:initialCenter}
+    \item \dgamma{100}{1} (no change on average, little variance) \label{sims:initialCenterNarrow} 
 \end{enumerate}
-We generated 500 \datasets under each of these five distributions, all of which
-were analyzed using the same simulated distributions as priors.
+The last distribution was chosen to represent a ``worst-case'' scenario where
+there was almost no demographic change in the history of the populations.
+For the mutation-scaled effective size of the descendant populations
+($\epopsize[\descendantpopindex{}]\murate$; i.e., the population size after the
+demographic change),
+we used a gamma distribution with a shape of 5 and mean of 0.002.
+The timing of the demographic events was exponentially distributed with a mean
+of 0.01 expected substitutions per site;
+given the mean of our distribution on the effective size of the descendant
+populations, this puts the expectation of demographic-change times in units of
+$4N_e$ generations at 1.25.
+This distribution on times was chosen to span times of demographic change from
+very recent (i.e., most gene lineages coalesce before the change) to old (i.e.,
+most gene lineages coalesce after the change).
+The assignment of the three simulated populations to $1--3$ demographic events
+was controlled by a Dirichlet process with a mean number of 2.0 demographic
+events across the three populations.
+We generated 500 \datasets under each of these five simulation conditions, all
+of which were analyzed using the same simulated distributions as priors.
 
-\paragraph{Simulation conditions designed to improve performance}
+\paragraph{Simulation conditions chosen to improve performance}
 
-For our next set of conditions, we used an offset gamma distribution on times
-with a shape of 4.0, offset of 0.0001, and mean of 0.002 (after accounting for
-the offset).
-For the mutation-scaled effective size ($\epopsize\murate$) of the descendant
-population, we used an offset gamma distribution with a shape of 4, offset of
-0.0001, and mean of 0.0021.
+Estimates of the timing and sharing of demographic events were quite poor
+across all the initial simulation conditions (see results).
+In an effort to find conditions under which the timing and sharing of
+demographic changes could be better estimated, and avoid combinations
+of parameter values that caused identifiability problems,
+we next explored simulations under distributions on times and population sizes
+offset from zero, but with much more recent demographic event times.
+% Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
+% relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
+% relative root size ~ gamma(shape=5.0, scale = 0.09, offset = 0.05); mean 0.5
+% relative root size ~ gamma(shape=5.0, scale = 0.79, offset = 0.05); mean 4
+% relative root size ~ gamma(shape=5.0, scale = 0.19, offset = 0.05); mean 1
+% relative root size ~ gamma(shape=50.0, scale = 0.02, offset = 0.0); mean 1
+For the mutation-scaled effective size of the descendant
+population
+($\epopsize[\descendantpopindex{}]\murate$),
+we used an offset gamma distribution with a shape of 4, offset of 0.0001, and
+mean of 0.0021 (accounting for the offset).
+For the distribution of event times, we used a gamma distribution
+with a shape of 4, offset of 0.0001, and a mean of 0.002 (accounting
+for the offset; 0.25 units of $4N_e$ generations, on average).
 Again, we used five different distributions on the relative effective size of
 the ancestral population (see left column of
 \figs
 \labelcref{fig:valsimsmodelopt,fig:valsimsetimesopt}):
 \begin{enumerate}[label=B.\arabic*]
-    \item \dogamma{5}{0.25}{0.05} \label{sims:optimal}
-    \item \dogamma{5}{0.5}{0.05} \label{sims:optimaltwofoldincrease}
-    \item \dogamma{5}{4}{0.05}
-    \item \dogamma{5}{1}{0.05}
-    \item \dogamma{50}{1}{0}
+    \item \dogamma{5}{0.25}{0.05} (4-fold population increase) \label{sims:optimalFourFoldIncrease}
+    \item \dogamma{5}{0.5}{0.05} (2-fold population increase)  \label{sims:optimalTwoFoldIncrease}
+    \item \dogamma{5}{4}{0.05} (4-fold population decrease)    \label{sims:optimalFourFoldDecrease}
+    \item \dogamma{5}{1}{0.05} (no change on average, but a fair amount of variation) \label{sims:optimalCenter}
+    \item \dogamma{50}{1}{0} (no change on average, little variance) \label{sims:optimalCenterNarrow}
 \end{enumerate}
 We generated 500 \datasets under each of these five distributions, all of which
 were analyzed under priors that matched the generating distributions.
@@ -72,8 +158,8 @@ were analyzed under priors that matched the generating distributions.
 % Event time ~ exponential(mean = 0.005)
 % relative root size ~ Exponential(mean = 2.0)
 % descendant size ~ gamma(2.0, scale 0.001); mean 0.002
-Next, we simulated an additional 500 \datasets under the conditions
-specified by Item~\ref{sims:optimal} above.
+Next, we simulated an additional 500 \datasets under
+Condition~\ref{sims:optimalFourFoldIncrease} above.
 We then analyzed each of these \datasets under ``diffuse'' prior
 distributions:
 \begin{itemize}
@@ -85,18 +171,27 @@ These distributions were chosen to reflect realistic amounts of prior
 uncertainty about the timing of demographic changes and past and present
 effective population sizes when analyzing empirical data.
 
+For comparison, we repeated the same simulations and analyses for three pairs
+of populations for which we estimated the timing and sharing of their
+divergences
+(i.e., three divergence comparisons rather than three demographic comparisons;
+\fig{}~\ref{fig:modelCartoon}).
+For these divergence comparisons, we simulated 10 sampled genomes per
+population to match the total number sampled per comparison (20) as in the
+demographic simulations.
+
 
 \subsubsection{Simulating a mix of divergence and pop-size-change comparisons}
 
-To how well our method can infer a mix of shared demographic changes and
-divergence times, we simulated 500 \datasets comprised of 6 comparisons:
+To explore how well our method can infer a mix of shared demographic changes
+and divergence times, we simulated 500 \datasets comprised of 6 comparisons:
 3 demographic comparisons and
 3 divergence comparisons.
 20 genomes (10 diploid individuals) were sampled from each comparison; for
 divergence comparisons, 10 genomes were sampled from each of the two
 populations.
 We used the same simulation conditions described above for
-\ref{sims:optimaltwofoldincrease}.
+\ref{sims:optimalTwoFoldIncrease}.
 All simulated \datasets were analyzed under priors that matched
 the generating distributions.
 
@@ -107,7 +202,7 @@ of the timing and sharing of demographic changes,
 we simulated \datasets comprising 5000 100-base-pair
 loci (500,000 total characters).
 The distributions on parameters were the same
-as the conditions described for \ref{sims:optimal} above.
+as the conditions described for \ref{sims:optimalFourFoldIncrease} above.
 These same distributions were used as priors when
 analyzing the simulated \datasets.
 
@@ -116,6 +211,10 @@ analyzing the simulated \datasets.
 \subsection{Empirical application to stickleback data}
 
 \subsubsection{Assembly of loci}
+We assembled the publicly available RADseq data collected by
+\citet{Hohenlohe2010}
+from five populations of threespine sticklebacks (\spp{Gasterosteus aculeatus})
+from south-central Alaska.
 We used stacks Version XXXX \citationNeeded.
 To maximize the number of loci and minimize paralogy, we assembled each
 population separately;

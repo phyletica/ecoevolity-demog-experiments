@@ -47,19 +47,15 @@ according to a finite-sites, continuous-time Markov chain (CTMC) model.
 We assume the gene tree of each character is independent of the others,
 conditional on the population history (i.e., the characters are effectively
 unlinked).
-As the marker evolves along the gene tree, forward in time, there is an
-instantaneous relative rate \rgmurate of mutating from the red state to the
-green state, and a corresponding relative rate \grmurate of mutation from
-green to red \citep{Bryant2012,Oaks2018ecoevolity}.
-
-As the marker evolves along the gene tree, forward in time, there is an
-instantaneous relative rate \rgmurate of mutating from the red state to the
-green state, and a corresponding relative rate \grmurate of mutation from green
-to red.
+As the marker evolves along the gene tree, forward in time, there is a relative
+rate \rgmurate of mutating from the red state to the green state,
+and a corresponding relative rate \grmurate of mutation from green to red
+\citep{Bryant2012,Oaks2018ecoevolity}.
 The stationary frequency of the green state is then
 $\gfreq = \rgmurate / (\rgmurate + \grmurate)$.
 We will use \murate to denote the overall rate of mutation.
-If $\murate = 1$, time is measured in
+Evolutionary change is the product of \murate and time.
+Thus, if $\murate = 1$, time is measured in
 units of expected substitutions per site.
 Alternatively, if a mutation rate per site per unit time is given, then time is
 absolute.
@@ -234,11 +230,12 @@ Following \citet{Oaks2018ecoevolity},
 we use a gamma distribution on the effective size of the ancestral population
 \emph{relative} to the size of the descendant population(s), which we
 denote as \rootrelativepopsize.
-For a taxon with two descendant population (i.e., a divergence model), the
+For a taxon with two descendant population (i.e., a divergence comparison), the
 ancestral population size is relative to the mean of the descendant
 populations.
-For a taxon with only one descendant population (i.e., a size-change model),
-the ancestral populations is relative to the size of that descendant.
+For a taxon with only one descendant population (i.e., a demographic
+comparison), the ancestral populations is relative to the size of that
+descendant.
 % The goal of this approach is to allow more informative priors on the root
 % population size; we often have stronger prior expectations for the relative
 % size of the ancestral population than the absolute size.
@@ -262,36 +259,18 @@ The decision about how to model mutation rates is extremely important for any
 comparative phylogeographic approach that models taxa as disconnected
 species trees
 \citep[\fig{}~\ref{fig:modelCartoon}; e.g.,][]{Hickerson2006,Hickerson2007,Huang2011,Chan2014,Oaks2014dpp,Xue2015,Burbrink2016,Xue2017,Gehara2017,Oaks2018ecoevolity}.
-Here, we quote \citet{Oaks2018ecoevolity} directly:
-\begin{quotation}
-In the model presented above, for each population pair, the divergence time
-(\etime) and mutation rate (\murate) are inextricably linked.
-For a single pair of populations, if little is known about the mutation rate,
-this problem is easily solved by setting it to one ($\murate[1] = 1$) such
-that time is in units of expected substitutions per site and the effective
-population sizes are scaled by \murate.
-However, what about the second pair of populations for which we wish to compare
-the divergence time to the first?
-Because the species trees in our model are disconnected
-[\ldots],
-we cannot learn about
-the relative rates of mutation across the population pairs from the data.
-As a result, we need strong prior information about the relative rates of
-mutation across population pairs for this model to work.
-
-If the second pair of populations is closely related to the first, and shares a
-similar life history, we could assume they share the same mutation rate and
-set the mutation rate of the second pair to one as well ($\murate[1] = \murate[2] = 1$).
-Alternatively, we could relax that assumption and put a prior on \murate[2].
-However, this should be a strongly informative prior.
-Placing a weakly informative prior on \murate[2] would mean that we can no
-longer estimate its divergence time relative to the first pair,
-which is our primary goal.
-So, while it is possible to incorporate uncertainty in relative mutation rates,
-it is important to keep in mind that the data cannot inform these parameters,
-and thus the prior uncertainty in rates will be directly reflected in the
-posterior of divergence times.
-\end{quotation}
+Time (\etime) and mutation rate (\murate) are inextricably linked, and because
+the comparisons are modeled as disconnected species trees, the data cannot
+inform the model about relative or absolute differences in \murate among the
+comparisons.
+We provide flexibility to the investigator to fix or place prior probability
+distributions on the relative or absolute rate of mutation for each comparison.
+However, if one chooses to accommodate uncertainty in the mutation rate of one
+or more comparisons, the priors should be strongly informative.
+Because of the inextricable link between rate and time,
+placing a weakly informative prior on a comparison's mutation rate prevents
+estimation of the time of its demographic change or divergence,
+which is the primary goal.
 
 \paragraph{Prior on the equilibrium-state frequency}
 Recoding four-state nucleotides to two states requires some arbitrary
@@ -317,22 +296,22 @@ We also use univariate and multivariate Metropolis-Hastings algorithms
 \citep{Metropolis1953,Hastings1970} to update the model,
 the latter of which are detailed in \citet{Oaks2018ecoevolity}.
 
-\subsection{Software implementation}
-The model and Bayesian estimattion outlined above has been incorporated into
-the open-source software package, \ecoevolity, written in the \cpp language.
-The source code is freely available from
-\url{https://github.com/phyletica/ecoevolity} and
-includes an extensive test suite.
-Documentation for how to install and use the software is available at
-\url{http://phyletica.org/ecoevolity/}.
-We have incorporated help in preprocessing data and postprocessing posterior
-samples collectd by \ecoevolity into the Python package \pycoevolity, which is
-available at
-\url{https://github.com/phyletica/pycoevolity}.
+% \subsection{Software implementation}
+% The model and Bayesian estimattion outlined above has been incorporated into
+% the open-source software package, \ecoevolity, written in the \cpp language.
+% The source code is freely available from
+% \url{https://github.com/phyletica/ecoevolity} and
+% includes an extensive test suite.
+% Documentation for how to install and use the software is available at
+% \url{http://phyletica.org/ecoevolity/}.
+% We have incorporated help in preprocessing data and postprocessing posterior
+% samples collectd by \ecoevolity into the Python package \pycoevolity, which is
+% available at
+% \url{https://github.com/phyletica/pycoevolity}.
 
-We used Version 0.3.1 
-(Commit 9284417)
-of the \ecoevolity software package for all of our analyses.
-A detailed history of this project, including all of the data and scripts
-needed to produce our results, is available at
-\url{https://github.com/phyletica/ecoevolity-demog-experiments}.
+% We used Version 0.3.1 
+% (Commit 9284417)
+% of the \ecoevolity software package for all of our analyses.
+% A detailed history of this project, including all of the data and scripts
+% needed to produce our results, is available at
+% \url{https://github.com/phyletica/ecoevolity-demog-experiments}.

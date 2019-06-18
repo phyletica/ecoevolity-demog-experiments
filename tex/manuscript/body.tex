@@ -7,45 +7,47 @@ species.
 Many biotic and abiotic factors that shape the distribution of biodiversity
 across a landscape are expected to affect multiple species.
 Abiotic mechanisms include changes to the environment that can cause
-co-distributed species to contract or expand their ranges or become isolated.
+co-distributed species to contract or expand their ranges and/or become
+fragmented.
 Biotic factors include inter-specific ecological interactions such as the range
-expansion of one species causing the expansion of its symbionts and the range
+expansion of a species causing the expansion of its symbionts and the range
 contraction and/or fragmentation of its competitors.
 Such processes predict that evolutionary events, such as population divergences
-or demographic changes,
-will be temporally clustered across multiple species.
+or demographic changes, will be temporally clustered across multiple species.
 As a result, statistical methods that infer such patterns from genetic data
 allow ecologists and evolutionary biologists to test hypotheses about such
 community-scale processes.
 
-Recent research has developed methods to infer shared divergence times
-among pairs of populations
+Recent research has developed methods to infer
+patterns of temporally clustered (or ``shared'') evolutionary events,
+including shared divergence times among pairs of populations
 \citep{Hickerson2006,Hickerson2007,Huang2011,Oaks2014dpp,Oaks2018ecoevolity}
-and shared changes in effective population size across populations
+and shared demographic changes in effective population size across populations
 \citep{Chan2014,Xue2015,Burbrink2016,Xue2017,Gehara2017}
 from comparative genetic data.
-We use ``demography'' to refer to the effective size of populations.
+% We use ``demography'' to refer to the effective size of populations.
 To date, no method has allowed the joint inference of both shared divergences
 and demographic changes.
-Given overlap among processes that can potentially cause isolation and
+Given overlap among processes that can potentially cause divergence and
 demographic changes of populations across multiple species, such a method would
 be useful for testing hypotheses about community-scale processes that shape
 biodiversity across landscapes.
 Here, we introduce a general, full-likelihood Bayesian method that can estimate
 shared times among an arbitrary mix of population divergences and population
 size changes (\fig{}~\ref{fig:modelCartoon}).
-We implemented this method in the software package \ecoevolity.
+% We implemented this method in the software package \ecoevolity.
 
 Whereas the theory and performance of methods that estimate shared divergence
-times has been well-explored
+times has been relatively well-investigated
 \citep[e.g.,][]{Oaks2012,Hickerson2013,Oaks2014reply,Oaks2014dpp,Overcast2017,Oaks2018ecoevolity},
 exploration into the estimation of shared demographic changes has been much
 more limited.
 There are theoretical reasons to suspect that estimating shared demographic
 changes is more difficult than divergence times.
-The parameter of interest, the timing of a demographic change, is informed by
-differing rates of genetic coalescence before and after the change, and can
-become unidentifiable in three ways.
+The parameter of interest (timing of a demographic change) is informed by
+differing rates at which sampled copies of a gene ``find'' their common
+ancestors going backward in time (coalescence) before and after the change in
+population size, and this can become unidentifiable in three ways.
 First, as the magnitude of a change in population becomes smaller,
 it becomes more difficult to estimate.
 Second, as the age of the demographic change gets older, fewer of the genetic
@@ -67,29 +69,34 @@ computation (ABC) approach \citep{Xue2015}.
 \input{fig-model-cartoon.tex}
 }{}
 
+\section{Materials \& Methods}
+
+\input{methods.tex}
+
 
 \section{Results \& Discussion}
 
 \input{results.tex}
 
+
 \section{Conclusions}
 
 % We are threading a needle.
-There is a very narrow temporal window within which we can reasonably estimate
-the time of a demographic change.
-This window is determined by how deep in the past the change occurred
-in coalescent units (i.e., relative to the current effective size
-of the population).
+There is a narrow temporal window within which we can reasonably estimate the
+time of a demographic change.
+This width of this window is determined by how deep in the past the change
+occurred in coalescent units (i.e., relative to the current effective size of
+the population).
 Too recent and we lack enough coalescence events after the change, and too old
 and we lack enough coalscence events before the change.
 Even within this window, however, estimates of the number of demographic events
 and the assignment of populations to those events are still quite poor.
 This is in stark contrast to inferring shared divergence times among taxa.
 
-Given the poor estimates of co-demographic changes, even when all
-the information in the data are leveraged by a full-likelihood method, any
+Given the poor estimates of co-demographic changes, even when all the
+information in the data are leveraged by a full-likelihood method, any
 inference of shared demographic changes should be treated with caution.
-This is especially true when only only variable sites are analyzed.
+This is especially true when only variable sites are analyzed.
 Our estimates of the timing and sharing of demographic changes were
 consistently poor across all the conditions we simulated when only variable
 sites were used.
@@ -112,8 +119,13 @@ tree they evolved along,
 perhaps more information can be captured about changes in the rate of
 coalescence through time.
 \jcomment{cite and discuss ``Bayesian skyline''/``phylodynamic'' methods here}
+\citep{Pybus2000,Strimmer2001,OpgenRhein2005,Drummond2005,Heled2008,Minin2008beast,Ho2011,Palacios2012,Palacios2012UAI,Stadler2013,Gill2013,Palacios2014,Lan2015,Karcher2016,Karcher2017,Faulkner2018,Karcher2019}
+The skyline-plot method has also been extended to work with SNP frequence spectra \citep{LiuFu2015}
 
-
-\section{Methods}
-
-\input{methods.tex}
+Another potential path forward could entail modeling recombination along large
+regions of chromosomes.
+By approximating the full coalescent process, many methods have been developed
+to model recombination in a computationally feasible manner
+\citep{McVean2005,Marjoram2006,Chen2009,Li2011,Sheehan2013,Schiffels2014,Rasmussen2014,Palacios2015}.
+This could potentially glean additional information from genomic data about the
+linkage patterns among sites.
