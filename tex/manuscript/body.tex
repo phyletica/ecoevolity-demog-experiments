@@ -84,48 +84,58 @@ computation (ABC) approach \citep{Xue2015}.
 % We are threading a needle.
 There is a narrow temporal window within which we can reasonably estimate the
 time of a demographic change.
-This width of this window is determined by how deep in the past the change
-occurred in coalescent units (i.e., relative to the current effective size of
-the population).
-Too recent and we lack enough coalescence events after the change, and too old
-and we lack enough coalscence events before the change.
-Even within this window, however, estimates of the number of demographic events
-and the assignment of populations to those events are still quite poor.
-This is in stark contrast to inferring shared divergence times among taxa.
+The width of this window is determined by how deep in the past the change
+occurred relative to the effective size of the population (i.e., in coalescent
+units).
+If too old or recent, there are too few coalescence events before or after the
+demographic change, respectively, to provide information about the effective
+size of the population.
+When we are careful to simulate data within this window, and the change in
+population size is large enough, we can estimate the time of the demographic
+changes reasonably well
+(e.g., see the top row of \fig{}~\ref{fig:valsimsetimesopt}).
+However, even under these condtions, the ability to correctly infer the number
+of demographic events, and the assignment of populations to those events is
+quite limited
+\ref{fig:valsimsmodelopt}).
+When only variable characters are analyzed (i.e., SNPs), estimates of
+the timing and sharing of demographic changes are consistently bad; we see this
+across all the conditions we simulated.
+Most alarmingly, when the priors are more diffuse than the distributions that
+generated the data, as will be true in most empirical applications, there is a
+strong bias toward estimating too few demographic events
+(i.e., over-clustering comparisons to demographic events;
+Row 2 of \fig{}~\ref{fig:valsimsmodeldiffuse}),
+especially when only variable characters are analyzed.
+These results help explain the stark contrast we see in our results from the
+stickleback RADseq data when including versus excluding constant sites
+(\fig{}~\ref{fig:sticklesummary}).
+These findings are in sharp contrast to estimating shared \emph{divergence}
+times, which is much more accurate, precise, and robust to prior assumptions
+\citep[\figs \labelcref{fig:valsimsmodeldiffuse,fig:valsimsetimesdiffuse,fig:mixsims}][]{Oaks2018ecoevolity,Oaks2018paic}.
 
 Given the poor estimates of co-demographic changes, even when all the
 information in the data are leveraged by a full-likelihood method, any
 inference of shared demographic changes should be treated with caution.
-This is especially true when only variable sites are analyzed.
-Our estimates of the timing and sharing of demographic changes were
-consistently poor across all the conditions we simulated when only variable
-sites were used.
-Furthermore, when the prior is more diffuse than the distributions that
-generated the data (which is usually the case in empirical applications),
-excluding constant sites makes the method strongly biased toward
-inferring shared demographic events
-(second row of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-These results help explain the stark contrast we see in our results from the
-stickleback RADseq data when including versus excluding constant sites
-(\fig{}~\ref{fig:sticklesummary}).
-
-Perhaps modelling contiguous, linked sequence loci could help
-improve estimates of shared demographic changes.
+However, there are potential ways that estimates of shared demographic
+events could be improved.
+For example, modelling loci of contiguous, linked sites could help
+extract more information about past demographic changes.
 Longer loci can contain much more information about the lengths of branches in
 the gene tree, which are critically informative about the size of the
 population at any point in time.
+This is evidenced by the extensive literature on powerful ``phylodynamic''
+and ``skyline plot'' methods
+\citep{Pybus2000,Strimmer2001,OpgenRhein2005,Drummond2005,Heled2008,Minin2008beast,Ho2011,Palacios2012,Palacios2012UAI,Stadler2013,Gill2013,Palacios2014,Lan2015,Karcher2016,Karcher2017,Faulkner2018,Karcher2019}.
 With loci from across the genome, each with more information about the gene
 tree they evolved along,
 perhaps more information can be captured about changes in the rate of
 coalescence through time.
-\jcomment{cite and discuss ``Bayesian skyline''/``phylodynamic'' methods here}
-\citep{Pybus2000,Strimmer2001,OpgenRhein2005,Drummond2005,Heled2008,Minin2008beast,Ho2011,Palacios2012,Palacios2012UAI,Stadler2013,Gill2013,Palacios2014,Lan2015,Karcher2016,Karcher2017,Faulkner2018,Karcher2019}
-The skyline-plot method has also been extended to work with SNP frequency spectra \citep{LiuFu2015}
 
-Another potential path forward could entail modeling recombination along large
+Another potential path forward is modelling recombination along large
 regions of chromosomes.
 By approximating the full coalescent process, many methods have been developed
 to model recombination in a computationally feasible manner
 \citep{McVean2005,Marjoram2006,Chen2009,Li2011,Sheehan2013,Schiffels2014,Rasmussen2014,Palacios2015}.
 This could potentially glean additional information from genomic data about the
-linkage patterns among sites.
+linkage patterns among sites along chromosomes.
