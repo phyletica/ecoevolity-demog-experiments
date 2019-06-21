@@ -1,6 +1,5 @@
 \section{Introduction}
 
-\jcomment{Need more background, context, and citations}
 A primary goal of ecology and evolutionary biology is to understand the
 processes influencing the distribution, abundance, and diversification of
 species.
@@ -17,7 +16,7 @@ Such processes predict that evolutionary events, such as population divergences
 or demographic changes, will be temporally clustered across multiple species.
 As a result, statistical methods that infer such patterns from genetic data
 allow ecologists and evolutionary biologists to test hypotheses about such
-community-scale processes.
+processes operating at or above the scale of communities of species.
 
 Recent research has developed methods to infer
 patterns of temporally clustered (or ``shared'') evolutionary events,
@@ -98,7 +97,7 @@ changes reasonably well
 However, even under these condtions, the ability to correctly infer the number
 of demographic events, and the assignment of populations to those events is
 quite limited
-\ref{fig:valsimsmodelopt}).
+(\fig{}~\ref{fig:valsimsmodelopt}).
 When only variable characters are analyzed (i.e., SNPs), estimates of
 the timing and sharing of demographic changes are consistently bad; we see this
 across all the conditions we simulated.
@@ -124,19 +123,21 @@ For example, modelling loci of contiguous, linked sites could help
 extract more information about past demographic changes.
 Longer loci can contain much more information about the lengths of branches in
 the gene tree, which are critically informative about the size of the
-population at any point in time.
-This is evidenced by the extensive literature on powerful ``phylodynamic''
-and ``skyline plot'' methods
+population through time.
+This is evidenced by the extensive literature on powerful 
+``skyline plot'' and ``phylodynamic'' methods
 \citep{Pybus2000,Strimmer2001,OpgenRhein2005,Drummond2005,Heled2008,Minin2008beast,Ho2011,Palacios2012,Palacios2012UAI,Stadler2013,Gill2013,Palacios2014,Lan2015,Karcher2016,Karcher2017,Faulkner2018,Karcher2019}.
 With loci from across the genome, each with more information about the gene
 tree they evolved along,
-perhaps more information can be captured about changes in the rate of
-coalescence through time.
-
-Another potential path forward is modelling recombination along large
-regions of chromosomes.
+perhaps more information can be captured about temporally clustered changes in
+the rate of coalescence across populations.
+Another potential source of information could be captured by modelling
+recombination along large regions of chromosomes.
 By approximating the full coalescent process, many methods have been developed
 to model recombination in a computationally feasible manner
 \citep{McVean2005,Marjoram2006,Chen2009,Li2011,Sheehan2013,Schiffels2014,Rasmussen2014,Palacios2015}.
-This could potentially glean additional information from genomic data about the
+This could potentially leverage additional information from genomic data about the
 linkage patterns among sites along chromosomes.
+Both of the these avenues are worth pursuing given the myriad historical
+processes that predict patterns of temporally clustered changes in population
+sizes across populations.
