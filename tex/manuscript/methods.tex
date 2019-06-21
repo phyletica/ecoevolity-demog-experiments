@@ -213,10 +213,25 @@ analyzing the simulated \datasets.
 
 
 \subsubsection{Assembly of loci}
-
-Using an ABC analog to the model of shared demographic changes developed here, \citet{Xue2015} found very strong support (0.99 posterior probability) that five populations of threespine sticklebacks (\spp{Gasterosteus aculeatus}) from south central Alaska recently co-expanded. This inference was based on the publicly available RADseq data collected by \citet{Hohenlohe2010}. We re-assembled and analyzed these data under our full-likelihood
-Bayesian framework, both using all sites from assembled loci and only SNPs. Reads mapped to the stickleback genome were downloaded from Dryad (doi:10.5061/dryad.b6vh6). Reference guided alignments of loci were assembled in Stacks v1.48 \citet{Catchen2013} with a minimum read depth of 3 identical reads per locus within each individual and the bounded SNP model with error bounds between 0.001 and 0.01. To maximize the number of loci and minimize paralogy, we aligned reads for each population separately; because \ecoevolity models each population separately (\fig{}~\ref{fig:modelCartoon}), the characters do not need to be orthologous across populations, only within them.
-
+We assembled the publicly available RADseq data collected by
+\citet{Hohenlohe2010}
+from five populations of threespine sticklebacks (\spp{Gasterosteus aculeatus})
+from south-central Alaska.
+After downloading the reads mapped to the stickleback genome by
+\citet{Hohenlohe2010}
+from Dryad
+(doi:10.5061/dryad.b6vh6),
+We assembled reference guided alignments of loci in Stacks v1.48
+\citet{Catchen2013} with a minimum read depth of 3 identical reads per locus
+within each individual and the bounded single-nucleotide polymorphism (SNP)
+model with error bounds between
+0.001 and 0.01.
+To maximize the number of loci and minimize paralogy, we assembled each
+population separately;
+because \ecoevolity models each population separately
+(\fig{}~\ref{fig:modelCartoon}),
+the characters do not need to be orthologous across populations, only within
+them.
 
 \subsubsection{Inferring shared demographic changes with \ecoevolity}
 
@@ -244,8 +259,9 @@ effective population size of the ancestral population:
 \end{itemize}
 
 For each prior setting, we ran 10 MCMC chains for 150,000 generations, sampling
-every 100 generations.
-We assessed convergence and mixing of the chains by calculating the potential
+every 100 generations; we did this using all the sites in the assembled
+stickleback loci and only SNPs.
+To assess convergence and mixing of the chains, we calculated the potential
 scale reduction factor \citep[PSRF; the square root of Equation 1.1 in][]{Brooks1998}
 and effective sample size \citep{Gong2014} of all continuous parameters and the
 log likelihood using the \texttt{pyco-sumchains} tool of \pycoevolity
