@@ -158,6 +158,7 @@ were analyzed under priors that matched the generating distributions.
 % Event time ~ exponential(mean = 0.005)
 % relative root size ~ Exponential(mean = 2.0)
 % descendant size ~ gamma(2.0, scale 0.001); mean 0.002
+
 Next, we simulated an additional 500 \datasets under
 Condition~\ref{sims:optimalFourFoldIncrease} above.
 We then analyzed each of these \datasets under ``diffuse'' prior
@@ -170,18 +171,14 @@ distributions:
 These distributions were chosen to reflect realistic amounts of prior
 uncertainty about the timing of demographic changes and past and present
 effective population sizes when analyzing empirical data.
-
-For comparison, we repeated the same simulations and analyses for three pairs
-of populations for which we estimated the timing and sharing of their
-divergences
-(i.e., three divergence comparisons rather than three demographic comparisons;
-\fig{}~\ref{fig:modelCartoon}).
+For comparison, we also performed the same simulations and analyses under
+diffuse priors for three divergence comparisons
 For these divergence comparisons, we simulated 10 sampled genomes per
-population to match the total number sampled per comparison (20) as in the
+population to match the same total number of samples per comparison (20) as the
 demographic simulations.
 
 
-\subsubsection{Simulating a mix of divergence and pop-size-change comparisons}
+\subsubsection{Simulating a mix of divergence and demographic comparisons}
 
 To explore how well our method can infer a mix of shared demographic changes
 and divergence times, we simulated 500 \datasets comprised of 6 comparisons:

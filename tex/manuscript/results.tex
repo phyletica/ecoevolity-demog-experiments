@@ -154,7 +154,7 @@ S\ref{fig:valsimsdsizesopt}).
 }{}
 
 
-\subsubsection{Simulations to assess sensitivity to prior assumptions}
+\subsubsection{Sensitivity to prior assumptions}
 
 Above, we observe the best estimates of the timing and sharing of demographic
 events under narrow distributions on the relative effective size of the
@@ -190,34 +190,6 @@ prior assumptions than shared divergences
 % relative root size ~ Exponential(mean = 2.0)
 % descendant size ~ gamma(2.0, scale 0.001); mean 0.002
 
-Under more realistic, diffuse priors, the probability of inferring the correct
-model of demographic events decreases from 0.57 to 0.434 when all characters
-are used, and from 0.36 to 0.284 when only variable characters are used
-(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-The median posterior probability of the correct model also decreases from
-0.422 to 0.292 when all characters are used,
-and from 0.231 to 0.178 when only variable characters are used
-(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-\emph{Most importantly, we see a strong bias toward underestimating the number
-    of events under the more realistic diffuse priors}
-(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-
-In comparison, the inference of shared divergences is much more accurate and
-precise than shared demographic changes, and is much more robust to the diffuse
-priors
-(bottom two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-When all characters are used, under both the correct and diffuse
-priors, the correct divergence model is preferred over 91\% of the time,
-and the median posterior probability of the correct model is over
-0.93.
-
-\ifembed{
-\input{fig-sims-model-diffuse.tex}
-}{}
-
-The results are similar when we look at the estimates of the timing of
-demographic changes
-(\fig{}~\ref{fig:valsimsetimesdiffuse}).
 The precision of time estimates of demographic changes decreases
 substantially under the diffuse priors
 (top two rows of \fig{}~\ref{fig:valsimsetimesdiffuse}),
@@ -232,6 +204,30 @@ S\ref{fig:valsimsdsizesdiffuse})
 
 \ifembed{
 \input{fig-sims-event-times-diffuse.tex}
+}{}
+
+Under more realistic, diffuse priors, the probability of inferring the correct
+model of demographic events decreases from 0.57 to 0.434 when all characters
+are used, and from 0.36 to 0.284 when only variable characters are used
+(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+The median posterior probability of the correct model also decreases from
+0.422 to 0.292 when all characters are used,
+and from 0.231 to 0.178 when only variable characters are used
+(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+\emph{Most importantly, we see a strong bias toward underestimating the number
+    of events under the more realistic diffuse priors}
+(top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+In comparison, the inference of shared divergences is much more accurate and
+precise than shared demographic changes, and is much more robust to the diffuse
+priors
+(bottom two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+When all characters are used, under both the correct and diffuse
+priors, the correct divergence model is preferred over 91\% of the time,
+and the median posterior probability of the correct model is over
+0.93.
+
+\ifembed{
+\input{fig-sims-model-diffuse.tex}
 }{}
 
 
@@ -294,7 +290,7 @@ the demographic changes.
 }{}
 
 
-\subsection{Simulating linked sites}
+\subsection{The effect of linked sites}
 
 Most reduced-representation genomic datasets are comprised of loci of
 contiguous, linked nucleotides.
