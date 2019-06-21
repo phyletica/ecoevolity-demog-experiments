@@ -46,7 +46,7 @@ We have incorporated help in pre-processing data and post-processing posterior
 samples collected by \ecoevolity into the Python package \pycoevolity, which is
 available at
 \url{https://github.com/phyletica/pycoevolity}.
-We used Version 0.3.1 
+We used Version 0.3.1
 (Commit 9284417)
 of the \ecoevolity software package for all of our analyses.
 A detailed history of this project, including all of the data and scripts
@@ -89,7 +89,7 @@ relative effective size of the ancestral population
     \item \dgamma{10}{0.5} (2-fold population increase)  \label{sims:initialTwoFoldIncrease}
     \item \dgamma{10}{2} (2-fold population decrease)    \label{sims:initialTwoFoldDecrease}
     \item \dgamma{10}{1} (no change on average, but a fair amount of variance) \label{sims:initialCenter}
-    \item \dgamma{100}{1} (no change on average, little variance) \label{sims:initialCenterNarrow} 
+    \item \dgamma{100}{1} (no change on average, little variance) \label{sims:initialCenterNarrow}
 \end{enumerate}
 The last distribution was chosen to represent a ``worst-case'' scenario where
 there was almost no demographic change in the history of the populations.
@@ -208,21 +208,15 @@ analyzing the simulated \datasets.
 
 % \subsection{Data-acquisition bias?}
 
+
 \subsection{Empirical application to stickleback data}
 
+
 \subsubsection{Assembly of loci}
-We assembled the publicly available RADseq data collected by
-\citet{Hohenlohe2010}
-from five populations of threespine sticklebacks (\spp{Gasterosteus aculeatus})
-from south-central Alaska.
-We used stacks Version XXXX \citationNeeded.
-To maximize the number of loci and minimize paralogy, we assembled each
-population separately;
-because \ecoevolity models each population separately
-(\fig{}~\ref{fig:modelCartoon}),
-the characters do not need to be orthologous across populations, only within
-them.
-\highLight{Insert stacks details here}
+
+Using an ABC analog to the model of shared demographic changes developed here, \citet{Xue2015} found very strong support (0.99 posterior probability) that five populations of threespine sticklebacks (\spp{Gasterosteus aculeatus}) from south central Alaska recently co-expanded. This inference was based on the publicly available RADseq data collected by \citet{Hohenlohe2010}. We re-assembled and analyzed these data under our full-likelihood
+Bayesian framework, both using all sites from assembled loci and only SNPs. Reads mapped to the stickleback genome were downloaded from Dryad (doi:10.5061/dryad.b6vh6). Reference guided alignments of loci were assembled in Stacks v1.48 \citet{Catchen2013} with a minimum read depth of 3 identical reads per locus within each individual and the bounded SNP model with error bounds between 0.001 and 0.01. To maximize the number of loci and minimize paralogy, we aligned reads for each population separately; because \ecoevolity models each population separately (\fig{}~\ref{fig:modelCartoon}), the characters do not need to be orthologous across populations, only within them.
+
 
 \subsubsection{Inferring shared demographic changes with \ecoevolity}
 
