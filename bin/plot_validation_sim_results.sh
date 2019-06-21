@@ -6,6 +6,8 @@ current_dir="$(pwd)"
 
 ./plot_validation_sim_results.py
 
+./rasterize-model-plots.sh
+
 cd ../results
 
 for p in grid-*.tex;
