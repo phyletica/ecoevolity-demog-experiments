@@ -163,13 +163,16 @@ ancestral population
 \labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsetimesopt,fig:valsimsmodelopt}),
 which were used to both simulate the data and as the prior
 when those data were analyzed.
-These distributions are unrealistically informative priors for empirical
-studies, for which there is usually little \emph{a priori} information about
-past population sizes.
-Our results show that the better performance under these distributions was at
-least partially caused by greater prior information, and that
-inference of shared demographic events is much more sensitive to
-prior assumptions than shared divergences
+Thus, the improved behavior could due to these narrow prior distributions that
+are unrealistically informative for empirical studies, for which there is
+usually little \emph{a priori} information about past population sizes.
+When we analyze data under more realistic, diffuse priors, estimates of shared
+demographic events deteriorate, whereas divergence-time estimates remain
+robust.
+% Our results show that the better performance under these distributions was at
+% least partially caused by greater prior information, and that
+% inference of shared demographic events is much more sensitive to
+% prior assumptions than shared divergences
 (\figs \labelcref{fig:valsimsmodeldiffuse,fig:valsimsetimesdiffuse}).
 % To determine whether the better performance under these distributions was
 % caused by more informative data or priors, we simulated \datasets under a
@@ -189,8 +192,7 @@ prior assumptions than shared divergences
 % Event time ~ exponential(mean = 0.005)
 % relative root size ~ Exponential(mean = 2.0)
 % descendant size ~ gamma(2.0, scale 0.001); mean 0.002
-
-The precision of time estimates of demographic changes decreases
+Specifically, the precision of time estimates of demographic changes decreases
 substantially under the diffuse priors
 (top two rows of \fig{}~\ref{fig:valsimsetimesdiffuse}),
 whereas the precision of the divergence-time estimates
@@ -200,13 +202,13 @@ We see the same patterns in the estimates of population sizes
 (\figs
 S\ref{fig:valsimsasizesdiffuse}
 and
-S\ref{fig:valsimsdsizesdiffuse})
+S\ref{fig:valsimsdsizesdiffuse}).
 
 \ifembed{
 \input{fig-sims-event-times-diffuse.tex}
 }{}
 
-Under more realistic, diffuse priors, the probability of inferring the correct
+Furthermore, under the diffuse priors, the probability of inferring the correct
 model of demographic events decreases from 0.57 to 0.434 when all characters
 are used, and from 0.36 to 0.284 when only variable characters are used
 (top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
@@ -217,9 +219,8 @@ and from 0.231 to 0.178 when only variable characters are used
 \emph{Most importantly, we see a strong bias toward underestimating the number
     of events under the more realistic diffuse priors}
 (top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-In comparison, the inference of shared divergences is much more accurate and
-precise than shared demographic changes, and is much more robust to the diffuse
-priors
+In comparison, the inference of shared divergence times is much more accurate,
+precise, and robust to the diffuse priors
 (bottom two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
 When all characters are used, under both the correct and diffuse
 priors, the correct divergence model is preferred over 91\% of the time,
@@ -239,9 +240,9 @@ divergences is dramatically different, with the latter being much more accurate
 and precise than the former
 (e.g., see
 \figs
-\ref{fig:valsimsmodeldiffuse}
+\ref{fig:valsimsetimesdiffuse}
 and
-\ref{fig:valsimsetimesdiffuse}).
+\ref{fig:valsimsmodeldiffuse}).
 One might hope that
 if we analyze a mix of demographic and divergence comparisons,
 the informativeness of the divergence times can help ``anchor'' and
@@ -271,9 +272,9 @@ When analyzing a mix of demographic and divergence comparisons, the ability to
 infer the timing and sharing of demographic changes remains poor, whereas
 estimates of shared divergences remain accurate and precise
 (\fig{}~\ref{fig:mixsims}).
-The estimates of the timing and sharing of demographic events are very similar
-to when we simulated and analyzed only three demographic comparisons under the
-same distributions on event times and population sizes
+The estimates of the timing and sharing of demographic events are nearly
+identical to when we simulated and analyzed only three demographic comparisons
+under the same distributions on event times and population sizes
 (compare left column of \fig{}~\ref{fig:mixsims}
 to the second row of \figs
 \ref{fig:valsimsetimesopt}
@@ -295,9 +296,11 @@ the demographic changes.
 Most reduced-representation genomic datasets are comprised of loci of
 contiguous, linked nucleotides.
 Thus, when using the method presented here that assumes each character is
-effectively unlinked (i.e., evolved along a gene tree that is independent from
-other characters, conditional on the population history), one either has to
-violate this assumption, or discard all but (at most) one site per locus.
+effectively unlinked,
+% (i.e., evolved along a gene tree that is independent from other characters,
+% conditional on the population history)
+one either has to violate this assumption, or discard all but (at most) one
+site per locus.
 Given that all the results above indicate better estimates when all
 characters are used (compared to using only variable characters), we
 simulated linked sites to determine which strategy is better:
@@ -337,7 +340,7 @@ this is also true for estimates of population sizes
 This is consistent with the findings of
 \citet{Oaks2018ecoevolity} and
 \citet{Oaks2018paic}
-that the violation of linked sites had little affect on the estimation of
+that linked sites had little affect on the estimation of
 shared divergence times.
 These results suggest that analyzing all of the sites in loci assembled from
 reduced-representation genomic libraries (e.g., sequence-capture or RADseq
@@ -357,31 +360,31 @@ assumption of unlinked characters.
 Using an ABC analog to the model of shared demographic changes developed here,
 \citet{Xue2015} found very strong support (0.99 posterior probability) that
 five populations of threespine sticklebacks (\spp{Gasterosteus aculeatus})
-from south central Alaska recently
+from south-central Alaska recently
 co-expanded.
 This inference was based on the publicly available RADseq data collected by
-\citet{Hohenlohe2010}
-(\url{https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP001747};
-NCBI Short Read Archive accession numbers SRX015871--SRX015877).
+\citet{Hohenlohe2010}.
+% (\url{https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP001747};
+% NCBI Short Read Archive accession numbers SRX015871--SRX015877).
 We re-assembled and analyzed these data under our full-likelihood
 Bayesian framework, both using all sites from assembled loci
 and only SNPs.
 
 
-Stacks produced a concatenated alignment of all loci with
+Stacks produced a concatenated alignment with
 2,115,588,
 2,166,215,
 2,081,863,
 2,059,650, and
 2,237,438
-total sites and
+total sites, of which
 118,462,
 89,968,
 97,557,
 139,058, and
 103,271
-variable sites for the Bear, Boot, Mud, Rabbit, and Resurrection
-stickleback populations respectively.
+were variable for the Bear Paw Lake, Boot Lake, Mud Lake, Rabbit Slough, and
+Resurrection Bay stickleback populations respectively.
 When analyzing all sites from the assembled stickleback
 RADseq data, we find strong support for five independent
 population expansions (no shared demographic events;
@@ -412,13 +415,16 @@ information about the timing of any demographic changes in the SNP data alone.
 This is consistent with results of \citet{Xue2015} where the single, shared
 event was also estimated to have occurred at the minimum (1000 generations) of
 their uniform prior on the timing of demographic changes.
-Their and our results based solely on SNPs seem to be an artifact of the lack
-of information in the SNP-only data.
-Based on our simulation results, our estimates using all of the sites
-in the stickleback RADseq loci should be the most accurate.
-However, the unifying theme of our simulation results is that all estimates of
-shared demographic events tend to be poor and should be treated with
-a lot of skepticism.
+In light of our simulation results, the support for a single event based solely
+on SNPs, seen here and in \citet{Xue2015}, is likely caused by a combination of
+(1) mispecified priors, and
+(2) the lack of information about demographic history when invariant characters
+are discarded.
+Our estimates using all of the sites in the stickleback RADseq loci should be
+the most accurate, according to our results from simulated data.
+However, the unifying theme from our simulations is that all estimates of
+shared demographic events tend to be poor and should be treated with a lot of
+skepticism.
 % Given our results when using all the information from data simulated under
 % conditions favorable for estimating the timing of demographic changes, strong
 % posterior support for any particular scenario is almost certainly spurious.

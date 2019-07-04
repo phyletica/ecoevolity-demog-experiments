@@ -12,7 +12,7 @@ in which case we infer the time when they diverged (\fig{}~\ref{fig:modelCartoon
 For each population and for each character we genotype \allelecount copies
 of the locus, \redallelecount of which are copies of the red allele and the
 remaining $\allelecount - \redallelecount$ are copies of the green allele.
-Thus, for each population of a pair, and for each locus, we have a count of the
+Thus, for each population, and for each locus, we have a count of the
 total sampled gene copies and how many of those are the red allele.
 
 \ifembed{
@@ -35,7 +35,7 @@ across all the loci from taxon $i$, which can be a single population
 or a pair of populations.
 Finally, we use \alldata to represent the data across all the taxa for which we
 wish to compare times of either divergence or population-size change.
-Note, because the population of each compared taxon is modeled separately
+Note, because the population history of each taxon is modeled separately
 (\fig{}~\ref{fig:modelCartoon}),
 characters do not have to be orthologous across taxa, only within them.
 
@@ -58,7 +58,7 @@ Evolutionary change is the product of \murate and time.
 Thus, if $\murate = 1$, time is measured in
 units of expected substitutions per site.
 Alternatively, if a mutation rate per site per unit time is given, then time is
-absolute.
+in those units (e.g., generations or years).
 
 \subsubsection{The evolution of gene trees}
 
@@ -72,13 +72,13 @@ We will use
 to denote all the effective population sizes of a species tree;
 \epopsize[\rootpopindex] and 
 \epopsize[\descendantpopindex{1}] when modeling a population-size change, and
-(\epopsize[\rootpopindex],
+\epopsize[\rootpopindex],
 \epopsize[\descendantpopindex{1}],
 and \epopsize[\descendantpopindex{2}] when modeling a divergence.
 Following \citet{Oaks2018ecoevolity}, we use
 \sptree{}
 as shorthand for the species tree, which comprises the population sizes and
-divergence time of a pair
+event time of a comparison
 (\comparisonpopsizes{} and \comparisonetime{}).
 
 
@@ -91,8 +91,8 @@ character substitution histories to compute the likelihood
 of the species tree directly from 
 a biallelic character pattern under a coalescent model;
 $\pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)$.
-The only difference that is necessary is for population-size-change models that
-have a species tree with only one descendant population.
+We only need to make a small modification to accommodate population-size-change
+models that have a species tree with only one descendant population.
 Equation 19 of \citet{Bryant2012} shows how to obtain the partial likelihoods
 at the bottom of an ancestral branch from the partial likelihoods at the top of
 its two descendant branches.
@@ -117,8 +117,8 @@ taking the product over them,
     \pr(\leafallelecounts[i], \leafredallelecounts[i] \given \sptree, \murate, \gfreq).
     \label{eq:comparisonlikelihood}
 \end{equation}
-We assume we biallelic data from \ncomparisons{} taxa, which can be an
-arbitrary mix of
+We assume we have sampled biallelic data from \ncomparisons{} taxa, which can
+be an arbitrary mix of
 (1) two populations or species for which \comparisonetime represents
 the time they diverged, or
 (2) one population for which \comparisonetime represents the time
@@ -166,7 +166,8 @@ We use \etimes to represent the times of the unique events in \etimesets.
 Using this notation, the posterior distribution of our 
 Dirichlet-process model is
 \begin{equation}
-    \pr(
+\begin{split}
+    & \pr(
     \concentration,
     \etimes,
     \etimesets,
@@ -177,8 +178,8 @@ Dirichlet-process model is
     \alldata
     % \basedistribution
     )
-    =
-    \frac{
+    = \\
+    & \frac{
         \pr(
         \alldata
         \given
@@ -196,11 +197,12 @@ Dirichlet-process model is
         \pr(\gfreqs)
     }{
         \pr(
-        \alldata,
+        \alldata%,
         % \basedistribution
         )
-    }.
+    },
     \label{eq:bayesruleexpanded}
+\end{split}
 \end{equation}
 where
 \collectionpopsizes
@@ -230,7 +232,7 @@ Following \citet{Oaks2018ecoevolity},
 we use a gamma distribution on the effective size of the ancestral population
 \emph{relative} to the size of the descendant population(s), which we
 denote as \rootrelativepopsize.
-For a taxon with two descendant population (i.e., a divergence comparison), the
+For a taxon with two descendant populations (i.e., a divergence comparison), the
 ancestral population size is relative to the mean of the descendant
 populations.
 For a taxon with only one descendant population (i.e., a demographic
@@ -272,7 +274,7 @@ placing a weakly informative prior on a comparison's mutation rate prevents
 estimation of the time of its demographic change or divergence,
 which is the primary goal.
 
-\paragraph{Prior on the equilibrium-state frequency}
+\paragraph{Prior on the equilibrium state frequency}
 Recoding four-state nucleotides to two states requires some arbitrary
 decisions, and whenever $\gfreq \neq 0.5$, these decisions can affect
 the likelihood of the model \citep{Oaks2018ecoevolity}.

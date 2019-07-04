@@ -16,7 +16,7 @@
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
     Each plot consists of 1500 estimates---500 simulated \datasets, each with
-    three taxa.
+    three demographic comparisons.
     \accuracyscatterplotannotations{\epopsize\murate}
     \weusedmatplotlib
 }{fig:valsimsasizesinitial}
@@ -39,7 +39,7 @@
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
     Each plot consists of 1500 estimates---500 simulated \datasets, each with
-    three taxa.
+    three demographic comparisons.
     \accuracyscatterplotannotations{\epopsize\murate}
     \weusedmatplotlib
 }{fig:valsimsdsizesinitial}
@@ -63,7 +63,7 @@
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
     Each plot consists of 1500 estimates---500 simulated \datasets, each with
-    three taxa.
+    three demographic comparisons.
     \accuracyscatterplotannotations{\epopsize\murate}
     \weusedmatplotlib
 }{fig:valsimsasizesopt}
@@ -86,7 +86,7 @@
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
     Each plot consists of 1500 estimates---500 simulated \datasets, each with
-    three taxa.
+    three demographic comparisons.
     \accuracyscatterplotannotations{\epopsize\murate}
     \weusedmatplotlib
 }{fig:valsimsdsizesopt}
@@ -111,7 +111,9 @@
     and 95\% credible interval.
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
-    Each plot comprises 500 simulated \datasets, each with three taxa.
+    Each plot comprises 500 simulated \datasets, each with three
+    demographic comparisons (Rows 1--2) or
+    divergence comparisons (Rows 3--4).
     \accuracyscatterplotannotations{\epopsize\murate}
     The first row of plots are repeated from
     \fig{}~S\ref{fig:valsimsasizesopt}
@@ -138,7 +140,9 @@
     and 95\% credible interval.
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
-    Each plot comprises 500 simulated \datasets, each with three taxa.
+    Each plot comprises 500 simulated \datasets, each with three
+    demographic comparisons (Rows 1--2) or
+    divergence comparisons (Rows 3--4).
     \accuracyscatterplotannotations{\epopsize\murate}
     The first row of plots are repeated from
     \fig{}~S\ref{fig:valsimsdsizesopt}
@@ -148,9 +152,9 @@
 
 
 \siFigure{1.0}{../../results/cropped-grid-mixed-comparisons.pdf}{
-    Analyses of six taxa comprising a mix of three populations that
-    experienced a demogrpahic change and three pairs of populations that
-    diverged.
+    Results of analyses of 500 \datasets simulated with six comparisons
+    comprising a mix of three populations that experienced a demographic change
+    and three pairs of populations that diverged.
     The performance of estimating the
     timing of events (Row 1),
     sharing of events (Rows 2--3),
@@ -163,35 +167,38 @@
     to the second column of \figs
     \ref{fig:valsimsetimesopt},
     \ref{fig:valsimsmodelopt},
-    S\ref{fig:valsimsdsizesopt},
+    S\ref{fig:valsimsasizesopt},
     and
-    S\ref{fig:valsimsasizesopt};
+    S\ref{fig:valsimsdsizesopt};
     the same priors on event times and ancestral population size were used.
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
-    Each plot shows the results from 500 simulated \datasets, each with
-    six taxa.
+    % Each plot shows the results from 500 simulated \datasets, each with
+    % six comparisons.
     \weusedmatplotlib
 }{fig:mixsimsfull}
 
 
 \siFigure{0.9}{../../results/cropped-grid-loci.pdf}{
     \footnotesize
-    Results of analyses of simulated \datasets
-    with 5000 100-base-pair loci when using all characters (left column) or
-    only unlinked variable characters (right column).
+    Estimates of the timing (Row 1),
+    and sharing (Row 2) of demographic events,
+    ancestral population size (Row 4),
+    and descendant population size (Row 5)
+    when using all characters (left column) or only unlinked variable
+    characters (right column) from \datasets simulated with 5000 loci of 100
+    linked bases from three demographic comparisons.
     The plots are comparable to the first row of \figs
     \ref{fig:valsimsetimesopt},
     \ref{fig:valsimsmodelopt},
-    S\ref{fig:valsimsdsizesopt},
+    S\ref{fig:valsimsasizesopt},
     and
-    S\ref{fig:valsimsasizesopt};
-    the models were identical,
+    S\ref{fig:valsimsdsizesopt};
     the only difference is the linkage of characters into loci.
     Estimates for which the potential-scale reduction factor was greater than
     1.2 \citep{Brooks1998} are highlighted in orange.
     Each plot shows the results from 500 simulated \datasets, each with
-    six taxa.
+    three demographic comparisons.
     \weusedmatplotlib
 }{fig:locisimsfull}
 

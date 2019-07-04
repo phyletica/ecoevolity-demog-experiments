@@ -62,11 +62,11 @@ We used the \simcoevolity and \ecoevolity tools within the \ecoevolity software
 package to simulate and analyze \datasets,
 respectively, under a variety of conditions.
 Each simulated \dataset comprised 500,000 characters collected from 10 diploid
-individuals (20 genomes) sampled per population from each of three demographic
+individuals (20 genomes) sampled per population from three demographic
 comparisons.
 We specified the concentration parameter of the Dirichlet process so that
 the mean number of events was 2 ($\concentration = 1.414216$).
-We assumed the mutation rate of all three populations was equal and 1, such
+We assumed the mutation rates of all three populations were equal and 1, such
 that time and effective population sizes were scaled by the mutation rate.
 When analyzing each simulated \dataset, we ran four MCMC chains run for 75,000
 generations with a sample taken every 50 generations; we combined and
@@ -105,9 +105,9 @@ $4N_e$ generations at 1.25.
 This distribution on times was chosen to span times of demographic change from
 very recent (i.e., most gene lineages coalesce before the change) to old (i.e.,
 most gene lineages coalesce after the change).
-The assignment of the three simulated populations to $1--3$ demographic events
-was controlled by a Dirichlet process with a mean number of 2.0 demographic
-events across the three populations.
+The assignment of the three simulated populations to 1, 2, or 3 demographic
+events was controlled by a Dirichlet process with a mean number of 2.0
+demographic events across the three populations.
 We generated 500 \datasets under each of these five simulation conditions, all
 of which were analyzed using the same simulated distributions as priors.
 
@@ -119,7 +119,7 @@ In an effort to find conditions under which the timing and sharing of
 demographic changes could be better estimated, and avoid combinations
 of parameter values that caused identifiability problems,
 we next explored simulations under distributions on times and population sizes
-offset from zero, but with much more recent demographic event times.
+offset from zero, and with much more recent demographic event times.
 % Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
 % relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
 % relative root size ~ gamma(shape=5.0, scale = 0.09, offset = 0.05); mean 0.5
@@ -145,8 +145,8 @@ the ancestral population (see left column of
     \item \dogamma{5}{1}{0.05} (no change on average, but a fair amount of variation) \label{sims:optimalCenter}
     \item \dogamma{50}{1}{0} (no change on average, little variance) \label{sims:optimalCenterNarrow}
 \end{enumerate}
-We generated 500 \datasets under each of these five distributions, all of which
-were analyzed under priors that matched the generating distributions.
+We generated 500 \datasets under each of these five distributions, and analyzed
+all of them using priors that matched the generating distributions.
 
 \subsubsection{Simulations to assess sensitivity to prior assumptions}
 
@@ -172,7 +172,7 @@ These distributions were chosen to reflect realistic amounts of prior
 uncertainty about the timing of demographic changes and past and present
 effective population sizes when analyzing empirical data.
 For comparison, we also performed the same simulations and analyses under
-diffuse priors for three divergence comparisons
+diffuse priors for three divergence comparisons.
 For these divergence comparisons, we simulated 10 sampled genomes per
 population to match the same total number of samples per comparison (20) as the
 demographic simulations.
@@ -184,13 +184,13 @@ To explore how well our method can infer a mix of shared demographic changes
 and divergence times, we simulated 500 \datasets comprised of 6 comparisons:
 3 demographic comparisons and
 3 divergence comparisons.
-20 genomes (10 diploid individuals) were sampled from each comparison; for
-divergence comparisons, 10 genomes were sampled from each of the two
-populations.
+To ensure the same amount of data across comparisons, we simulated
+20 sampled genomes (10 diploid individuals) from each comparison
+(i.e., 10 genomes from both populations of each divergence comparison).
 We used the same simulation conditions described above for
-\ref{sims:optimalTwoFoldIncrease}.
-All simulated \datasets were analyzed under priors that matched
-the generating distributions.
+\ref{sims:optimalTwoFoldIncrease},
+and specified these same distributions as priors when analyzing all of the
+simulated \datasets.
 
 
 \subsubsection{Simulating linked sites}
@@ -233,7 +233,7 @@ them.
 \subsubsection{Inferring shared demographic changes with \ecoevolity}
 
 We used a value for the concentration parameter of the Dirichlet process
-that corresponds to a mean number of events of three
+that corresponds to a mean number of three events
 ($\concentration = 2.22543$).
 We used the following prior distributions on the timing of events and effective
 sizes of populations:

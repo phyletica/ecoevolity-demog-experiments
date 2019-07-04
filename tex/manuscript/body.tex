@@ -46,22 +46,21 @@ There are theoretical reasons to suspect that estimating shared demographic
 changes is more difficult than divergence times.
 The parameter of interest (timing of a demographic change) is informed by
 differing rates at which sampled copies of a gene ``find'' their common
-ancestors going backward in time (coalescence) before and after the change in
+ancestors (coalesce) going backward in time before and after the change in
 population size, and this can become unidentifiable in three ways.
 First, as the magnitude of a change in population becomes smaller,
 it becomes more difficult to estimate.
 Second, as the age of the demographic change gets older, fewer of the genetic
 coalescent events occur prior to the change, resulting in less information
 about the timing and magnitude of the change.
-Third, as the age of the demographic change approaches zero, fewer coalescent
-events occur after the change, again limiting information about the timing and
-magnitude of the change.
-Thus, we take advantage of our full-likelihood method to assess how well we can
-infer shared demographic changes among populations when using all the
-information in genomic data.
+Third, information also decreases as the age of the demographic change
+approaches zero, because fewer coalescent events occur after the change.
+To explore these potential problems, we take advantage of our full-likelihood
+method to assess how well we can infer shared demographic changes among
+populations when using all the information in genomic data.
 We apply our method to restriction-site-associated DNA sequence (RADseq) data
 from five populations of three-spine stickleback
-\citep[(\spp{Gasterosteus aculeatus});][]{Hohenlohe2010}
+\citep[\spp{Gasterosteus aculeatus};][]{Hohenlohe2010}
 that were previously estimated to have co-expanded with an approximate Bayesian
 computation (ABC) approach \citep{Xue2015}.
 

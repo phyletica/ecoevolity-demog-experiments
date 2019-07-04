@@ -64,20 +64,24 @@
 \newcommand{\embedWidthFigure}[4]{\widthFigure{#1}{#2}{listformat=figList}{#3}{#4}}
 \newcommand{\siFigure}[4]{\smartFigure{#1}{#2}{name=Figure S, labelformat=noSpace, listformat=sFigList}{#3}{#4}\clearpage}
 
-\newcommand{\validationsimsthreecolumndescription}{The left column of plots
-    shows the gamma distribution from which the relative size of the ancestral
-    population was drawn; this was also used as the prior when each simulated
-    \dataset was analyzed.
-    The center and right column of plots show true versus estimated values when
+\newcommand{\validationsimsthreecolumndescriptiontemplate}[1]{The left column
+    of plots shows the gamma distribution from which the relative size of the
+    ancestral population was drawn; this was also used as the prior when each
+    simulated \dataset was analyzed.
+    The center and right column of plots show true versus estimated #1 when
     using all characters (center) or only variable characters (right).
 }
-\newcommand{\diffusesimsfourcolumndescription}{The first and second columns of
+\newcommand{\validationsimsthreecolumndescription}{\validationsimsthreecolumndescriptiontemplate{values}}
+\newcommand{\validationsimsthreecolumndescriptionmodels}{\validationsimsthreecolumndescriptiontemplate{models}}
+\newcommand{\diffusesimsfourcolumndescriptiontemplate}[1]{The first and second columns of
     plots show the distribution on the relative effective size of the ancestral
     population for simulating the data (first column) and for the prior when
     analyzing the simulated data (second column).
-    The third and fourth columns of plots show true versus estimated values
+    The third and fourth columns of plots show true versus estimated #1
     when using all characters (center) or only variable characters (right).
 }
+\newcommand{\diffusesimsfourcolumndescription}{\diffusesimsfourcolumndescriptiontemplate{values}}
+\newcommand{\diffusesimsfourcolumndescriptionmodels}{\diffusesimsfourcolumndescriptiontemplate{models}}
 \newcommand{\validationfiguregriddescription}{The first four columns show the
     results from different distributions on the relative effective size of the
     ancestral population, decreasing in variance from left to right.
@@ -112,7 +116,7 @@
 \newcommand{\filtereddatafigurerowdescription}{The rows show the results when
     (top) all sites and (bottom) only variable sites are analyzed.
 }
-\newcommand{\weusedmatplotlib}{We generated the plot using matplotlib Version
+\newcommand{\weusedmatplotlib}{We generated the plots using matplotlib Version
     2.0.0 \citep{matplotlib}.}
 \newcommand{\weusedggplot}{We generated the plots with ggplot2 Version 2.2.1
     \citep{ggplot2}.}
@@ -130,18 +134,17 @@
     \textrm{CS})$---is shown in the lower right.
 }
 \newcommand{\modelplotannotations}{Each model is represented along the plot
-    axes by three integers that indicate the divergence category of each
-    pair of populations (e.g., 011 represents the model in which the second and
-    third pair diverge at the same time, but separately from the first).
+    axes by three integers that indicate the event category of each comparison
+    (e.g., 011 represents the model in which the second and third comparison
+    share the same event time that is distinct from the first).
     The estimates are based on the model with the maximum \textit{a posteriori}
     probability (MAP).
     For each plot,
-    the proportion of \datasets for which the model with the largest
-    posterior probability matched the true model---$p(\hat{\etimesets}
-    = \etimesets)$---is shown in the upper left corner, and
-    the median posterior probability of the correct model across all
-    \datasets---$\widetilde{p(\etimesets|\alldata)}$---is shown in the upper
-    right corner.
+    the proportion of \datasets for which the MAP model matched the true
+    model---$p(\hat{\etimesets} = \etimesets)$---is shown in the upper left
+    corner, and the median posterior probability of the correct model across
+    all \datasets---$\widetilde{p(\etimesets|\alldata)}$---is shown in the
+    upper right corner.
 }
 \newcommand{\accuracyscatterplotannotations}[1]{For each plot, the
     root-mean-square error (RMSE) and the proportion of estimates for which the
