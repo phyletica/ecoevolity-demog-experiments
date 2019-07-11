@@ -9,16 +9,17 @@
 \input{../utils/macros.tex}
 \input{../utils/notation.tex}
 
-\newcommand{\ifembed}[2]{#1}
-% \newcommand{\ifembed}[2]{#2}
-% \newcommand{\ifdoublespacing}[2]{#1}
-\newcommand{\ifdoublespacing}[2]{#2}
-% \newcommand{\iflinenumbers}[2]{#1}
-\newcommand{\iflinenumbers}[2]{#2}
+% \newcommand{\ifembed}[2]{#1}
+\newcommand{\ifembed}[2]{#2}
+\newcommand{\ifdoublespacing}[2]{#1}
+% \newcommand{\ifdoublespacing}[2]{#2}
+\newcommand{\iflinenumbers}[2]{#1}
+% \newcommand{\iflinenumbers}[2]{#2}
 % \newcommand{\ifragged}[2]{#1}
 \newcommand{\ifragged}[2]{#2}
 
-\usepackage[round]{natbib}
+% \usepackage[round]{natbib}
+\usepackage[natbibapa]{apacite}
 
 \title{Insights from a general, full-likelihood Bayesian approach to inferring
     shared evolutionary events from genomic data: Inferring shared demographic
@@ -58,7 +59,7 @@
 \begin{linenumbers}
 }{}
 
-% \textbf{Running head}: \uppercase{Inferring shared demographic changes}
+\textbf{Running head}: \uppercase{Inferring shared demographic changes}
 
 {\let\newpage\relax\maketitle}
 
@@ -79,8 +80,19 @@
 
 \input{body.tex}
 
+
 \section{Acknowledgments}
 \input{acknowledgments.tex}
+
+% \bibliographystyle{../bib/sysbio}
+\bibliographystyle{apacite}
+\bibliography{../bib/references}
+
+\section{Data Accessibility}
+\input{data-accessibility.tex}
+
+\section{Author Contributions}
+\input{author-contributions.tex}
 
 % \section{Appendix}
 \begin{appendices}
@@ -89,8 +101,7 @@
 \input{model.tex}
 \end{appendices}
 
-\bibliographystyle{../bib/sysbio}
-\bibliography{../bib/references}
+%TC:ignore
 
 %% LIST OF FIGURES %%%%%%%%%%%%%%%%%%%%%%%%%%
 % \ifembed{}{
@@ -154,5 +165,7 @@
 \clearpage
 
 \input{si-figures.tex}
+
+%TC:endignore
 
 \end{document}
