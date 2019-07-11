@@ -7,6 +7,10 @@ Table of Contents
 Overview
 ========
 
+This project is archived on [zenodo](https://doi.org/10.5281/zenodo.3319992):
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3319992.svg)](https://doi.org/10.5281/zenodo.3319992)
+
 This repository serves as an [open-science
 notebook](http://en.wikipedia.org/wiki/Open_notebook_science) for research
 conducted by the [Phyletica Lab](http://phyletica.org) to assess the
