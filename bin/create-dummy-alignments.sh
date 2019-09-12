@@ -79,3 +79,25 @@ do
         i=`expr $i + 1`
     done
 done
+
+# Create dummy alignments with 40 sampled gene copies
+NSPECIES=1
+NGENOMES=40
+NCHARS=500000
+
+alignment_dir="../alignments"
+mkdir -p "$alignment_dir"
+
+i=1
+while [ "$i" -lt 4 ]
+do
+    prefix="c${i}sp"
+    outfile="${alignment_dir}/comp0${i}-${NSPECIES}species-${NGENOMES}genomes-${NCHARS}chars.nex"
+    ./generate-dummy-biallelic-alignment.py \
+        --nspecies "$NSPECIES" \
+        --ngenomes "$NGENOMES" \
+        --ncharacters "$NCHARS" \
+        --prefix "$prefix" \
+        > "$outfile"
+    i=`expr $i + 1`
+done
