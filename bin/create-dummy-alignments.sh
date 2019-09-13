@@ -9,7 +9,7 @@ mkdir -p "$alignment_dir"
 
 # Generate 500k dummy alignments
 i=1
-while [ "$i" -lt 4 ]
+while [ "$i" -lt 7 ]
 do
     prefix="c${i}sp"
     outfile="${alignment_dir}/comp0${i}-${NSPECIES}species-${NGENOMES}genomes-${NCHARS}chars.nex"
