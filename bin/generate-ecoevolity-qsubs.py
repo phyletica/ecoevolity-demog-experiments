@@ -29,7 +29,7 @@ def get_asc_header():
          "username=\"$USER\"\n"
          "if [ \"$username\" == \"aubjro\" ]\n"
          "then\n"
-         "    module load gcc/6.1.0\n"
+         "    module load gcc/7.2.0\n"
          "fi\n\n")
     return s
 
