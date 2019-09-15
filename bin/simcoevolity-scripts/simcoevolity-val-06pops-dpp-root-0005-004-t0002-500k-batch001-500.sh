@@ -3,7 +3,7 @@
 username="$USER"
 if [ "$username" == "aubjro" ]
 then
-    module load gcc/6.1.0
+    module load gcc/7.2.0
 fi
 
 if [ -n "$PBS_JOBNAME" ]
