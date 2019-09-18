@@ -475,6 +475,7 @@ def main_cli(argv = sys.argv):
     pair_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pairs-dpp-root-*'))
     three_run_val_sim_dirs = [d for d in val_sim_dirs if d not in four_run_val_sim_dirs]
     mixed_comparison_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '03pops-03pairs-dpp-root-*'))
+    six_demog_comparison_sim_dirs = glob.glob(os.path.join(project_util.VAL_DIR, '06pops-dpp-root-*'))
     parse_simulation_results(
             four_run_val_sim_dirs,
             number_of_comparisons = 3,
@@ -502,6 +503,13 @@ def main_cli(argv = sys.argv):
             burnin = args.burnin,
             mixed_comparisons = False,
             comparison_number_offset = 3)
+    parse_simulation_results(
+            six_demog_comparison_sim_dirs,
+            number_of_comparisons = 6,
+            expected_number_of_runs = 4,
+            expected_number_of_samples = args.expected_number_of_samples,
+            burnin = args.burnin,
+            mixed_comparisons = False)
 
 
 if __name__ == "__main__":
