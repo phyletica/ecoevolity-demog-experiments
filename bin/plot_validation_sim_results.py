@@ -37,7 +37,17 @@ import numpy
 
 
 sim_dir_to_priors = {
+        "06pops-dpp-root-0005-004-t0002-500k":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
         "03pops-dpp-root-0005-004-t0002-500k":
+            (
+                (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-004-t0002-500k-40genomes":
             (
                 (5.0, 0.04, 0.05),
                 (4.0, 0.000475, 0.0001)
@@ -55,6 +65,16 @@ sim_dir_to_priors = {
         "03pairs-dpp-root-0005-004-t0002-500k-diffuseprior":
             (
                 (5.0, 0.04, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-001-t0002-500k-diffuseprior":
+            (
+                (5.0, 0.01, 0.05),
+                (4.0, 0.000475, 0.0001)
+            ),
+        "03pops-dpp-root-0005-001-9_95-t0002-500k-diffuseprior":
+            (
+                (5.0, 0.01, 9.95),
                 (4.0, 0.000475, 0.0001)
             ),
         "03pairs-dpp-root-0005-004-t0002-500k":
@@ -175,6 +195,10 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
         s += "-singletonprob-0_4"
     elif sim_dir_name.endswith("-060s"):
         s += "-singletonprob-0_6"
+    elif sim_dir_name == "03pops-dpp-root-0005-001-t0002-500k-diffuseprior":
+        s += "-diffuseprior-10increase"
+    elif sim_dir_name == "03pops-dpp-root-0005-001-9_95-t0002-500k-diffuseprior":
+        s += "-diffuseprior-10decrease"
     elif sim_dir_name == "03pops-dpp-root-0005-004-t0002-500k-diffuseprior":
         s += "-diffuseprior-4increase"
     elif sim_dir_name == "03pairs-dpp-root-0005-004-t0002-500k-diffuseprior":
@@ -183,9 +207,90 @@ def get_prefix_from_sim_dir_name(sim_dir_name):
         s += "-pairs"
     elif sim_dir_name == "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior":
         s += "-diffuseprior-4decrease"
+    elif sim_dir_name == "03pops-dpp-root-0005-004-t0002-500k-40genomes":
+        s += "-40genomes"
+    elif sim_dir_name == "06pops-dpp-root-0005-004-t0002-500k":
+        s += "-06pops"
     if sim_dir_name.startswith("03pops-03pairs"):
         s += "-mixed-comps"
     return s
+
+
+class BoxData(object):
+    def __init__(self, values = [], labels = []):
+        assert len(values) == len(labels)
+        self._values = values
+        self._labels = labels
+
+    @classmethod
+    def init(cls, results, parameters, labels = None):
+        if labels:
+            assert len(parameters) == len(labels)
+        bd = cls()
+        bd._values = [[] for i in range(len(parameters))]
+        if labels:
+            bd._labels = list(labels)
+        else:
+            bd._labels = list(parameters)
+        for i, parameter_str in enumerate(parameters):
+            x = [float(e) for e in results["{0}".format(parameter_str)]]
+            bd._d[i].append(x)
+        return bd
+
+    def _get_values(self):
+        return self._values
+
+    values = property(_get_values)
+
+    def _get_labels(self):
+        return self._labels
+
+    labels = property(_get_labels)
+
+    def _get_number_of_categories(self):
+        return len(self._values)
+
+    number_of_categories = property(_get_number_of_categories)
+
+
+    @classmethod
+    def init_time_v_sharing(cls, results,
+            estimator_prefix = "mean"):
+
+        bd_abs_error = cls()
+        bd_ci_width = cls()
+
+        nreplicates = len(results["true_model"])
+        ncomparisons = len(results["true_model"][0])
+
+        labels = list(range(ncomparisons))
+        err_vals = [[] for l in labels]
+        ci_vals = [[] for l in labels]
+
+        for sim_index in range(nreplicates):
+            true_model = [int(x) for x in list(results["true_model"][sim_index])]
+            assert len(true_model) == ncomparisons
+            # Only use first comparison so as not to multply count the same
+            # parameter estimates
+            comparison_index = 0
+            # for comparison_index in range(ncomparisons):
+            num_shared = true_model.count(true_model[comparison_index]) - 1
+            height_key_suffix = "root_height_c{0}sp1".format(comparison_index + 1)
+            true_height = float(results["true_{0}".format(height_key_suffix)][sim_index])
+            est_height = float(results["{0}_{1}".format(estimator_prefix, height_key_suffix)][sim_index])
+            ci_lower = float(results["eti_95_lower_{0}".format(height_key_suffix)][sim_index])
+            ci_upper = float(results["eti_95_upper_{0}".format(height_key_suffix)][sim_index])
+            ci_width = ci_upper - ci_lower
+            abs_error = math.fabs(true_height - est_height)
+
+            err_vals[num_shared].append(abs_error)
+            ci_vals[num_shared].append(ci_width)
+
+        bd_abs_error._values = err_vals
+        bd_ci_width._values = ci_vals
+        bd_abs_error._labels = labels
+        bd_ci_width._labels = labels
+        return bd_abs_error, bd_ci_width
 
 
 class HistogramData(object):
@@ -254,6 +359,62 @@ class ScatterData(object):
         d._vet_data()
         d._populate_highlight_indices()
         return d
+
+    @classmethod
+    def init_time_v_sharing(cls, results,
+            estimator_prefix = "mean",
+            highlight_parameter_prefix = "psrf",
+            highlight_threshold = 1.2,
+            highlight_greater_than = True):
+        d_abs_error = cls()
+        d_abs_error._x = []
+        d_abs_error._y = []
+        d_abs_error._y_lower = []
+        d_abs_error._y_upper = []
+        d_abs_error._highlight_threshold = highlight_threshold
+        d_abs_error._highlight_values = []
+        d_abs_error._highlight_indices = []
+        d_ci_width = cls()
+        d_ci_width._x = []
+        d_ci_width._y = []
+        d_ci_width._y_lower = []
+        d_ci_width._y_upper = []
+        d_ci_width._highlight_threshold = highlight_threshold
+        d_ci_width._highlight_values = []
+        d_ci_width._highlight_indices = []
+        nreplicates = len(results["true_model"])
+        ncomparisons = len(results["true_model"][0])
+        for sim_index in range(nreplicates):
+            true_model = [int(x) for x in list(results["true_model"][sim_index])]
+            assert len(true_model) == ncomparisons
+            # Only use first comparison so as not to multply count the same
+            # parameter estimates
+            comparison_index = 0
+            # for comparison_index in range(ncomparisons):
+            num_shared = true_model.count(true_model[comparison_index])
+            height_key_suffix = "root_height_c{0}sp1".format(comparison_index + 1)
+            true_height = float(results["true_{0}".format(height_key_suffix)][sim_index])
+            est_height = float(results["{0}_{1}".format(estimator_prefix, height_key_suffix)][sim_index])
+            ci_lower = float(results["eti_95_lower_{0}".format(height_key_suffix)][sim_index])
+            ci_upper = float(results["eti_95_upper_{0}".format(height_key_suffix)][sim_index])
+            ci_width = ci_upper - ci_lower
+            abs_error = math.fabs(true_height - est_height)
+            d_abs_error._x.append(num_shared)
+            d_ci_width._x.append(num_shared)
+            d_abs_error._y.append(abs_error)
+            d_ci_width._y.append(ci_width)
+            if highlight_parameter_prefix:
+                d_abs_error._highlight_values.append(float(results["{0}_{1}".format(
+                        highlight_parameter_prefix,
+                        height_key_suffix)][sim_index]))
+                d_ci_width._highlight_values.append(float(results["{0}_{1}".format(
+                        highlight_parameter_prefix,
+                        height_key_suffix)][sim_index]))
+        d_abs_error._vet_data()
+        d_ci_width._vet_data()
+        d_abs_error._populate_highlight_indices()
+        d_ci_width._populate_highlight_indices()
+        return d_abs_error, d_ci_width
 
     def _vet_data(self):
         assert len(self._x) == len(self._y)
@@ -1423,6 +1584,85 @@ def generate_specific_scatter_plot(
     _LOG.info("Plots written to {0!r}\n".format(plot_path))
 
 
+def generate_specific_box_plot(
+        data,
+        plot_file_prefix,
+        title = None,
+        title_size = 16.0,
+        x_label = None,
+        x_label_size = 16.0,
+        y_label = None,
+        y_label_size = 16.0,
+        plot_width = 3.5,
+        plot_height = 3.0,
+        pad_left = 0.2,
+        pad_right = 0.99,
+        pad_bottom = 0.18,
+        pad_top = 0.9,
+        jitter = 0.01,
+        alpha = 0.4,
+        rasterized = False,
+        plot_dir = project_util.PLOT_DIR):
+
+    plt.close('all')
+    fig = plt.figure(figsize = (plot_width, plot_height))
+    gs = gridspec.GridSpec(1, 1,
+            wspace = 0.0,
+            hspace = 0.0)
+
+    ax = plt.subplot(gs[0, 0])
+    box_dict = ax.boxplot(data.values,
+            labels = data.labels,
+            notch = False,
+            sym = '',
+            vert = True,
+            showfliers = False,
+            whis = 'range',
+            zorder = 500)
+    # Change median line from default color to black
+    plt.setp(box_dict["medians"], color = "black")
+    for i in range(data.number_of_categories):
+        vals = data.values[i]
+        x = numpy.random.uniform(low = i + 1 - jitter, high = i + 1 + jitter, size = len(vals))
+        ax.plot(x, vals,
+                marker = 'o',
+                linestyle = '',
+                markerfacecolor = 'none',
+                markeredgecolor = '0.35',
+                markeredgewidth = 0.7,
+                alpha = alpha,
+                markersize = 2.5,
+                zorder = 100,
+                rasterized = rasterized)
+    if x_label is not None:
+        ax.set_xlabel(
+                x_label,
+                fontsize = x_label_size)
+    if y_label is not None:
+        ax.set_ylabel(
+                y_label,
+                fontsize = y_label_size)
+    if title is not None:
+        ax.set_title(plot_title,
+                fontsize = title_size)
+
+    gs.update(
+            left = pad_left,
+            right = pad_right,
+            bottom = pad_bottom,
+            top = pad_top)
+
+    if not os.path.exists(plot_dir):
+        os.mkdir(plot_dir)
+    plot_path = os.path.join(plot_dir,
+            "{0}-box.pdf".format(plot_file_prefix))
+    if rasterized:
+        plt.savefig(plot_path, dpi=600)
+    else:
+        plt.savefig(plot_path)
+    _LOG.info("Box plot written to {0!r}\n".format(plot_path))
+
+
 def generate_histograms(
         data_grid,
         plot_file_prefix,
@@ -1629,6 +1869,7 @@ def generate_specific_histogram(
         bins = None,
         x_range = None,
         range_key = "range",
+        center_key = "mean",
         number_of_digits = 0,
         plot_dir = project_util.PLOT_DIR
         ):
@@ -1668,7 +1909,7 @@ def generate_specific_histogram(
 
     ax.text(0.98, 0.98,
             "{mean:,.{ndigits}f} ({lower:,.{ndigits}f}--{upper:,.{ndigits}f})".format(
-                    mean = summary["mean"],
+                    mean = summary[center_key],
                     lower = summary[range_key][0],
                     upper = summary[range_key][1],
                     ndigits = number_of_digits),
@@ -2058,51 +2299,54 @@ def generate_specific_model_plots(
                         horizontalalignment = "center",
                         verticalalignment = "center")
 
+    # Currently, we are exclusively showing the model (rather than the number
+    # of events) plots. For consistency, let's annotate all plots with summary
+    # stats about the models (and not the nevents)
     if include_cs:
-        if show_all_models:
-            ax.text(0.98, lower_annotation_y,
-                    "$p(\\mathcal{{T}} \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
-                            p_model_within_95_cred),
-                    horizontalalignment = "right",
-                    verticalalignment = "bottom",
-                    transform = ax.transAxes)
-        else:
-            ax.text(0.98, lower_annotation_y,
-                    "$p(k \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
-                            p_nevents_within_95_cred),
-                    horizontalalignment = "right",
-                    verticalalignment = "bottom",
-                    transform = ax.transAxes)
+        # if show_all_models:
+        ax.text(0.98, lower_annotation_y,
+                "$p(\\mathcal{{T}} \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
+                        p_model_within_95_cred),
+                horizontalalignment = "right",
+                verticalalignment = "bottom",
+                transform = ax.transAxes)
+        # else:
+        #     ax.text(0.98, lower_annotation_y,
+        #             "$p(k \\in \\textrm{{\\sffamily CS}}) = {0:.3f}$".format(
+        #                     p_nevents_within_95_cred),
+        #             horizontalalignment = "right",
+        #             verticalalignment = "bottom",
+        #             transform = ax.transAxes)
     if include_prop_correct:
-        if show_all_models:
-            ax.text(0.02, upper_annotation_y,
-                    "$p(\\hat{{\\mathcal{{T}}}} = \\mathcal{{T}}) = {0:.3f}$".format(
-                            p_model_correct),
-                    horizontalalignment = "left",
-                    verticalalignment = "bottom",
-                    transform = ax.transAxes)
-        else:
-            ax.text(0.02, upper_annotation_y,
-                    "$p(\\hat{{k}} = k) = {0:.3f}$".format(
-                            p_correct),
-                    horizontalalignment = "left",
-                    verticalalignment = "bottom",
-                    transform = ax.transAxes)
+        # if show_all_models:
+        ax.text(0.02, upper_annotation_y,
+                "$p(\\hat{{\\mathcal{{T}}}} = \\mathcal{{T}}) = {0:.3f}$".format(
+                        p_model_correct),
+                horizontalalignment = "left",
+                verticalalignment = "bottom",
+                transform = ax.transAxes)
+        # else:
+        #     ax.text(0.02, upper_annotation_y,
+        #             "$p(\\hat{{k}} = k) = {0:.3f}$".format(
+        #                     p_correct),
+        #             horizontalalignment = "left",
+        #             verticalalignment = "bottom",
+        #             transform = ax.transAxes)
     if include_median:
-        if show_all_models:
-            ax.text(0.98, upper_annotation_y,
-                    "$\\widetilde{{p(\\mathcal{{T}}|\\mathbf{{D}})}} = {0:.3f}$".format(
-                            median_true_model_prob),
-                    horizontalalignment = "right",
-                    verticalalignment = "bottom",
-                    transform = ax.transAxes)
-        else:
-            ax.text(0.98, upper_annotation_y,
-                    "$\\widetilde{{p(k|\\mathbf{{D}})}} = {0:.3f}$".format(
-                            median_true_nevents_prob),
-                    horizontalalignment = "right",
-                    verticalalignment = "bottom",
-                    transform = ax.transAxes)
+        # if show_all_models:
+        ax.text(0.98, upper_annotation_y,
+                "$\\widetilde{{p(\\mathcal{{T}}|\\mathbf{{D}})}} = {0:.3f}$".format(
+                        median_true_model_prob),
+                horizontalalignment = "right",
+                verticalalignment = "bottom",
+                transform = ax.transAxes)
+        # else:
+        #     ax.text(0.98, upper_annotation_y,
+        #             "$\\widetilde{{p(k|\\mathbf{{D}})}} = {0:.3f}$".format(
+        #                     median_true_nevents_prob),
+        #             horizontalalignment = "right",
+        #             verticalalignment = "bottom",
+        #             transform = ax.transAxes)
     if include_x_label:
         if show_all_models:
             ax.set_xlabel("True model ($\\mathcal{{T}}$)",
@@ -2188,6 +2432,8 @@ def main_cli(argv = sys.argv):
     if not os.path.exists(project_util.PLOT_DIR):
         os.mkdir(project_util.PLOT_DIR)
 
+    brooks_gelman_1998_recommended_psrf = 1.2
+
     pad_left = 0.16
     pad_right = 0.94
     pad_bottom = 0.12
@@ -2197,6 +2443,7 @@ def main_cli(argv = sys.argv):
 
     # Plot relative root priors
     root_gamma_parameters = (
+            (5.0, 0.01, 0.05, 8.0, False),
             (5.0, 0.04, 0.05, 8.0, False),
             (5.0, 0.09, 0.05, 8.0, False),
             (5.0, 0.19, 0.05, 8.0, False),
@@ -2212,6 +2459,11 @@ def main_cli(argv = sys.argv):
             (5.0, 0.04, 0.05, 4.5, True),
             (5.0, 0.04, 3.8, 4.5, True),
             (1.0, 2.0, 0.0, 4.5, True),
+            (5.0, 0.01, 0.05, 4.5, False),
+            (5.0, 0.04, 0.05, 10.5, True),
+            (5.0, 0.04, 3.8, 10.5, True),
+            (5.0, 0.01, 0.05, 10.5, True),
+            (5.0, 0.01, 9.95, 10.5, True),
             )
     # x_max = float("-inf")
     # for shape, scale, offset in root_gamma_parameters:
@@ -2321,6 +2573,13 @@ def main_cli(argv = sys.argv):
             "03pops-dpp-root-0500-0002-t0002-500k",
             "03pops-dpp-root-0005-004-t0002-500k-diffuseprior",
             "03pops-dpp-root-0005-004-3_8-t0002-500k-diffuseprior",
+            "03pops-dpp-root-0005-004-t0002-500k-40genomes",
+            "03pops-dpp-root-0005-001-t0002-500k-diffuseprior",
+            "03pops-dpp-root-0005-001-9_95-t0002-500k-diffuseprior",
+    ]
+
+    sim_dirs_opt_6_pops = [
+            "06pops-dpp-root-0005-004-t0002-500k",
     ]
 
     sim_dirs_mixed_comparisons = [
@@ -2385,6 +2644,20 @@ def main_cli(argv = sys.argv):
         if var_only_results_pairs_paths:
             var_only_results_pairs[sim_dir] = parse_results(var_only_results_pairs_paths)
 
+    results_6_pops = {}
+    var_only_results_6_pops = {}
+    for sim_dir in sim_dirs_opt_6_pops:
+        results_6_pops[sim_dir] = parse_results(glob.glob(os.path.join(project_util.VAL_DIR,
+                sim_dir,
+                "batch00?",
+                "results.csv.gz")))
+        var_only_results_pairs_paths = glob.glob(os.path.join(project_util.VAL_DIR,
+                        sim_dir,
+                        "batch00?",
+                        "var-only-results.csv.gz"))
+        if var_only_results_pairs_paths:
+            var_only_results_6_pops[sim_dir] = parse_results(var_only_results_pairs_paths)
+
 
     height_parameters = [
             "root_height_c1sp1",
@@ -2442,6 +2715,7 @@ def main_cli(argv = sys.argv):
                     "pad_left": pad_left,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": div_height_parameters,
             },
             "div-time": {
                     "headers": div_height_parameters,
@@ -2474,6 +2748,7 @@ def main_cli(argv = sys.argv):
                     "pad_left": pad_left - 0.02,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": div_coal_height_parameters,
             },
             "event-div-coal-time": {
                     "headers": div_coal_height_parameters,
@@ -2504,6 +2779,7 @@ def main_cli(argv = sys.argv):
                     "pad_left": pad_left + 0.01,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": div_root_size_parameters,
             },
             "div-ancestor-size": {
                     "headers": div_root_size_parameters,
@@ -2535,6 +2811,7 @@ def main_cli(argv = sys.argv):
                     "pad_left": pad_left,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": div_leaf_size_parameters,
             },
             "div-descendant-size": {
                     "headers": div_leaf_size_parameters,
@@ -2568,34 +2845,46 @@ def main_cli(argv = sys.argv):
             for sim_dir, r in results_mixed_comps.items():
                 data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
                         )
             for sim_dir, r in var_only_results_mixed_comps.items():
                 var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
                         )
         else:
             for sim_dir, r in results.items():
                 data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
                         )
             for sim_dir, r in var_only_results.items():
                 var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
+                        )
+            for sim_dir, r in results_6_pops.items():
+                data[sim_dir] = ScatterData.init(r,
+                        p_info["headers"] + p_info["six_pops_extra_headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
+                        )
+            for sim_dir, r in var_only_results_6_pops.items():
+                var_only_data[sim_dir] = ScatterData.init(r,
+                        p_info["headers"] + p_info["six_pops_extra_headers"],
+                        highlight_parameter_prefix = "psrf",
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
                         )
         if not p_info["exclude_pairs_only"]:
             for sim_dir, r in results_pairs.items():
                 data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
                         )
             for sim_dir, r in var_only_results_pairs.items():
                 var_only_data[sim_dir] = ScatterData.init(r, p_info["headers"],
                         highlight_parameter_prefix = "psrf",
-                        highlight_threshold = 1.1,
+                        highlight_threshold = brooks_gelman_1998_recommended_psrf,
                         )
         
         x_label = "True {0} (${1}$)".format(
@@ -3010,6 +3299,138 @@ def main_cli(argv = sys.argv):
                     num_events_key = "num_demog_events",
                     )
 
+    for sim_dir in sim_dirs_opt_6_pops:
+        prefix = get_prefix_from_sim_dir_name(sim_dir)
+        r = results_6_pops.get(sim_dir)
+        generate_specific_model_plots(
+                results = r,
+                number_of_comparisons = 6,
+                plot_title = None,
+                include_x_label = False,
+                include_y_label = False,
+                include_median = True,
+                include_cs = False,
+                include_prop_correct = True,
+                plot_width = plot_width * 0.96,
+                plot_height = plot_height,
+                xy_label_size = 16.0,
+                title_size = 16.0,
+                pad_left = pad_left - 0.03,
+                pad_right = 0.985,
+                pad_bottom = pad_bottom - 0.015,
+                pad_top = pad_top - 0.07,
+                lower_annotation_y = 0.01,
+                upper_annotation_y = 1.015,
+                plot_file_prefix = "nevents-" + prefix)
+        if sim_dir in var_only_results_6_pops:
+            vor = var_only_results_6_pops.get(sim_dir)
+            generate_specific_model_plots(
+                    results = vor,
+                    number_of_comparisons = 6,
+                    plot_title = None,
+                    include_x_label = False,
+                    include_y_label = False,
+                    include_median = True,
+                    include_cs = False,
+                    include_prop_correct = True,
+                    plot_width = plot_width * 0.96,
+                    plot_height = plot_height,
+                    xy_label_size = 16.0,
+                    title_size = 16.0,
+                    pad_left = pad_left - 0.03,
+                    pad_right = 0.985,
+                    pad_bottom = pad_bottom - 0.015,
+                    pad_top = pad_top - 0.07,
+                    lower_annotation_y = 0.01,
+                    upper_annotation_y = 1.015,
+                    plot_file_prefix = "var-only-nevents-" + prefix)
+
+    jitter = 0.12
+    alpha = 0.5
+    for sim_dir in sim_dirs_opt_6_pops:
+        prefix = get_prefix_from_sim_dir_name(sim_dir)
+        r = results_6_pops.get(sim_dir)
+        nshared_v_abs_error, nshared_v_ci_width = BoxData.init_time_v_sharing(
+                results = r,
+                estimator_prefix = "mean")
+        generate_specific_box_plot(
+                data = nshared_v_abs_error,
+                plot_file_prefix = "shared-v-abs-error-" + prefix,
+                title = None,
+                title_size = 16.0,
+                x_label = None,
+                x_label_size = 16.0,
+                y_label = None,
+                y_label_size = 16.0,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                pad_left = pad_left + 0.02,
+                pad_right = pad_right + 0.02,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                jitter = jitter,
+                alpha = alpha,
+                rasterized = False)
+        generate_specific_box_plot(
+                data = nshared_v_ci_width,
+                plot_file_prefix = "shared-v-ci-width-" + prefix,
+                title = None,
+                title_size = 16.0,
+                x_label = None,
+                x_label_size = 16.0,
+                y_label = None,
+                y_label_size = 16.0,
+                plot_width = plot_width,
+                plot_height = plot_height,
+                pad_left = pad_left + 0.02,
+                pad_right = pad_right + 0.02,
+                pad_bottom = pad_bottom,
+                pad_top = pad_top,
+                jitter = jitter,
+                alpha = alpha,
+                rasterized = False)
+        if sim_dir in var_only_results_6_pops:
+            vor = var_only_results_6_pops.get(sim_dir)
+            vo_nshared_v_abs_error, vo_nshared_v_ci_width = BoxData.init_time_v_sharing(
+                    results = vor,
+                    estimator_prefix = "mean")
+            generate_specific_box_plot(
+                    data = vo_nshared_v_abs_error,
+                    plot_file_prefix = "var-only-shared-v-abs-error-" + prefix,
+                    title = None,
+                    title_size = 16.0,
+                    x_label = None,
+                    x_label_size = 16.0,
+                    y_label = None,
+                    y_label_size = 16.0,
+                    plot_width = plot_width,
+                    plot_height = plot_height,
+                    pad_left = pad_left + 0.02,
+                    pad_right = pad_right + 0.02,
+                    pad_bottom = pad_bottom,
+                    pad_top = pad_top,
+                    jitter = jitter,
+                    alpha = alpha,
+                    rasterized = False)
+            generate_specific_box_plot(
+                    data = vo_nshared_v_ci_width,
+                    plot_file_prefix = "var-only-shared-v-ci-width-" + prefix,
+                    title = None,
+                    title_size = 16.0,
+                    x_label = None,
+                    x_label_size = 16.0,
+                    y_label = None,
+                    y_label_size = 16.0,
+                    plot_width = plot_width,
+                    plot_height = plot_height,
+                    pad_left = pad_left + 0.02,
+                    pad_right = pad_right + 0.02,
+                    pad_bottom = pad_bottom,
+                    pad_top = pad_top,
+                    jitter = jitter,
+                    alpha = alpha,
+                    rasterized = False)
+
 
     histograms_to_plot = {
             "n-var-sites": {
@@ -3023,6 +3444,12 @@ def main_cli(argv = sys.argv):
                     "ndigits": 0,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": [
+                            "n_var_sites_c4",
+                            "n_var_sites_c5",
+                            "n_var_sites_c6",
+                    ],
+                    "center_key": "mean",
             },
             "div-n-var-sites": {
                     "headers": [
@@ -3035,6 +3462,8 @@ def main_cli(argv = sys.argv):
                     "ndigits": 0,
                     "mixed_comp_only": True,
                     "exclude_pairs_only": False,
+                    "six_pops_extra_headers": [],
+                    "center_key": "mean",
             },
             "ess-ln-likelihood": {
                     "headers": [
@@ -3045,6 +3474,8 @@ def main_cli(argv = sys.argv):
                     "ndigits": 1,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": False,
+                    "six_pops_extra_headers": [],
+                    "center_key": "mean",
             },
             "ess-event-time": {
                     "headers": [
@@ -3057,6 +3488,12 @@ def main_cli(argv = sys.argv):
                     "ndigits": 1,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": [
+                            "ess_sum_root_height_c4sp1",
+                            "ess_sum_root_height_c5sp1",
+                            "ess_sum_root_height_c6sp1",
+                    ],
+                    "center_key": "mean",
             },
             "ess-div-time": {
                     "headers": [
@@ -3069,6 +3506,8 @@ def main_cli(argv = sys.argv):
                     "ndigits": 1,
                     "mixed_comp_only": True,
                     "exclude_pairs_only": False,
+                    "six_pops_extra_headers": [],
+                    "center_key": "mean",
             },
             "ess-root-pop-size": {
                     "headers": [
@@ -3081,6 +3520,12 @@ def main_cli(argv = sys.argv):
                     "ndigits": 1,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": [
+                            "ess_sum_pop_size_root_c4sp1",
+                            "ess_sum_pop_size_root_c5sp1",
+                            "ess_sum_pop_size_root_c6sp1",
+                    ],
+                    "center_key": "mean",
             },
             "ess-div-root-pop-size": {
                     "headers": [
@@ -3093,6 +3538,8 @@ def main_cli(argv = sys.argv):
                     "ndigits": 1,
                     "mixed_comp_only": True,
                     "exclude_pairs_only": False,
+                    "six_pops_extra_headers": [],
+                    "center_key": "mean",
             },
             "psrf-ln-likelihood": {
                     "headers": [
@@ -3103,6 +3550,8 @@ def main_cli(argv = sys.argv):
                     "ndigits": 2,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": False,
+                    "six_pops_extra_headers": [],
+                    "center_key": "mean",
             },
             "psrf-event-time": {
                     "headers": [
@@ -3115,6 +3564,12 @@ def main_cli(argv = sys.argv):
                     "ndigits": 2,
                     "mixed_comp_only": False,
                     "exclude_pairs_only": True,
+                    "six_pops_extra_headers": [
+                            "psrf_root_height_c4sp1",
+                            "psrf_root_height_c5sp1",
+                            "psrf_root_height_c6sp1",
+                    ],
+                    "center_key": "mean",
             },
             "psrf-div-time": {
                     "headers": [
@@ -3127,6 +3582,20 @@ def main_cli(argv = sys.argv):
                     "ndigits": 2,
                     "mixed_comp_only": True,
                     "exclude_pairs_only": False,
+                    "six_pops_extra_headers": [],
+                    "center_key": "mean",
+            },
+            "run-time": {
+                    "headers": [
+                            "mean_run_time",
+                    ],
+                    "label": "Run time (seconds)",
+                    "short_label": "Run time (seconds)",
+                    "ndigits": 1,
+                    "mixed_comp_only": False,
+                    "exclude_pairs_only": False,
+                    "six_pops_extra_headers": [],
+                    "center_key": "median",
             },
     }
 
@@ -3143,6 +3612,15 @@ def main_cli(argv = sys.argv):
                 data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
             for sim_dir, r in var_only_results.items():
                 var_only_data[sim_dir] = HistogramData.init(r, p_info["headers"], False)
+
+            for sim_dir, r in results_6_pops.items():
+                data[sim_dir] = HistogramData.init(r,
+                        p_info["headers"] + p_info["six_pops_extra_headers"],
+                        False)
+            for sim_dir, r in var_only_results_6_pops.items():
+                var_only_data[sim_dir] = HistogramData.init(r,
+                        p_info["headers"] + p_info["six_pops_extra_headers"],
+                        False)
 
         if not p_info["exclude_pairs_only"]:
             for sim_dir, r in results_pairs.items():
@@ -3169,6 +3647,7 @@ def main_cli(argv = sys.argv):
                     pad_top = pad_top,
                     bins = None,
                     range_key = "range",
+                    center_key = p_info["center_key"],
                     number_of_digits = p_info["ndigits"])
             if sim_dir in var_only_data:
                 generate_specific_histogram(
@@ -3188,6 +3667,7 @@ def main_cli(argv = sys.argv):
                         pad_top = pad_top,
                         bins = None,
                         range_key = "range",
+                        center_key = p_info["center_key"],
                         number_of_digits = p_info["ndigits"])
 
 
