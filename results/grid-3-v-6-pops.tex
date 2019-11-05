@@ -1,0 +1,70 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}cccccc@{}}
+        & \multicolumn{2}{c}{\Large All sites analyzed}
+        &
+        & \multicolumn{2}{c}{\Large Only variable sites analyzed} \\
+        \cline{2-3}\cline{5-6}
+        & & & & & \\
+        & \multicolumn{1}{c}{\large 3 comparisons}
+        & \multicolumn{1}{c}{\large 6 comparisons}
+        &
+        & \multicolumn{1}{c}{\large 3 comparisons}
+        & \multicolumn{1}{c}{\large 6 comparisons} \\
+        \multirow{8}{*}[-9em]{\begin{sideways}\large Estimated\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/event-time-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/event-time-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-scatter.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-event-time-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-event-time-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-scatter.pdf} \\
+        & \multicolumn{5}{c}{\large True demographic event time} \\
+        % \multirow{1}{*}[0em]{\begin{sideways}\large MAP number of events\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/nevents-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-nevents-rasterized.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/nevents-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-nevents-rasterized.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-nevents-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-nevents-rasterized.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-nevents-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-nevents-rasterized.pdf} \\
+        & \multicolumn{5}{c}{\large True number of events} \\
+        % \multirow{1}{*}[0em]{\begin{sideways}\large Estimated size\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/ancestor-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/ancestor-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-scatter.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-ancestor-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-ancestor-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-scatter.pdf} \\
+        & \multicolumn{5}{c}{\large True ancestral population size} \\
+        % \multirow{1}{*}[0em]{\begin{sideways}\large Estimated size\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-scatter.pdf}
+        &
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-scatter.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-descendant-size-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-scatter.pdf} \\
+        & \multicolumn{5}{c}{\large True descendant population size} \\
+    \end{tabular}
+\end{figure}
+
+\end{document}
