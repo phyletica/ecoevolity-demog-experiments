@@ -604,6 +604,12 @@ def plot_gamma(shape = 1.0,
 
     x_plot = [v + offset for v in x]
 
+    if offset > 0.0:
+        x_gap = numpy.linspace(x_min, offset, 100)
+        d_gap = [0.0 for i in range(100)]
+        x_plot = list(x_gap) + list(x_plot)
+        d = d_gap + list(d)
+
     plt.close('all')
     fig = plt.figure(figsize = (plot_width, plot_height))
     gs = gridspec.GridSpec(1, 1,
@@ -2485,10 +2491,13 @@ def main_cli(argv = sys.argv):
         include_y_label = False
         if i == 0:
             include_y_label = True
+        x_min = 0.0
+        if x_max == 10.5:
+            x_min = -0.5
         plot_gamma(shape = shape,
                 scale = scale,
                 offset = offset,
-                x_min = 0.0,
+                x_min = x_min,
                 x_max = x_max,
                 number_of_points = 10000,
                 x_label = "Relative root size",
