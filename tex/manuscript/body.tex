@@ -27,8 +27,8 @@ and shared demographic changes in effective population size across populations
 from comparative genetic data.
 % We use ``demography'' to refer to the effective size of populations.
 To date, no method has allowed the joint inference of both shared divergences
-and demographic changes.
-Given overlap among processes that can potentially cause divergence and
+and population-size changes.
+Given the overlap among processes that can potentially cause divergence and
 demographic changes of populations across multiple species, such a method would
 be useful for testing hypotheses about community-scale processes that shape
 biodiversity across landscapes.
@@ -40,10 +40,10 @@ size changes (\fig{}~\ref{fig:modelCartoon}).
 Whereas the theory and performance of methods that estimate shared divergence
 times has been relatively well-investigated
 \citep[e.g.,][]{Oaks2012,Hickerson2013,Oaks2014reply,Oaks2014dpp,Overcast2017,Oaks2018ecoevolity},
-exploration into the estimation of shared demographic changes has been much
-more limited.
-There are theoretical reasons to suspect that estimating shared demographic
-changes is more difficult than divergence times.
+exploration into the estimation of shared changes in population size has been
+much more limited.
+There are theoretical reasons to suspect that estimating shared changes in
+effective population size is more difficult than divergence times.
 The parameter of interest (timing of a demographic change) is informed by
 differing rates at which sampled copies of a gene ``find'' their common
 ancestors (coalesce) going backward in time before and after the change in
@@ -67,6 +67,8 @@ computation (ABC) approach \citep{Xue2015}.
 \ifembed{
 \input{fig-model-cartoon.tex}
 }{}
+
+\input{model.tex}
 
 \section{Materials \& Methods}
 

@@ -1,0 +1,37 @@
+\subsection{Initial simulation conditions}
+
+We initially simulated data under distributions we hoped comprised a mix of
+conditions that were favorable and challenging for estimating the timing and
+sharing of demographic changes.
+For these initial conditions, we simulated \datasets with three populations
+that underwent a demographic change, under five different distributions on the
+relative effective size of the ancestral population
+(\rootrelativepopsize; see left column of
+\figs
+\labelcref{fig:valsimsmodelinitial,fig:valsimsetimesinitial}):
+\begin{enumerate}[label=A.\arabic*]
+    \item \dgamma{10}{0.25} (4-fold population increase) \label{sims:initialFourFoldIncrease}
+    \item \dgamma{10}{0.5} (2-fold population increase)  \label{sims:initialTwoFoldIncrease}
+    \item \dgamma{10}{2} (2-fold population decrease)    \label{sims:initialTwoFoldDecrease}
+    \item \dgamma{10}{1} (no change on average, but a fair amount of variance) \label{sims:initialCenter}
+    \item \dgamma{100}{1} (no change on average, little variance) \label{sims:initialCenterNarrow}
+\end{enumerate}
+The last distribution was chosen to represent a ``worst-case'' scenario where
+there was almost no demographic change in the history of the populations.
+For the mutation-scaled effective size of the descendant populations
+($\epopsize[\descendantpopindex{}]\murate$; i.e., the population size after the
+demographic change),
+we used a gamma distribution with a shape of 5 and mean of 0.002.
+The timing of the demographic events was exponentially distributed with a mean
+of 0.01 expected substitutions per site;
+given the mean of our distribution on the effective size of the descendant
+populations, this puts the expectation of demographic-change times in units of
+$4N_e$ generations at 1.25.
+This distribution on times was chosen to span times of demographic change from
+very recent (i.e., most gene lineages coalesce before the change) to old (i.e.,
+most gene lineages coalesce after the change).
+The assignment of the three simulated populations to 1, 2, or 3 demographic
+events was controlled by a Dirichlet process with a mean number of 2.0
+demographic events across the three populations.
+We generated 500 \datasets under each of these five simulation conditions, all
+of which were analyzed using the same simulated distributions as priors.

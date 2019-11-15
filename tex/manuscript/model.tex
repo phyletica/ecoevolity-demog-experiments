@@ -1,3 +1,32 @@
+\section{The model}
+
+We extended the software package, \ecoevolity, to accommodate two types of
+temporal comparisons:
+\begin{enumerate}
+    \item A population that experienced a change from effective population size
+        \epopsize[\rootpopindex]
+        to effective size
+        \epopsize[\descendantpopindex{}]
+        at time \comparisonetime in the past.
+        We will refer to this as a \emph{demographic comparison}
+        (\fig{}~\ref{fig:modelCartoon}),
+        and refer to the population before and after the change in population
+        size as ``ancestral'' and ``descendant'', respectively.
+    \item A population that diverged at time \comparisonetime in the past into
+        two descendant populations, each with unique effective population
+        sizes.
+        We will refer to this as a \emph{divergence comparison}
+        (\fig{}~\ref{fig:modelCartoon}).
+\end{enumerate}
+The type of each comparison is specified by the investigator; either the input
+data specifies one (demographic comparison) or two (divergence comparison)
+populations.
+This allows inference of shared times of divergence and/or demographic change
+across an arbitrary mix of demographic and divergence comparisons in a
+full-likelihood, Bayesian framework.
+Table~\ref{table:notation} provides a key to the notation we use throughout
+this paper.
+
 \subsection{The data}
 As described by \citet{Oaks2018ecoevolity},
 we assume we have orthologous, biallelic genetic characters collected from
@@ -40,7 +69,7 @@ Note, because the population history of each taxon is modeled separately
 characters do not have to be orthologous across taxa, only within them.
 
 
-\subsubsection{The evolution of markers}
+\subsection{The evolution of markers}
 
 We assume each character evolved along a gene tree (\genetree)
 according to a finite-sites, continuous-time Markov chain (CTMC) model.
@@ -60,7 +89,7 @@ units of expected substitutions per site.
 Alternatively, if a mutation rate per site per unit time is given, then time is
 in those units (e.g., generations or years).
 
-\subsubsection{The evolution of gene trees}
+\subsection{The evolution of gene trees}
 
 We assume that the gene tree of each locus evolved within a simple
 ``species'' tree with one ancestral root population, which either
@@ -82,7 +111,7 @@ event time of a comparison
 (\comparisonpopsizes{} and \comparisonetime{}).
 
 
-\subsubsection{The likelihood}
+\subsection{The likelihood}
 
 As in \citet{Oaks2018ecoevolity},
 we use the work of \citet{Bryant2012}
@@ -298,22 +327,25 @@ We also use univariate and multivariate Metropolis-Hastings algorithms
 \citep{Metropolis1953,Hastings1970} to update the model,
 the latter of which are detailed in \citet{Oaks2018ecoevolity}.
 
-% \subsection{Software implementation}
-% The model and Bayesian estimattion outlined above has been incorporated into
-% the open-source software package, \ecoevolity, written in the \cpp language.
-% The source code is freely available from
-% \url{https://github.com/phyletica/ecoevolity} and
-% includes an extensive test suite.
-% Documentation for how to install and use the software is available at
-% \url{http://phyletica.org/ecoevolity/}.
-% We have incorporated help in preprocessing data and postprocessing posterior
-% samples collectd by \ecoevolity into the Python package \pycoevolity, which is
-% available at
-% \url{https://github.com/phyletica/pycoevolity}.
-
-% We used Version 0.3.1 
-% (Commit 9284417)
-% of the \ecoevolity software package for all of our analyses.
-% A detailed history of this project, including all of the data and scripts
-% needed to produce our results, is available at
-% \url{https://github.com/phyletica/ecoevolity-demog-experiments}.
+\subsection{Software implementation}
+The \cpp source code for \ecoevolity is freely available from
+\url{https://github.com/phyletica/ecoevolity} and includes an extensive test
+suite.
+From the \cpp source code, two primary command-line tools are compiled:
+(1) \ecoevolity, for performing Bayesian inference under the model described
+above,
+and
+(2) \simcoevolity for simulating data under the model described above.
+Documentation for how to install and use the software is available at
+\url{http://phyletica.org/ecoevolity/}.
+We have incorporated help in pre-processing data and post-processing posterior
+samples collected by \ecoevolity in the Python package \pycoevolity, which is
+available at
+\url{https://github.com/phyletica/pycoevolity}.
+We used Version 0.3.1
+(Commit 9284417)
+of the \ecoevolity software package for all of our analyses.
+A detailed history of this project, including all of the data and scripts
+needed to produce our results, is available at
+\url{https://github.com/phyletica/ecoevolity-demog-experiments}
+\citep{Oaks2019CodemogZenodo}.

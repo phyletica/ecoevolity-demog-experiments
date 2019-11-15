@@ -1,67 +1,25 @@
-% \input{model.tex}
-\subsection{The model}
-
-We extended the software package, \ecoevolity, to accommodate two types of
-temporal comparisons:
-\begin{enumerate}
-    \item A population that experienced a change from effective population size
-        \epopsize[\rootpopindex]
-        to effective size
-        \epopsize[\descendantpopindex{}]
-        at time \comparisonetime in the past.
-        We will refer to this as a \emph{demographic comparison}
-        (\fig{}~\ref{fig:modelCartoon}),
-        and refer to the population before and after the change in population
-        size as ``ancestral'' and ``descendant'', respectively.
-    \item A population that diverged at time \comparisonetime in the past into
-        two descendant populations, each with unique effective population
-        sizes.
-        We will refer to this as a \emph{divergence comparison}
-        (\fig{}~\ref{fig:modelCartoon}).
-\end{enumerate}
-This allowed us to infer shared times of divergence and/or demographic change
-across an arbitrary mix of demographic and divergence comparisons in a
-full-likelihood, Bayesian framework.
-During an ``event'' at time \etime, one or more demographic changes and/or
-divergences can occur.
-We estimate the number and timing of events and the assignment of comparisons
-to those events under a Dirichlet-process \citep{Ferguson1973,Antoniak1974}
-prior model.
-The \emph{a priori} tendency for comparisons to share events is controlled by
-the concentration parameter (\concentration) of the Dirichlet process.
-We use Markov chain Monte Carlo (MCMC) algorithms
-\citep{Metropolis1953,Hastings1970,Neal2000}
-to sample from the joint posterior of the model.
-See Appendix~\ref{appendix:model} for a full description of the model, and
-Table~\ref{table:notation} for a key to the notation we use throughout this
-paper.
-
-\subsection{Software implementation}
-The \cpp source code for \ecoevolity is freely available from
-\url{https://github.com/phyletica/ecoevolity} and includes an extensive test
-suite.
-Documentation for how to install and use the software is available at
-\url{http://phyletica.org/ecoevolity/}.
-We have incorporated help in pre-processing data and post-processing posterior
-samples collected by \ecoevolity in the Python package \pycoevolity, which is
-available at
-\url{https://github.com/phyletica/pycoevolity}.
-We used Version 0.3.1
-(Commit 9284417)
-of the \ecoevolity software package for all of our analyses.
-A detailed history of this project, including all of the data and scripts
-needed to produce our results, is available at
-\url{https://github.com/phyletica/ecoevolity-demog-experiments}
-\citep{Oaks2019CodemogZenodo}.
-
+% During an ``event'' at time \etime, one or more demographic changes and/or
+% divergences can occur.
+% We estimate the number and timing of events and the assignment of comparisons
+% to those events under a Dirichlet-process \citep{Ferguson1973,Antoniak1974}
+% prior model.
+% The \emph{a priori} tendency for comparisons to share events is controlled by
+% the concentration parameter (\concentration) of the Dirichlet process.
+% We use Markov chain Monte Carlo (MCMC) algorithms
+% \citep{Metropolis1953,Hastings1970,Neal2000}
+% to sample from the joint posterior of the model.
+% See Appendix~\ref{appendix:model} for a full description of the model, and
+% Table~\ref{table:notation} for a key to the notation we use throughout this
+% paper.
 
 \subsection{Analyses of simulated data}
 
 \subsubsection{Assessing ability to estimate timing and sharing of demographic changes}
 
 We used the \simcoevolity and \ecoevolity tools within the \ecoevolity software
-package to simulate and analyze \datasets,
-respectively, under a variety of conditions.
+package
+\citep{Oaks2018ecoevolity}
+to simulate and analyze \datasets, respectively, under a variety of conditions.
 Each simulated \dataset comprised 500,000 characters collected from 10 diploid
 individuals (20 genomes) sampled per population from three demographic
 comparisons.
@@ -74,51 +32,17 @@ generations with a sample taken every 50 generations; we combined and
 summarized the last 1000 samples of each of the four chains (the first 501
 samples discarded from each chain).
 
-\paragraph{Initial simulation conditions}
+%% Initial simulation conditions removed
 
-We initially simulated data under distributions we hoped comprised a mix of
-conditions that were favorable and challenging for estimating the timing and
-sharing of demographic changes.
-For these initial conditions, we simulated \datasets with three populations
-that underwent a demographic change, under five different distributions on the
-relative effective size of the ancestral population
-(\rootrelativepopsize; see left column of
-\figs
-\labelcref{fig:valsimsmodelinitial,fig:valsimsetimesinitial}):
-\begin{enumerate}[label=A.\arabic*]
-    \item \dgamma{10}{0.25} (4-fold population increase) \label{sims:initialFourFoldIncrease}
-    \item \dgamma{10}{0.5} (2-fold population increase)  \label{sims:initialTwoFoldIncrease}
-    \item \dgamma{10}{2} (2-fold population decrease)    \label{sims:initialTwoFoldDecrease}
-    \item \dgamma{10}{1} (no change on average, but a fair amount of variance) \label{sims:initialCenter}
-    \item \dgamma{100}{1} (no change on average, little variance) \label{sims:initialCenterNarrow}
-\end{enumerate}
-The last distribution was chosen to represent a ``worst-case'' scenario where
-there was almost no demographic change in the history of the populations.
-For the mutation-scaled effective size of the descendant populations
-($\epopsize[\descendantpopindex{}]\murate$; i.e., the population size after the
-demographic change),
-we used a gamma distribution with a shape of 5 and mean of 0.002.
-The timing of the demographic events was exponentially distributed with a mean
-of 0.01 expected substitutions per site;
-given the mean of our distribution on the effective size of the descendant
-populations, this puts the expectation of demographic-change times in units of
-$4N_e$ generations at 1.25.
-This distribution on times was chosen to span times of demographic change from
-very recent (i.e., most gene lineages coalesce before the change) to old (i.e.,
-most gene lineages coalesce after the change).
-The assignment of the three simulated populations to 1, 2, or 3 demographic
-events was controlled by a Dirichlet process with a mean number of 2.0
-demographic events across the three populations.
-We generated 500 \datasets under each of these five simulation conditions, all
-of which were analyzed using the same simulated distributions as priors.
-
-\paragraph{Simulation conditions chosen to improve performance}
-
-Estimates of the timing and sharing of demographic events were quite poor
-across all the initial simulation conditions (see results).
+% \paragraph{Simulation conditions chosen to improve performance}
+Initially, we simulated data under conditions we thought spanned parameter
+space that would be conducive and challenging for estimating the timing and
+sharing of demograpic changes, but estimates were quite poor across all the
+initial simulation conditions (see Supporting Information).
 In an effort to find conditions under which the timing and sharing of
-demographic changes could be better estimated, and avoid combinations
-of parameter values that caused identifiability problems,
+demographic changes could be better estimated, and avoid combinations of
+parameter values that caused identifiability problems in our preliminary
+analyses,
 we next explored simulations under distributions on times and population sizes
 offset from zero, and with much more recent demographic event times.
 % Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
