@@ -1,7 +1,7 @@
 \section{The model}
 
-We extended the software package, \ecoevolity, to accommodate two types of
-temporal comparisons:
+We extended the model implemented in the software package \ecoevolity to
+accommodate two types of temporal comparisons:
 \begin{enumerate}
     \item A population that experienced a change from effective population size
         \epopsize[\rootpopindex]
@@ -27,10 +27,14 @@ full-likelihood, Bayesian framework.
 Table~\ref{table:notation} provides a key to the notation we use throughout
 this paper.
 
+\ifembed{
+\input{../utils/notation-table.tex}
+}{}
+
 \subsection{The data}
 As described by \citet{Oaks2018ecoevolity},
-we assume we have orthologous, biallelic genetic characters collected from
-taxa we wish to compare.
+we assume we have collected orthologous, biallelic genetic characters from taxa
+we wish to compare.
 By biallelic, we mean that each character has at most two states,
 which we refer to as ``red'' and ``green'' following \citet{Bryant2012}.
 For each taxon, we either have these data from one or more individuals from a
@@ -44,21 +48,17 @@ remaining $\allelecount - \redallelecount$ are copies of the green allele.
 Thus, for each population, and for each locus, we have a count of the
 total sampled gene copies and how many of those are the red allele.
 
-\ifembed{
-\input{../utils/notation-table.tex}
-}{}
-
 Following the notation of \citet{Oaks2018ecoevolity}
 we will use \leafallelecounts and \leafredallelecounts to denote allele counts
-for a locus from either one population if we are modeling population-size
+for a locus from either one population if we are modeling a population-size
 change or both populations of a pair if we are modeling a divergence; i.e., 
 $\leafallelecounts, \leafredallelecounts = (\allelecount, \redallelecount)$
 or
 $\leafallelecounts, \leafredallelecounts = (\allelecount[1],
-\redallelecount[1]), (\allelecount[2], \redallelecount[2])$
-(\fig{}~\ref{fig:modelCartoon}
-and
-Table~\ref{table:notation}).
+\redallelecount[1]), (\allelecount[2], \redallelecount[2])$.
+% (\fig{}~\ref{fig:modelCartoon}
+% and
+% Table~\ref{table:notation}).
 For convenience will use \comparisondata[i] to denote these allele counts
 across all the loci from taxon $i$, which can be a single population
 or a pair of populations.
@@ -100,7 +100,7 @@ We will use
 \comparisonpopsizes{}
 to denote all the effective population sizes of a species tree;
 \epopsize[\rootpopindex] and 
-\epopsize[\descendantpopindex{1}] when modeling a population-size change, and
+\epopsize[\descendantpopindex{}] when modeling a population-size change, and
 \epopsize[\rootpopindex],
 \epopsize[\descendantpopindex{1}],
 and \epopsize[\descendantpopindex{2}] when modeling a divergence.
@@ -191,7 +191,7 @@ which we will also refer to as the ``event model.''
 The concentration parameter, \concentration, controls how clustered the
 Dirichlet process is, and determines the probability of all possible \etimesets
 (i.e., all possible set partitions of taxa to $1, 2, \ldots, \ncomparisons$ events).
-We use \etimes to represent the times of the unique events in \etimesets.
+We use \etimes to represent the unique times of events in \etimesets.
 Using this notation, the posterior distribution of our 
 Dirichlet-process model is
 \begin{equation}
@@ -291,7 +291,7 @@ comparative phylogeographic approach that models taxa as disconnected
 species trees
 \citep[\fig{}~\ref{fig:modelCartoon}; e.g.,][]{Hickerson2006,Hickerson2007,Huang2011,Chan2014,Oaks2014dpp,Xue2015,Burbrink2016,Xue2017,Gehara2017,Oaks2018ecoevolity}.
 Time (\etime) and mutation rate (\murate) are inextricably linked, and because
-the comparisons are modeled as disconnected species trees, the data cannot
+the comparisons are modeled as separate species trees, the data cannot
 inform the model about relative or absolute differences in \murate among the
 comparisons.
 We provide flexibility to the investigator to fix or place prior probability
