@@ -20,17 +20,23 @@ We used the \simcoevolity and \ecoevolity tools within the \ecoevolity software
 package
 \citep{Oaks2018ecoevolity}
 to simulate and analyze \datasets, respectively, under a variety of conditions.
-Each simulated \dataset comprised 500,000 characters collected from 10 diploid
-individuals (20 genomes) sampled per population from three demographic
+Each simulated \dataset comprised 500,000 unlinked biallelic characters from 10
+diploid individuals (20 genomes) sampled per population from three demographic
 comparisons.
 We specified the concentration parameter of the Dirichlet process so that
 the mean number of events was 2 ($\concentration = 1.414216$).
 We assumed the mutation rates of all three populations were equal and 1, such
 that time and effective population sizes were scaled by the mutation rate.
-When analyzing each simulated \dataset, we ran four MCMC chains run for 75,000
-generations with a sample taken every 50 generations; we combined and
-summarized the last 1000 samples of each of the four chains (the first 501
-samples discarded from each chain).
+When analyzing each simulated \dataset, we ran four MCMC chains for 75,000
+generations with a sample taken every 50 generations.
+From preliminary analyses, we calculated the potential scale reduction factor
+\citep[PSRF; the square root of Equation 1.1 in][]{Brooks1998} and effective
+sample size \citep{Gong2014} from the four chaings for all continuous
+parameters and the log likelihood using the \texttt{pyco-sumchains} tool of
+\pycoevolity (Version 0.1.2 Commit 89d90a1).
+Based on these metrics of MCMC convergence and mixing, we summarized the last
+1000 samples from each chain for a total of 4000 samples of parameter values to
+approximate the posterior distribution for ever simulated data set.
 
 %% Initial simulation conditions removed
 
@@ -41,7 +47,7 @@ sharing of demograpic changes, but estimates were quite poor across all the
 initial simulation conditions (see Supporting Information).
 In an effort to find conditions under which the timing and sharing of
 demographic changes could be better estimated, and avoid combinations of
-parameter values that caused identifiability problems in our preliminary
+parameter values that caused identifiability problems in our initial
 analyses,
 we next explored simulations under distributions on times and population sizes
 offset from zero, and with much more recent demographic event times.
