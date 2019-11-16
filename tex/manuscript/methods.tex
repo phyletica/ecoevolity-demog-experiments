@@ -23,45 +23,59 @@ to simulate and analyze \datasets, respectively, under a variety of conditions.
 Each simulated \dataset comprised 500,000 unlinked biallelic characters from 10
 diploid individuals (20 genomes) sampled per population from three demographic
 comparisons.
-We specified the concentration parameter of the Dirichlet process so that
-the mean number of events was 2 ($\concentration = 1.414216$).
+We specified the concentration parameter of the Dirichlet process so that the
+mean number of demographic change events was 2 ($\concentration = 1.414216$).
 We assumed the mutation rates of all three populations were equal and 1, such
 that time and effective population sizes were scaled by the mutation rate.
 When analyzing each simulated \dataset, we ran four MCMC chains for 75,000
 generations with a sample taken every 50 generations.
 From preliminary analyses, we calculated the potential scale reduction factor
 \citep[PSRF; the square root of Equation 1.1 in][]{Brooks1998} and effective
-sample size \citep{Gong2014} from the four chaings for all continuous
+sample size \citep{Gong2014} from the four chains for all continuous
 parameters and the log likelihood using the \texttt{pyco-sumchains} tool of
 \pycoevolity (Version 0.1.2 Commit 89d90a1).
-Based on these metrics of MCMC convergence and mixing, we summarized the last
-1000 samples from each chain for a total of 4000 samples of parameter values to
-approximate the posterior distribution for ever simulated data set.
+Based on these metrics of MCMC convergence and mixing, we conservatively chose
+to summarize the last 1000 samples from each chain for a total of 4000 samples
+of parameter values to approximate the posterior distribution for ever
+simulated data set.
+When plotting results, we highlight any simulation replicate that has a
+$\textrm{PSRF} > 1.2$.
 
 %% Initial simulation conditions removed
 
 % \paragraph{Simulation conditions chosen to improve performance}
-Initially, we simulated data under conditions we thought spanned parameter
-space that would be conducive and challenging for estimating the timing and
-sharing of demograpic changes, but estimates were quite poor across all the
-initial simulation conditions (see Supporting Information).
+Initially, we simulated data under a variety of settings we thought would cover
+regions of parameter space that are both conducive and challenging for
+estimating the timing and sharing of demographic changes.
+However, estimates were quite poor across all our initial simulation conditions
+(see Supporting Information).
 In an effort to find conditions under which the timing and sharing of
 demographic changes could be better estimated, and avoid combinations of
-parameter values that caused identifiability problems in our initial
+parameter values that caused parameter identifiability problems in our initial
 analyses,
-we next explored simulations under distributions on times and population sizes
-offset from zero, and with much more recent demographic event times.
+we explored simulations under distributions on times and population sizes
+offset from zero, and with recent demographic event times.
+When we specify an ``offset,'' we are right-shifting the entire distribution to
+have a lower limit of the offset value.
 % Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
 % relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
 % relative root size ~ gamma(shape=5.0, scale = 0.09, offset = 0.05); mean 0.5
 % relative root size ~ gamma(shape=5.0, scale = 0.79, offset = 0.05); mean 4
 % relative root size ~ gamma(shape=5.0, scale = 0.19, offset = 0.05); mean 1
 % relative root size ~ gamma(shape=50.0, scale = 0.02, offset = 0.0); mean 1
+
 For the mutation-scaled effective size of the descendant
 population
 ($\epopsize[\descendantpopindex{}]\murate$),
 we used an offset gamma distribution with a shape of 4, offset of 0.0001, and
 mean of 0.0021 (accounting for the offset).
+This mean corresponds to an average number of differences per base pair between
+individuals in the population (i.e., nucleotide diversity) of 0.0084,
+which is comparable to estimates from genomic data
+of populations of
+zooplankton \citep{Choquet2019},
+stickleback fish \citep{Hohenlohe2010},
+and humans \citep{Auton2015}.
 For the distribution of event times, we used a gamma distribution
 with a shape of 4, offset of 0.0001, and a mean of 0.002 (accounting
 for the offset; 0.25 units of $4N_e$ generations, on average).
