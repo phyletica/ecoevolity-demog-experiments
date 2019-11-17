@@ -7,114 +7,10 @@
 % selected to comprise a mix of conditions both favorable and challenging
 % for estimating the timing and sharing of demographic changes
 Despite our attempt to capture a mix of favorable and challenging parameter
-values,
-estimates of the timing
-(\fig{}~\ref{fig:valsimsetimesinitial})
-and sharing
-(\fig{}~\ref{fig:valsimsmodelinitial})
-of demographic events were quite poor across all the simulation conditions
-we initially explored.
-Under the ``worst-case'' scenario of very little population-size change
-(bottom row of \figs \ref{fig:valsimsetimesinitial} and
-\ref{fig:valsimsmodelinitial}),
-our method is unable to identify the timing or model of demographic change.
-As expected, our method returns the prior on the timing of events
-(bottom row of \fig{}~\ref{fig:valsimsetimesinitial})
-and almost always prefers either a model with a single, shared demographic
-event (model "000") or independent demographic changes (model "012";
-bottom row of \fig{}~\ref{fig:valsimsmodelinitial}).
-This is expected behavior, because there is essentially no information in the
-data about the timing of demographic changes, and a Dirichlet process with a
-mean of 2.0 demographic events, puts approximately 0.24 of the prior
-probability on the models with one and three events, and 0.515 prior
-probability on the three models with two events (approximately 0.17 each).
-Thus, with little information, the method samples from the prior distribution
-on the timing of events, and prefers one of the two models with larger prior
-probability.
-
-\ifembed{
-\input{fig-sims-event-times-initial.tex}
-}{}
-
-\ifembed{
-\input{fig-sims-model-initial.tex}
-}{}
-
-Under considerable changes in population size, the method only fared
-moderately better at estimating the timing of demographic events
-(top three rows of \fig{}~\ref{fig:valsimsetimesinitial}).
-The ability to identify the model improved under these
-conditions, but the frequency at which the correct model
-was preferred only exceeded 50\% for the large population
-expansions
-(top three rows of \fig{}~\ref{fig:valsimsmodelinitial}).
-The median posterior support for the correct model was very small (less than
-0.58) under all conditions.
-Under all simulation conditions, estimates of the timing and sharing of
-demographic events are better when using all characters, rather than only
-variable characters
-(second versus third column of \figs
-\ref{fig:valsimsetimesinitial}
-and
-\ref{fig:valsimsmodelinitial}).
-Likewise, we see better estimates of effective population sizes when using the
-invariant characters
-(\figs
-S\ref{fig:valsimsasizesinitial}
-and
-S\ref{fig:valsimsdsizesinitial}).
-
-
-We observed numerical problems when the time of the demographic change was
-either very recent or old relative to the effective size of the population
-following the change
-(\epopsize[\descendantpopindex{}]; the descendant population).
-In such cases, either very few or almost all of the sampled gene copies
-coalesce after the demographic change,
-providing almost no information about the magnitude or
-timing of the population-size change.
-In these cases, the data are well-explained by a constant population size,
-which can be achieved by the model in three ways:
-(1) an expansion time of zero and an ancestral population
-size that matched the true population size,
-(2) an old expansion and a descendant population size that matched the true
-population size,
-or (3) an intermediate expansion time and both the ancestral and descendant
-sizes matched the true size.
-The true population size being matched in these modelling conditions is that of
-the descendant or ancestral population if the expansion was old or recent,
-respectively.
-This caused MCMC chains to converge to different regions of parameter
-space
-(highlighted in orange in \fig{}~\ref{fig:valsimsetimesinitial}).
-
-% In an effort to find conditions under which the timing and sharing of
-% demographic changes could be better estimated, and avoid combinations
-% of parameter values that caused identifiability problems,
-% we next explored simulations under distributions on times and population sizes
-% offset from zero, but with much more recent demographic event times.
-% Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
-% relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
-% relative root size ~ gamma(shape=5.0, scale = 0.09, offset = 0.05); mean 0.5
-% relative root size ~ gamma(shape=5.0, scale = 0.79, offset = 0.05); mean 4
-% relative root size ~ gamma(shape=5.0, scale = 0.19, offset = 0.05); mean 1
-% relative root size ~ gamma(shape=50.0, scale = 0.02, offset = 0.0); mean 1
-% For the distribution of event times, we used a gamma distribution
-% with a shape of 4, offset of 0.0001, and a mean of 0.002 (accounting
-% for the offset; 0.25 units of $4N_e$ generations, on average).
-% In combination with this distribution on event times,
-% we used five different gamma distributions on the relative
-% effective size of the ancestral population.
-% Four of these had a shape of 5, an offset of 0.05, and a mean
-% of
-% 0.25 (4-fold increase),
-% 0.5 (2-fold increase),
-% 4 (4-fold decrease),
-% and
-% 1 (no change on average).
-% The last gamma distribution on the relative ancestral size had a shape of 50
-% and a mean of 1.
-
+values in our initial simulation condtions (Table~S\ref{table:prelimsimconditions}),
+estimates of the timing and sharing of demographic events were quite poor
+across all the simulation conditions we initially explored
+(\figs{}~S\labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsasizesinitial,fig:valsimsdsizesinitial}).
 Even after we tried selecting simulation conditions that are more favorable for
 identifying the event times, estimates of the timing and
 sharing of demographic events remain quite poor
@@ -122,22 +18,23 @@ sharing of demographic events remain quite poor
 Under the recent (but not too recent) 4-fold population-size increase (on
 average) scenario, we do see better estimates of the times of the demographic
 change
-(top row of \fig{}~\ref{fig:valsimsetimesopt}),
+(\vsimfourinc; top row of \fig{}~\ref{fig:valsimsetimesopt}),
 but the ability to identify the correct number of events and the assignment of
 the populations to those events remains quite poor;
 the correct model is preferred only 57\% of the time, and the
 median posterior probability of the correct model is only 0.42
 (top row of \fig{}~\ref{fig:valsimsmodelopt}).
-Under the most extreme population retraction scenario (4-fold, on average),
+Under the most extreme population retraction scenario
+(\vsimfourdec; 4-fold, on average),
 the correct model is preferred only 40\% of the time, and the median
 posterior probability of the correct model is only 0.26
 (middle row of \fig{}~\ref{fig:valsimsmodelopt}).
 Estimates are especially poor when using only variable characters,
 so we focus on the results using all characters
 (second versus third column of \figs
-\ref{fig:valsimsetimesinitial}
+\ref{fig:valsimsetimesopt}
 and
-\ref{fig:valsimsmodelinitial});
+\ref{fig:valsimsmodelopt});
 we also see worse estimates of population sizes when excluding invariant
 characters
 (\figs
@@ -152,6 +49,35 @@ S\ref{fig:valsimsdsizesopt}).
 \ifembed{
 \input{fig-sims-model-opt.tex}
 }{}
+
+Under the ``worst-case'' scenario of little population-size change
+(\vsimnochange; bottom row of \figs \ref{fig:valsimsetimesopt} and
+\ref{fig:valsimsmodelopt}),
+our method is unable to identify the timing or model of demographic change.
+As expected, under these conditions our method returns the prior on the timing
+of events (bottom row of \fig{}~\ref{fig:valsimsetimesopt})
+and always prefers either a model with a single, shared demographic
+event (model "000") or independent demographic changes (model "012";
+bottom row of \fig{}~\ref{fig:valsimsmodelopt}).
+This is expected behavior, because there is essentially no information in the
+data about the timing of demographic changes, and a Dirichlet process with a
+mean of 2.0 demographic events, puts approximately 0.24 of the prior
+probability on the models with one and three events, and 0.515 prior
+probability on the three models with two events (approximately 0.17 each).
+Thus, with little information, the method samples from the prior distribution
+on the timing of events, and prefers one of the two models with larger prior
+probability.
+
+The 95\% credible intervals of all the parameters
+covers the true value approximately 95\% of the time
+(\figs
+\ref{fig:valsimsetimesopt},
+S\ref{fig:valsimsasizesopt},
+and
+S\ref{fig:valsimsdsizesopt}).
+Given that our priors match the underlying distributions that generated the
+data, this coverage behavior is expected, and is an important validation
+of our implemetation of the model and corresponding MCMC algorighms.
 
 
 \subsubsection{Sensitivity to prior assumptions}

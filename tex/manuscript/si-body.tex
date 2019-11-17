@@ -1,3 +1,5 @@
+\section{Methods}
+
 \subsection{Initial simulation conditions}
 
 We initially simulated data under distributions we hoped comprised a mix of
@@ -6,32 +8,114 @@ sharing of demographic changes.
 For these initial conditions, we simulated \datasets with three populations
 that underwent a demographic change, under five different distributions on the
 relative effective size of the ancestral population
-(\rootrelativepopsize; see left column of
-\figs
-\labelcref{fig:valsimsmodelinitial,fig:valsimsetimesinitial}):
-\begin{enumerate}[label=A.\arabic*]
-    \item \dgamma{10}{0.25} (4-fold population increase) \label{sims:initialFourFoldIncrease}
-    \item \dgamma{10}{0.5} (2-fold population increase)  \label{sims:initialTwoFoldIncrease}
-    \item \dgamma{10}{2} (2-fold population decrease)    \label{sims:initialTwoFoldDecrease}
-    \item \dgamma{10}{1} (no change on average, but a fair amount of variance) \label{sims:initialCenter}
-    \item \dgamma{100}{1} (no change on average, little variance) \label{sims:initialCenterNarrow}
-\end{enumerate}
-The last distribution was chosen to represent a ``worst-case'' scenario where
-there was almost no demographic change in the history of the populations.
+(\rootrelativepopsize;
+see Table~S\ref{table:prelimsimconditions} and left column of
+\figs S\ref{fig:valsimsetimesinitial} and S\ref{fig:valsimsmodelinitial}),
+which ranged from having a mean 4-fold population-size increase (\psimfourinc)
+to a 2-fold decrease (\psimtwodec) and a ``worst-case'' scenario
+where there was essentially no population-size change in the
+history of the populations (\psimnochange).
+
+\input{table-prelim-sim-conditions.tex}
+% \begin{enumerate}[label=A.\arabic*]
+%     \item \dgamma{10}{0.25} (4-fold population increase) \label{sims:initialFourFoldIncrease}
+%     \item \dgamma{10}{0.5} (2-fold population increase)  \label{sims:initialTwoFoldIncrease}
+%     \item \dgamma{10}{2} (2-fold population decrease)    \label{sims:initialTwoFoldDecrease}
+%     \item \dgamma{10}{1} (no change on average, but a fair amount of variance) \label{sims:initialCenter}
+%     \item \dgamma{100}{1} (no change on average, little variance) \label{sims:initialCenterNarrow}
+% \end{enumerate}
+
 For the mutation-scaled effective size of the descendant populations
 ($\epopsize[\descendantpopindex{}]\murate$; i.e., the population size after the
 demographic change),
-we used a gamma distribution with a shape of 5 and mean of 0.002.
+we used a gamma distribution with a shape of 5 and mean of 0.002
+(Table~S\ref{table:prelimsimconditions}).
 The timing of the demographic events was exponentially distributed with a mean
-of 0.01 expected substitutions per site;
-given the mean of our distribution on the effective size of the descendant
-populations, this puts the expectation of demographic-change times in units of
-$4N_e$ generations at 1.25.
-This distribution on times was chosen to span times of demographic change from
+of 0.01 substitutions per site.
+Taken together, the mean of the distribution on event times in units of $4N_e$
+generations is 1.25.
+We chose this distribution in order to span times of demographic change from
 very recent (i.e., most gene lineages coalesce before the change) to old (i.e.,
-most gene lineages coalesce after the change).
-The assignment of the three simulated populations to 1, 2, or 3 demographic
-events was controlled by a Dirichlet process with a mean number of 2.0
-demographic events across the three populations.
+most gene lineages coalesce after the change),
+which we assumed would include conditions under which the method performed both
+well and poorly.
+The assignment of the population-size change of the three simulated populations
+to 1, 2, or 3 demographic events was controlled by a Dirichlet process with a
+mean number of two events across the three populations.
 We generated 500 \datasets under each of these five simulation conditions, all
 of which were analyzed using the same simulated distributions as priors.
+
+\section{Results}
+Despite our attempt to capture a mix of favorable and challenging parameter
+values,
+estimates of the timing
+(\fig{}~S\ref{fig:valsimsetimesinitial})
+and sharing
+(\fig{}~S\ref{fig:valsimsmodelinitial})
+of demographic events were quite poor across all the simulation conditions
+we initially explored.
+Under the ``worst-case'' scenario of very little population-size change
+(bottom row of \figs S\ref{fig:valsimsetimesinitial} and
+S\ref{fig:valsimsmodelinitial}),
+our method is unable to identify the timing or model of demographic change.
+As expected, our method returns the prior on the timing of events
+(bottom row of \fig{}~S\ref{fig:valsimsetimesinitial})
+and almost always prefers either a model with a single, shared demographic
+event (model "000") or independent demographic changes (model "012";
+bottom row of \fig{}~S\ref{fig:valsimsmodelinitial}).
+This is expected behavior, because there is essentially no information in the
+data about the timing of demographic changes, and a Dirichlet process with a
+mean of 2.0 demographic events, puts approximately 0.24 of the prior
+probability on the models with one and three events, and 0.515 prior
+probability on the three models with two events (approximately 0.17 each).
+Thus, with little information, the method samples from the prior distribution
+on the timing of events, and prefers one of the two models with larger prior
+probability.
+
+Under considerable changes in population size, the method only fared
+moderately better at estimating the timing of demographic events
+(top three rows of \fig{}~S\ref{fig:valsimsetimesinitial}).
+The ability to identify the model improved under these
+conditions, but the frequency at which the correct model
+was preferred only exceeded 50\% for the large population
+expansions
+(top three rows of \fig{}~S\ref{fig:valsimsmodelinitial}).
+The median posterior support for the correct model was very small (less than
+0.58) under all conditions.
+Under all simulation conditions, estimates of the timing and sharing of
+demographic events are better when using all characters, rather than only
+variable characters
+(second versus third column of \figs
+S\ref{fig:valsimsetimesinitial}
+and
+S\ref{fig:valsimsmodelinitial}).
+Likewise, we see better estimates of effective population sizes when using the
+invariant characters
+(\figs
+S\ref{fig:valsimsasizesinitial}
+and
+S\ref{fig:valsimsdsizesinitial}).
+
+
+We observed numerical problems when the time of the demographic change was
+either very recent or old relative to the effective size of the population
+following the change
+(\epopsize[\descendantpopindex{}]; the descendant population).
+In such cases, either very few or almost all of the sampled gene copies
+coalesce after the demographic change,
+providing almost no information about the magnitude or
+timing of the population-size change.
+In these cases, the data are well-explained by a constant population size,
+which can be achieved by the model in three ways:
+(1) an expansion time of zero and an ancestral population
+size that matched the true population size,
+(2) an old expansion and a descendant population size that matched the true
+population size,
+or (3) an intermediate expansion time and both the ancestral and descendant
+sizes matched the true size.
+The true population size being matched in these modelling conditions is that of
+the descendant or ancestral population if the expansion was old or recent,
+respectively.
+This caused MCMC chains to converge to different regions of parameter
+space
+(highlighted in orange in \fig{}~S\ref{fig:valsimsetimesinitial}).
