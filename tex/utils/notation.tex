@@ -12,6 +12,9 @@
 \newcommand{\dgamma}[2]{\ensuremath{\distgamma(\textrm{shape} = #1, \textrm{mean} = #2)}}
 \newcommand{\dogamma}[3]{\ensuremath{\distgamma(\textrm{shape} = #1, \textrm{offset} = #3, \textrm{mean} = #2)}}
 \newcommand{\dexponential}[1]{\ensuremath{\distexponential(\textrm{mean} = #1)}}
+\newcommand{\sdgamma}[2]{\ensuremath{\textrm{G}(#1, \textrm{mean} = #2)}}
+\newcommand{\sdogamma}[3]{\ensuremath{\textrm{G}^{#3}(#1, \textrm{mean} = #2)}}
+\newcommand{\sdexponential}[1]{\ensuremath{\textrm{E}(\textrm{mean} = #1)}}
 
 % \newcommand{\ncomparisons}{\ensuremath{N\xspace}}
 \newcommand{\ncomparisons}{\ensuremath{\mathcal{N}\xspace}}
@@ -87,3 +90,16 @@
 \newcommand{\tuningparameter}{\ensuremath{\lambda}\xspace}
 \newcommand{\uniformdeviate}{\ensuremath{u}\xspace}
 \newcommand{\sizechange}{\ensuremath{\delta}\xspace}
+
+\newcommand{\valsimcondition}[1][]{\textbf{\textit{V{#1}}}\xspace}
+\newcommand{\missimcondition}[1][]{\textbf{\textit{S{#1}}}\xspace}
+
+\newcommand{\vsimfourinc}{\valsimcondition{1}\xspace}
+\newcommand{\vsimtwoinc}{\valsimcondition{2}\xspace}
+\newcommand{\vsimfourdec}{\valsimcondition{3}\xspace}
+\newcommand{\vsimcentered}{\valsimcondition{4}\xspace}
+\newcommand{\vsimnochange}{\valsimcondition{5}\xspace}
+\newcommand{\msimfourinc}{\missimcondition{1}\xspace}
+\newcommand{\msimfourdec}{\missimcondition{2}\xspace}
+\newcommand{\msimteninc}{\missimcondition{3}\xspace}
+\newcommand{\msimtendec}{\missimcondition{4}\xspace}

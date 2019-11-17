@@ -1,0 +1,144 @@
+\begin{landscape}
+\begin{table}[htbp]
+    \sffamily
+    \footnotesize
+    % \rowcolors{2}{}{mygray}
+    % \addtolength{\tabcolsep}{-0.1cm}
+\caption{
+    Simulation and analysis conditions for all simulation-based analyses with
+    three demographic comparisons.
+    The distributions from which parameter values where drawn for simulating
+    data with \simcoevolity are given for event times (\etime) and the relative
+    effective size of the root (ancestral) population (\rootrelativepopsize),
+    along with the prior distributions used for these parameters when the
+    simulated data sets were analyzed with \ecoevolity.
+    $\textrm{G}(\cdots)$
+    and
+    $\textrm{E}(\cdots)$
+    represent gamma and exponential distributions, respectively, and
+    the parameters of a gamma distribution are given as
+    \sdogamma{\textrm{shape}}{\textrm{mean}}{\textrm{offset}}.
+}
+    \centering
+    \begin{tabular}{ @{}llllllll@{} }
+        \toprule
+        & \multicolumn{3}{c}{\textbf{Simulated distribution}}
+        &
+        & \multicolumn{3}{c}{\textbf{Prior distribution}} \tn
+        \cline{2-4}\cline{6-8} \tn[-1.2ex]
+        Label
+        & \multicolumn{1}{c}{\etime}
+        & \multicolumn{1}{c}{\rootrelativepopsize}
+        & \multicolumn{1}{c}{$\epopsize[\descendantpopindex{}]\murate$}
+        &
+        & \multicolumn{1}{c}{\etime}
+        & \multicolumn{1}{c}{\rootrelativepopsize}
+        & \multicolumn{1}{c}{$\epopsize[\descendantpopindex{}]\murate$}
+        \tn
+        \midrule
+        \multicolumn{8}{c}{\textbf{\textit{Validation simulation conditions}}} \tn
+        % \midrule
+        \vsimfourinc
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{0.25}{0.05}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        % & \sdogamma{4}{0.002}{0.0001}
+        % & \sdogamma{5}{0.25}{0.05}
+        % & \sdogamma{4}{0.0021}{0.0001}
+        & -
+        & -
+        & -
+        \tn
+        \vsimtwoinc
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{0.5}{0.05}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        % & \sdogamma{4}{0.002}{0.0001}
+        % & \sdogamma{5}{0.5}{0.05}
+        % & \sdogamma{4}{0.0021}{0.0001}
+        & -
+        & -
+        & -
+        \tn
+        \vsimfourdec
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{4}{0.05}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        % & \sdogamma{4}{0.002}{0.0001}
+        % & \sdogamma{5}{4}{0.05}
+        % & \sdogamma{4}{0.0021}{0.0001}
+        & -
+        & -
+        & -
+        \tn
+        \vsimcentered
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{1}{0.05}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        % & \sdogamma{4}{0.002}{0.0001}
+        % & \sdogamma{5}{1}{0.05}
+        % & \sdogamma{4}{0.0021}{0.0001}
+        & -
+        & -
+        & -
+        \tn
+        \vsimnochange
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{50}{1}{0.05}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        % & \sdogamma{4}{0.002}{0.0001}
+        % & \sdogamma{50}{1}{0.05}
+        % & \sdogamma{4}{0.0021}{0.0001}
+        & -
+        & -
+        & -
+        \tn
+        \midrule
+        \multicolumn{8}{c}{\textbf{\textit{Sensitivity simulation conditions}}} \tn
+        % \midrule
+        \msimfourinc
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{0.25}{0.05}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        & \sdexponential{0.005}
+        & \sdexponential{2}
+        & \sdgamma{2}{0.002}
+        \tn
+        \msimfourdec
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{4}{3.80}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        & \sdexponential{0.005}
+        & \sdexponential{2}
+        & \sdgamma{2}{0.002}
+        \tn
+        \msimteninc
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{0.1}{0.05}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        & \sdexponential{0.005}
+        & \sdexponential{2}
+        & \sdgamma{2}{0.002}
+        \tn
+        \msimtendec
+        & \sdogamma{4}{0.002}{0.0001}
+        & \sdogamma{5}{10}{9.95}
+        & \sdogamma{4}{0.0021}{0.0001}
+        &
+        & \sdexponential{0.005}
+        & \sdexponential{2}
+        & \sdgamma{2}{0.002}
+        \tn
+        \bottomrule
+    \end{tabular}
+    \label{table:simconditions}
+\end{table}
+\end{landscape}
