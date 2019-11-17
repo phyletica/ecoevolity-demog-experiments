@@ -1,0 +1,91 @@
+\begin{table}[htbp]
+    \sffamily
+    \footnotesize
+    % \rowcolors{2}{}{mygray}
+    % \addtolength{\tabcolsep}{-0.1cm}
+\captionsetup{name=Table S, labelformat=noSpace}
+\caption{
+    Simulation and analysis conditions for preliminary validation analyses.
+    The distributions from which parameter values where drawn for simulating
+    data with \simcoevolity are given for event times (\etime), the relative
+    effective size of the root (ancestral) population (\rootrelativepopsize),
+    and the effective size of the descendant population
+    ($\epopsize[\descendantpopindex{}]\murate$),
+    along with the prior distributions used for these parameters when the
+    simulated data sets were analyzed with \ecoevolity.
+    When the latter is represented by a dash, this means the prior distribution
+    matched the distribution under which the data were simulated.
+    $\textrm{G}(\cdots)$
+    and
+    $\textrm{E}(\cdots)$
+    represent gamma and exponential distributions, respectively, and the first
+    number provided for the gamma distributions is the shape parameter.
+}
+    \centering
+    \begin{tabular}{ @{}llllllll@{} }
+        \toprule
+        & \multicolumn{3}{c}{\textbf{Simulated distribution}}
+        &
+        & \multicolumn{3}{c}{\textbf{Prior distribution}} \tn
+        \cline{2-4}\cline{6-8} \tn[-1.2ex]
+        Label
+        & \multicolumn{1}{c}{\etime}
+        & \multicolumn{1}{c}{\rootrelativepopsize}
+        & \multicolumn{1}{c}{$\epopsize[\descendantpopindex{}]\murate$}
+        &
+        & \multicolumn{1}{c}{\etime}
+        & \multicolumn{1}{c}{\rootrelativepopsize}
+        & \multicolumn{1}{c}{$\epopsize[\descendantpopindex{}]\murate$}
+        \tn
+        \midrule
+        \multicolumn{8}{c}{\textbf{\textit{Preliminary validation simulation conditions}}} \tn
+        % \midrule
+        \psimfourinc
+        & \sdexponential{0.01}
+        & \sdgamma{10}{0.25}
+        & \sdgamma{5}{0.002}
+        &
+        & -
+        & -
+        & -
+        \tn
+        \psimtwoinc
+        & \sdexponential{0.01}
+        & \sdgamma{10}{0.5}
+        & \sdgamma{5}{0.002}
+        &
+        & -
+        & -
+        & -
+        \tn
+        \psimtwodec
+        & \sdexponential{0.01}
+        & \sdgamma{10}{2}
+        & \sdgamma{5}{0.002}
+        &
+        & -
+        & -
+        & -
+        \tn
+        \psimcentered
+        & \sdexponential{0.01}
+        & \sdgamma{10}{1}
+        & \sdgamma{5}{0.002}
+        &
+        & -
+        & -
+        & -
+        \tn
+        \psimnochange
+        & \sdexponential{0.01}
+        & \sdgamma{100}{1}
+        & \sdgamma{5}{0.002}
+        &
+        & -
+        & -
+        & -
+        \tn
+        \bottomrule
+    \end{tabular}
+    \label{table:prelimsimconditions}
+\end{table}
