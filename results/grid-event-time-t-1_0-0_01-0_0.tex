@@ -3,6 +3,8 @@
 \usepackage{rotating}
 \usepackage{multirow}
 \usepackage[cm]{sfmath}
+\usepackage[T1]{fontenc}
+\usepackage{xspace}
 
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -21,36 +23,49 @@
     \thesubfloat}
 \newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
 
+\input{../tex/utils/notation.tex}
+
 \begin{document}
 
 \begin{figure}
     \centering
-    \begin{tabular}{@{}ccccc@{}}
+    \begin{tabular}{@{}cccccc@{}}
+        &
         & \multirow{1}{0.15\textwidth}{\centering\Large Distribution on relative size of ancestral population}
         &
         & \multirow{1}{0.15\textwidth}{\centering\Large All sites analyzed}
         & \multirow{1}{0.15\textwidth}{\centering\Large Only variable sites analyzed} \\[9ex]
-        \multirow{5}{*}[-14em]{\begin{sideways}\large Density\end{sideways}}
+        \multirow{1}{1.9em}[0.06\textwidth]{\large\psimfourinc}
+        & \multirow{5}{*}[-14em]{\begin{sideways}\large Density\end{sideways}}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_025-0_0-gamma.pdf}
         & \multirow{5}{*}[-8em]{\begin{sideways}\large Estimated demographic event time\end{sideways}}
         & \includegraphics[width=0.15\textwidth]{plots/event-time-a-10_0-0_025-0_0-t-1_0-0_01-0_0-scatter.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/var-only-event-time-a-10_0-0_025-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        \multirow{1}{1.9em}[0.06\textwidth]{\large\psimtwoinc}
+        &
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_05-0_0-gamma.pdf}
         &
         & \includegraphics[width=0.15\textwidth]{plots/event-time-a-10_0-0_05-0_0-t-1_0-0_01-0_0-scatter.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/var-only-event-time-a-10_0-0_05-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        \multirow{1}{1.9em}[0.06\textwidth]{\large\psimtwodec}
+        &
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_2-0_0-gamma.pdf}
         &
         & \includegraphics[width=0.15\textwidth]{plots/event-time-a-10_0-0_2-0_0-t-1_0-0_01-0_0-scatter.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/var-only-event-time-a-10_0-0_2-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        \multirow{1}{1.9em}[0.06\textwidth]{\large\psimcentered}
+        &
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-10_0-0_1-0_0-gamma.pdf}
         &
         & \includegraphics[width=0.15\textwidth]{plots/event-time-a-10_0-0_1-0_0-t-1_0-0_01-0_0-scatter.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/var-only-event-time-a-10_0-0_1-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        \multirow{1}{1.9em}[0.06\textwidth]{\large\psimnochange}
+        &
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-100_0-0_01-0_0-gamma.pdf}
         &
         & \includegraphics[width=0.15\textwidth]{plots/event-time-a-100_0-0_01-0_0-t-1_0-0_01-0_0-scatter.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/var-only-event-time-a-100_0-0_01-0_0-t-1_0-0_01-0_0-scatter.pdf} \\
+        &
         & \multirow{1}{0.15\textwidth}{\centering\large Relative population size}
         &
         & \multicolumn{2}{c}{\large True demographic event time} \\

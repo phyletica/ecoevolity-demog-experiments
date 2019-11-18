@@ -3,6 +3,8 @@
 \usepackage{rotating}
 \usepackage{multirow}
 \usepackage[cm]{sfmath}
+\usepackage[T1]{fontenc}
+\usepackage{xspace}
 
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -21,25 +23,31 @@
     \thesubfloat}
 \newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
 
+\input{../tex/utils/notation.tex}
+
 \begin{document}
 
 \begin{figure}
     \setlength\arrayrulewidth{2pt}
     \centering
-    \begin{tabular}{@{}ccccccc@{}}
+    \begin{tabular}{@{}cccccccc@{}}
+        &
         & \multirow{1}{0.15\textwidth}{\centering\Large Distribution on relative size of ancestral population}
         & \multirow{1}{0.15\textwidth}{\centering\Large Prior on relative size of ancestral population}
         &
         & \multirow{1}{0.15\textwidth}{\centering\Large }
         & 
         & \\[9ex]
-        \multirow{5}{*}[-8em]{\begin{sideways}\large Density\end{sideways}}
+        \multirow{1}{1.3em}[0.06\textwidth]{\large\vsimfourinc}
+        & \multirow{5}{*}[-8em]{\begin{sideways}\large Density\end{sideways}}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \multirow{5}{*}[-14em]{\begin{sideways}\large Frequency\end{sideways}}
         & \includegraphics[width=0.15\textwidth]{plots/n-var-sites-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-histogram.pdf}
         & \multicolumn{1}{c|}{} 
         & \\
+        \multirow{1}{1.3em}[0.06\textwidth]{\large\msimfourinc}
+        &
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-1_0-2_0-0_0-4_5-gamma.pdf}
         &
@@ -47,18 +55,23 @@
         & \multicolumn{1}{c|}{} 
         & \multirow{5}{*}[17em]{\begin{sideways}\Large Demographic comparisons\end{sideways}} \\
         & & & & & & \\
+        \multirow{1}{1.3em}[0.06\textwidth]{\large\vsimfourinc}
+        &
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         &
         & \includegraphics[width=0.15\textwidth]{plots/div-n-var-sites-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-pairs-histogram.pdf}
         & \multicolumn{1}{c|}{}
         & \\
+        \multirow{1}{1.3em}[0.06\textwidth]{\large\msimfourinc}
+        &
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-5_0-0_04-0_05-4_5-gamma.pdf}
         & \includegraphics[width=0.15\textwidth]{plots/prior-relative-root-1_0-2_0-0_0-4_5-gamma.pdf}
         &
         & \includegraphics[width=0.15\textwidth]{plots/div-n-var-sites-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-diffuseprior-pairs-4increase-histogram.pdf}
         & \multicolumn{1}{c|}{}
         & \multirow{5}{*}[16.5em]{\begin{sideways}\Large Divergence comparisons\end{sideways}} \\
+        &
         & \multicolumn{2}{c}{\large Relative population size}
         &
         & \multicolumn{1}{c}{\large Number of variable sites}
