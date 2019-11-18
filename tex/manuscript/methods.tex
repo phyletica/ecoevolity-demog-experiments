@@ -38,13 +38,13 @@ Based on these metrics of MCMC convergence and mixing, we conservatively chose
 to summarize the last 1000 samples from each chain for a total of 4000 samples
 of parameter values to approximate the posterior distribution for ever
 simulated data set.
-When plotting results, we highlight any simulation replicate that has a
+When plotting results, we highlight any simulation replicates that have a
 $\textrm{PSRF} > 1.2$.
 
 %% Initial simulation conditions removed
 
 % \paragraph{Simulation conditions chosen to improve performance}
-Initially, we simulated data under a variety of settings we thought would cover
+Initially, we simulated data under a variety of settings we thought covered
 regions of parameter space that are both conducive and challenging for
 estimating the timing and sharing of demographic changes.
 However, estimates were quite poor across all our initial simulation conditions
@@ -53,10 +53,11 @@ In an effort to find conditions under which the timing and sharing of
 demographic changes could be better estimated, and avoid combinations of
 parameter values that caused parameter identifiability problems in our initial
 analyses,
-we explored simulations under distributions on times and population sizes
-offset from zero, and with recent demographic event times.
-When we specify an ``offset,'' we are right-shifting the entire distribution to
-have a lower limit of the offset value.
+we explored simulations under gamma distributions on times and population sizes
+offset from zero, and with recent demographic event times,
+(\valsimcondition{1}--\valsimcondition{5}, Table~\ref{table:simconditions}).
+When we specify an ``offset,'' we are right-shifting the entire gamma distribution to
+have a lower limit of the offset value, rather than zero.
 % Event time ~ gamma(shape=4.0, scale=0.000475, offset=0.0001); mean 0.002
 % relative root size ~ gamma(shape=5.0, scale = 0.04, offset = 0.05); mean 0.25
 % relative root size ~ gamma(shape=5.0, scale = 0.09, offset = 0.05); mean 0.5
@@ -68,7 +69,8 @@ For the mutation-scaled effective size of the descendant
 population
 ($\epopsize[\descendantpopindex{}]\murate$),
 we used an offset gamma distribution with a shape of 4, offset of 0.0001, and
-mean of 0.0021 (accounting for the offset).
+mean of 0.0021 after accounting for the offset
+(Table~\ref{table:simconditions}).
 This mean corresponds to an average number of differences per base pair between
 individuals in the population (i.e., nucleotide diversity) of 0.0084,
 which is comparable to estimates from genomic data
@@ -77,9 +79,18 @@ zooplankton \citep{Choquet2019},
 stickleback fish \citep{Hohenlohe2010},
 and humans \citep{Auton2015}.
 For the distribution of event times, we used a gamma distribution with a shape
-of 4, offset of 0.0001, and a mean of 0.002 (after accounting for the offset).
-Taken together, these priors create a distribution of event times in units of
+of 4, offset of 0.0001, and a mean of 0.002 (after accounting for the offset;
+Table~\ref{table:simconditions}).
+Taken together, this creates a distribution of event times in units of
 $4N_e$ generations with a mean of approximately 0.3.
+We chose these distributions to try and balance the number of gene lineages
+that coalesce after and before the population-size change for the average gene
+tree.
+We used the offset values to avoid very small descendant population sizes and
+very recent times of population-size change, because in our preliminary
+analyses, both of these conditions caused the timing of events to be
+essentially nonidentifiable (see Supporting Information).
+
 We chose five different distributions on the
 relative effective size of the ancestral population
 (\rootrelativepopsize;
@@ -151,7 +162,7 @@ and
 We used the same distribution on event times and descendant effective
 population sizes as for Conditions \valsimcondition{1}--\valsimcondition{5}
 above.
-For the  relative effective size of the ancestral population
+For the relative effective size of the ancestral population
 (\rootrelativepopsize), we chose four distributions under which to simulate
 data
 (\missimcondition{1}--\missimcondition{4}, Table~\ref{table:simconditions})
@@ -159,7 +170,7 @@ that are sharply peaked on four-fold and ten-fold population
 expansions and contractions.
 We simulated 500 \datasets under each of these four conditions and then
 analyzed them under diffuse prior distributions
-These distributions were chosen to reflect realistic amounts of prior
+We chose the prior distribution to reflect realistic amounts of prior
 uncertainty about the timing of demographic changes and past and present
 effective population sizes when analyzing empirical data.
 Note, Conditions \vsimfourinc and \msimfourinc share the same simulating
@@ -181,7 +192,7 @@ and divergence times, we simulated 500 \datasets comprised of 6 comparisons:
 3 divergence comparisons.
 To ensure the same amount of data across comparisons, we simulated
 20 sampled genomes (10 diploid individuals) from each comparison
-(i.e., 10 genomes from both populations of each divergence comparison).
+(i.e., 10 genomes from each population of each divergence comparison).
 We used the same simulation conditions described above for
 \vsimtwoinc,
 and specified these same distributions as priors when analyzing all of the
@@ -192,6 +203,8 @@ simulated \datasets.
 Our model assumes each character is effectively unlinked.
 To assess the effect of violating this assumption, we simulated \datasets
 comprising 5000 100-base-pair loci (500,000 total characters).
+All 100 characters from each locus evolved along the same gene tree that is
+independent (conditional on the population history) from all other loci.
 The distributions on parameters were the same
 as the conditions described for \vsimfourinc above.
 These same distributions were used as priors when analyzing the simulated
@@ -226,8 +239,9 @@ them.
 
 \subsubsection{Inferring shared demographic changes with \ecoevolity}
 
-We used a value for the concentration parameter of the Dirichlet process
-that corresponds to a mean number of three events
+When analyzing the stickleback data with \ecoevolity, we used a value for the
+concentration parameter of the Dirichlet process that corresponds to a mean
+number of three events
 ($\concentration = 2.22543$).
 We used the following prior distributions on the timing of events and effective
 sizes of populations:
@@ -251,7 +265,7 @@ effective population size of the ancestral population:
 
 For each prior setting, we ran 10 MCMC chains for 150,000 generations, sampling
 every 100 generations; we did this using all the sites in the assembled
-stickleback loci and only SNPs.
+stickleback loci and only variable sites (i.e., SNPs).
 To assess convergence and mixing of the chains, we calculated the PSRF
 \citep{Brooks1998}
 and ESS \citep{Gong2014} of all continuous parameters and the log likelihood

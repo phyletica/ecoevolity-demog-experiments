@@ -68,6 +68,20 @@ Thus, with little information, the method samples from the prior distribution
 on the timing of events, and prefers one of the two models with larger prior
 probability.
 
+Doubling the number of individuals sampled per population to 20 had very little
+affect on the results
+(\fig{}~S\ref{fig:valsimspopsamplesize}).
+Likewise, doubling the number of demographic comparisons to six had no affect
+on the accuracy or prescision of estimating the timing of demographic changes
+or effective population sizes
+(Rows 1, 3, and 4 of \fig{}~S\ref{fig:valsimscompsamplesize}).
+The ability to infer the correct number of demographic events,
+and assignment of population to the events (\etimesets),
+is much worse when there are six comparisons, which is
+not surprising given that the number of possible assignments
+of populations to events is 203 for six comparisions, compared
+to five for three comparisons \citep{Bell1934}.
+
 The 95\% credible intervals of all the parameters
 covers the true value approximately 95\% of the time
 (\figs
@@ -89,7 +103,7 @@ ancestral population
 \labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsetimesopt,fig:valsimsmodelopt}),
 which were used to both simulate the data and as the prior
 when those data were analyzed.
-Thus, the improved behavior could due to these narrow prior distributions that
+Thus, the improved behavior could be due to these narrow prior distributions that
 are unrealistically informative for empirical studies, for which there is
 usually little \emph{a priori} information about past population sizes.
 When we analyze data under more realistic, diffuse priors, estimates of shared
