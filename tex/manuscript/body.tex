@@ -79,8 +79,32 @@ computation (ABC) approach \citep{Xue2015}.
 
 \input{results.tex}
 
+\subsection{Comparison to previous models of shared demographic changes}
 % TODO: compare and contrast ecoevolity method to Chan, Prates, and Burbrink
 % methods.
+
+\subsection{Biological realism of the model of demographic change}
+Very unrealistic.
+We expect more complicated demography.
+However, incorporating more realism will introduce more variance and
+thus make the inference problem more challenging.
+Given that under the simple conditions of single, instantaneous
+changes in size explored here is already performing poorly
+when that simplicity is true (sims),
+incorporating more realism will likely make inference worse.
+
+Also, any process that causes ``shared'' demographic changes is
+expected to have temporal variance in the response of different species.
+Thus, our model of simultaneous changes is unrealistic.
+However, this should bias the model to \emph{over}estimate the
+number of events.
+The model already tends to \emph{under}estimate the number of events,
+so trying to model temporal variation among taxa involved in the
+same event would only make this underestimation work.
+Thus, assuming some sort of over-dispersion of the timing of evolutionary
+events
+\citep[e.g.,][]{Overcast2017}
+would only make things worse.
 
 \section{Conclusions}
 
