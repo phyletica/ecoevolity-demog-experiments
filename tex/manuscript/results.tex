@@ -226,10 +226,9 @@ and precise than the former
 \ref{fig:valsimsetimesdiffuse}
 and
 \ref{fig:valsimsmodeldiffuse}).
-One might hope that
-if we analyze a mix of demographic and divergence comparisons,
-the informativeness of the divergence times can help ``anchor'' and
-improve the estimates of shared demographic changes.
+One might hope that if we analyze a mix of demographic and divergence
+comparisons, the informativeness of the divergence times can help ``anchor''
+and improve the estimates of shared demographic changes.
 However, our results from simulating \datasets comprising a mix of three
 demographic and three divergence comparisons rule out this possibility.
 % To explore this possibility, we simulated datasets with six comparisons,
@@ -246,7 +245,6 @@ demographic and three divergence comparisons rule out this possibility.
 % \ref{fig:valsimsetimesopt}
 % and
 % \ref{fig:valsimsmodelopt}.
-
 % We summarized the timing and sharing of the demographic changes
 % separately from the divergences so that we could determine whether the
 % divergence-time estimates could help improve the estimates of the
@@ -258,7 +256,7 @@ estimates of shared divergences remain accurate and precise
 The estimates of the timing and sharing of demographic events are nearly
 identical to when we simulated and analyzed only three demographic comparisons
 under the same distributions on event times and population sizes
-(compare left column of \fig{}~\ref{fig:mixsims}
+(Condition \vsimtwoinc; compare left column of \fig{}~\ref{fig:mixsims}
 to the second row of \figs
 \ref{fig:valsimsetimesopt}
 and
@@ -323,7 +321,7 @@ this is also true for estimates of population sizes
 This is consistent with the findings of
 \citet{Oaks2018ecoevolity} and
 \citet{Oaks2018paic}
-that linked sites had little affect on the estimation of
+that linked sites had little impact on the estimation of
 shared divergence times.
 These results suggest that analyzing all of the sites in loci assembled from
 reduced-representation genomic libraries (e.g., sequence-capture or RADseq
@@ -351,7 +349,7 @@ This inference was based on the publicly available RADseq data collected by
 % NCBI Short Read Archive accession numbers SRX015871--SRX015877).
 We re-assembled and analyzed these data under our full-likelihood
 Bayesian framework, both using all sites from assembled loci
-and only SNPs.
+and only variable sites (i.e., SNPs).
 
 
 Stacks produced a concatenated alignment with
@@ -378,7 +376,8 @@ support for a single, shared, extremely recent population expansion
 The support for a single, shared event is consistent with the results from our
 simulations using diffuse priors and only including SNPs, which showed
 consistent, spurious support for a single event
-(Row 2 of \fig{}~\ref{fig:valsimsmodeldiffuse}).
+(Row 2 of \fig{}~\ref{fig:valsimsmodeldiffuse}
+and \fig{}~\ref{fig:valsimsmodeldiffuseonly}).
 These results are relatively robust to a broad range of prior
 assumptions
 (\figs
@@ -403,6 +402,9 @@ on SNPs, seen here and in \citet{Xue2015}, is likely caused by a combination of
 (1) misspecified priors, and
 (2) the lack of information about demographic history when invariant characters
 are discarded.
+By saying the priors were misspecified, we mean that the prior distributions do
+not match the true distributions underlying the generation of the data, not
+that the priors were poorly chosen.
 Our estimates using all of the sites in the stickleback RADseq loci should be
 the most accurate, according to our results from simulated data.
 However, the unifying theme from our simulations is that all estimates of
