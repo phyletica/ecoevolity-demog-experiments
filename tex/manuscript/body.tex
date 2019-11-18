@@ -23,7 +23,7 @@ patterns of temporally clustered (or ``shared'') evolutionary events,
 including shared divergence times among pairs of populations
 \citep{Hickerson2006,Hickerson2007,Huang2011,Oaks2014dpp,Oaks2018ecoevolity}
 and shared demographic changes in effective population size across populations
-\citep{Chan2014,Xue2015,Burbrink2016,Xue2017,Gehara2017}
+\citep{Chan2014,Xue2015,Burbrink2016,Prates2016,Xue2017,Gehara2017}
 from comparative genetic data.
 % We use ``demography'' to refer to the effective size of populations.
 To date, no method has allowed the joint inference of both shared divergences
@@ -80,8 +80,31 @@ computation (ABC) approach \citep{Xue2015}.
 \input{results.tex}
 
 \subsection{Comparison to previous models of shared demographic changes}
-% TODO: compare and contrast ecoevolity method to Chan, Prates, and Burbrink
+% TODO: compare and contrast ecoevolity method to Chan, Xue, and Burbrink
 % methods.
+\citet{Chan2014}:
+\begin{itemize}
+    \item Assumes only population expansions
+    \item Assumes at most one simultaneous event (taxa are either part of the
+        event or expand independently)
+    \item Implemenation for single locus data
+\end{itemize}
+
+\citet{Gehara2017}:
+Same as \citet{Chan2014} but play around with various ways of modelling
+overdispersed timing of events.
+
+\citet{Xue2015}:
+\begin{itemize}
+    \item Implementation for genomic data (uses SFS as summary statistic)
+\end{itemize}
+
+\citet{Prates2016}:
+\begin{itemize}
+    \item Populations that expand/contract are prespecified? No clear.
+    \item Assumes at most one simultaneous event (taxa are either part of the
+        event or expand independently)
+\end{itemize}
 
 \subsection{Biological realism of the model of demographic change}
 Very unrealistic.
