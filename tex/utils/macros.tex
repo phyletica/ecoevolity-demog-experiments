@@ -75,13 +75,21 @@
 \newcommand{\validationsimsthreecolumndescriptionmodels}{\validationsimsthreecolumndescriptiontemplate{models}}
 \newcommand{\diffusesimsfourcolumndescriptiontemplate}[1]{The first and second columns of
     plots show the distribution on the relative effective size of the ancestral
-    population for simulating the data (first column) and for the prior when
-    analyzing the simulated data (second column).
+    population for simulating the data (Column 1) and for the prior when
+    analyzing the simulated data (Column 2).
     The third and fourth columns of plots show true versus estimated #1
-    when using all characters (center) or only variable characters (right).
+    when using all characters (Column 3) or only variable characters (Column 4).
 }
 \newcommand{\diffusesimsfourcolumndescription}{\diffusesimsfourcolumndescriptiontemplate{values}}
 \newcommand{\diffusesimsfourcolumndescriptionmodels}{\diffusesimsfourcolumndescriptiontemplate{models}}
+\newcommand{\diffusesimsonlyfourcolumndescriptiontemplate}[1]{The first column of
+    plots shows the distribution on the relative effective size of the ancestral
+    population under which the data were simulated, and
+    the second and third columns of plots show true versus estimated #1
+    when using all characters (Column 2) or only variable characters (Column 3).
+}
+\newcommand{\diffusesimsonlyfourcolumndescription}{\diffusesimsfourcolumndescriptiontemplate{values}}
+\newcommand{\diffusesimsonlyfourcolumndescriptionmodels}{\diffusesimsfourcolumndescriptiontemplate{models}}
 \newcommand{\validationfiguregriddescription}{The first four columns show the
     results from different distributions on the relative effective size of the
     ancestral population, decreasing in variance from left to right.

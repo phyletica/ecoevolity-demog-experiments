@@ -99,16 +99,17 @@ of our implemetation of the model and corresponding MCMC algorighms.
 Above, we observe the best estimates of the timing and sharing of demographic
 events under narrow distributions on the relative effective size of the
 ancestral population
-(top row of \figs
-\labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsetimesopt,fig:valsimsmodelopt}),
+(\vsimfourinc; top row of \figs
+\labelcref{fig:valsimsetimesopt,fig:valsimsmodelopt}),
 which were used to both simulate the data and as the prior
 when those data were analyzed.
 Thus, the improved behavior could be due to these narrow prior distributions that
 are unrealistically informative for empirical studies, for which there is
 usually little \emph{a priori} information about past population sizes.
-When we analyze data under more realistic, diffuse priors, estimates of shared
-demographic events deteriorate, whereas divergence-time estimates remain
-robust.
+When we analyze data under more realistic, diffuse priors, estimates of the
+timing and sharing of \emph{demographic} events deteriorate,
+whereas estimates of the timing and sharing of \emph{divergence} events remain
+robust
 % Our results show that the better performance under these distributions was at
 % least partially caused by greater prior information, and that
 % inference of shared demographic events is much more sensitive to
@@ -156,8 +157,8 @@ The median posterior probability of the correct model also decreases from
 0.422 to 0.292 when all characters are used,
 and from 0.231 to 0.178 when only variable characters are used
 (top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
-\emph{Most importantly, we see a strong bias toward underestimating the number
-    of events under the more realistic diffuse priors}
+Most importantly, we see a strong bias toward underestimating the number of
+events under the more realistic diffuse priors
 (top two rows of \fig{}~\ref{fig:valsimsmodeldiffuse}).
 In comparison, the inference of shared divergence times is much more accurate,
 precise, and robust to the diffuse priors
@@ -171,6 +172,48 @@ and the median posterior probability of the correct model is over
 \input{fig-sims-model-diffuse.tex}
 }{}
 
+Results are very similar whether the distribution on the
+ancestral population size is peaked around a four-fold population
+expansion or contraction
+(Conditions \msimfourinc and \msimfourdec;
+top two rows of \figs
+\ref{fig:valsimsetimesdiffuseonly},
+\ref{fig:valsimsmodeldiffuseonly},
+S\ref{fig:valsimsasizesdiffuseonly},
+and
+S\ref{fig:valsimsdsizesdiffuseonly})
+Likewise, even when population expansions
+and contractions are 10-fold, the ability to infer
+the timing and sharing of these events remains
+poor
+(Conditions \msimteninc and \msimtendec;
+bottom two rows of figs
+\ref{fig:valsimsetimesdiffuseonly} and 
+\ref{fig:valsimsmodeldiffuseonly}).
+This is not surprising when reflecting on the first principles of this
+inference problem.
+While it may seem intuitive that more dramatic changes in the rate
+of coalescence should be easier to detect, such large changes
+will cause fewer lineages to coalesce
+after (in the case of a dramatic population expansion)
+or
+before (in the case of a dramatic population contraction)
+the change in population size.
+This reduces the information about the rate of coalescence on one side of the
+demographic change and thus the magnitude and timing of the change in effective
+population size.
+Thus, the gain in information in the data is expected to plateau (and even
+decrease as we see for Condition \msimtendec in
+\fig{}~\ref{fig:valsimsmodeldiffuseonly})
+as the magnitude of the change in effective population size increases.
+
+\ifembed{
+    \input{fig-sims-model-diffuse-only.tex}
+}{}
+
+\ifembed{
+    \input{fig-sims-event-times-diffuse-only.tex}
+}{}
 
 \subsection{Inferring a mix of shared divergences and demographic changes}
 
