@@ -7,7 +7,7 @@
 % selected to comprise a mix of conditions both favorable and challenging
 % for estimating the timing and sharing of demographic changes
 Despite our attempt to capture a mix of favorable and challenging parameter
-values in our initial simulation condtions (Table~S\ref{table:prelimsimconditions}),
+values in our initial simulation conditions (Table~S\ref{table:prelimsimconditions}),
 estimates of the timing and sharing of demographic events were quite poor
 across all the simulation conditions we initially explored
 (\figs{}~S\labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsasizesinitial,fig:valsimsdsizesinitial}).
@@ -72,14 +72,14 @@ Doubling the number of individuals sampled per population to 20 had very little
 affect on the results
 (\fig{}~S\ref{fig:valsimspopsamplesize}).
 Likewise, doubling the number of demographic comparisons to six had no affect
-on the accuracy or prescision of estimating the timing of demographic changes
+on the accuracy or precision of estimating the timing of demographic changes
 or effective population sizes
 (Rows 1, 3, and 4 of \fig{}~S\ref{fig:valsimscompsamplesize}).
 The ability to infer the correct number of demographic events,
 and assignment of population to the events (\etimesets),
 is much worse when there are six comparisons, which is
 not surprising given that the number of possible assignments
-of populations to events is 203 for six comparisions, compared
+of populations to events is 203 for six comparisons, compared
 to five for three comparisons \citep{Bell1934}.
 
 The 95\% credible intervals of all the parameters
@@ -91,8 +91,12 @@ and
 S\ref{fig:valsimsdsizesopt}).
 Given that our priors match the underlying distributions that generated the
 data, this coverage behavior is expected, and is an important validation
-of our implemetation of the model and corresponding MCMC algorighms.
+of our implementation of the model and corresponding MCMC algorithms.
 % TODO: summarize run times
+The average run time of \ecoevolity was approximately 21 minutes and 42 minutes
+when analyzing three and six demographic comparisons, respectively.
+Analyses were run on a variety of hardware configurations, but most were run on
+2.3GHz Intel Xeon CPU processors (E5-2650 v3).
 
 
 \subsubsection{Sensitivity to prior assumptions}

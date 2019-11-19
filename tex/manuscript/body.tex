@@ -80,68 +80,119 @@ computation (ABC) approach \citep{Xue2015}.
 \input{results.tex}
 
 \subsection{Comparison to previous models of shared demographic changes}
-% TODO: compare and contrast ecoevolity method to Chan, Xue, and Burbrink
-% methods.
-\citet{Chan2014}:
-\begin{itemize}
-    \item Assumes only population expansions
-    \item Assumes at most one simultaneous event (taxa are either part of the
-        event or expand independently)
-    \item Implemenation for single locus data
-\end{itemize}
 
-\citet{Gehara2017}:
-Same as \citet{Chan2014} but play around with various ways of modelling
-overdispersed timing of events.
+Our method is the first that we know of that is generalized to infer an
+arbitrary mix of times of divergence and changes in population size.
+However, if we focus only on changes in population size, the models underlying
+the ABC methods of
+\citet{Chan2014,Xue2015,Gehara2017}
+share many similarities with the model we introduced above.
+These models, like ours, allow the effective population sizes before and after
+the time of the demographic change to vary ($2\ncomparisons$ free parameters),
+however, they assume all populations experienced an expansion.
+The models of \citet{Chan2014,Xue2015,Gehara2017}
+also assume there was at most one shared demographic event;
+each comparison can either be assigned to this event or have an independent
+time of demographic change.
+\citet{Xue2017} relaxed these constraints by allowing population contractions
+and expansions and allowing any number of demographic events and assignments of
+populations to those events, like we do here.
+All previous approaches, like ours, model variation in gene trees using the
+coalescent.
+They also assume an infinite-sites model of character evolution along gene
+trees, whereas our approach uses a finite-sites model.
+\citet{Gehara2017,Xue2017}
+allow the investigator to assume that the processes that cause demographic
+changes are temporally overdispersed (i.e., separated in time by ``buffers'').
+We do not explore this temporal staggering of events here due to the lack of
+biological processes that predict such temporal separation of events and the
+fact that it will exacerbate the tendency to over-cluster comparisons
+(i.e., underestimate the number of events).
 
-\citet{Xue2015}:
-\begin{itemize}
-    \item Implementation for genomic data (uses SFS as summary statistic)
-    \item Assumes only pop expansions
-    \item Assumes at most one simult event (when applied to sticklebacks)
-\end{itemize}
+The biggest difference between previous approaches and ours is how the data are
+used.
+\citet{Chan2014,Gehara2017}
+reduce aligned sequences into a set of population genetic summary statistics.
+\citet{Xue2015,Xue2017}
+reduce SNPs into a site-frequency spectrum (SFS) that is aggregated across the
+populations being compared.
+Both of these approaches to summarizing the data result in information about
+the model being lost.
+(i.e., the summary statistics used for inference are insufficient).
+% By using the counts of allele patterns from each comparison, our approach is
+% able to use all of the information in the data about the model.
+By using the mathematical work of \citet{Bryant2012}, our method is able to
+calculate the likelihood of the population histories of the comparisons
+directly from the counts of allele patterns from each population, while
+integrating over all possible gene trees under a coalescent model and all
+possible mutational histories along those gene trees under a finite-sites model
+of character evolution.
+Not only does this allow our approach to leverage all of the information in the
+data, but it does so efficiently;
+when analyzing four divergence comparisons,
+\citet{Oaks2018ecoevolity} found this approach requires approximately 9340 times
+less computing time than using ABC.
 
-\citet{Xue2017}
-\begin{itemize}
-    \item Implementation for genomic data (uses SFS as summary statistic)
-    \item Allows expansion and contraction
-    \item General in regard to the number of shared events
-    \item Time buffering
-\end{itemize}
+% \citet{Chan2014}:
+% \begin{itemize}
+%     \item Assumes only population expansions
+%     \item Assumes at most one simultaneous event (taxa are either part of the
+%         event or expand independently)
+%     \item Implemenation for single locus data
+% \end{itemize}
 
-\citet{Prates2016}:
-\begin{itemize}
-    \item Populations that expand/contract are prespecified? No clear.
-    \item Assumes at most one simultaneous event (taxa are either part of the
-        event or expand independently)
-\end{itemize}
+% \citet{Gehara2017}:
+% Same as \citet{Chan2014} but play around with various ways of modelling
+% overdispersed timing of events.
+
+% \citet{Xue2015}:
+% \begin{itemize}
+%     \item Implementation for genomic data (uses SFS as summary statistic)
+%     \item Assumes only pop expansions
+%     \item Assumes at most one simult event (when applied to sticklebacks)
+% \end{itemize}
+
+% \citet{Xue2017}
+% \begin{itemize}
+%     \item Implementation for genomic data (uses SFS as summary statistic)
+%     \item Allows expansion and contraction
+%     \item General in regard to the number of shared events
+%     \item Time buffering
+% \end{itemize}
+
+% \citet{Prates2016}:
+% \begin{itemize}
+%     \item Populations that expand/contract are prespecified? No clear.
+%     \item Assumes at most one simultaneous event (taxa are either part of the
+%         event or expand independently)
+% \end{itemize}
 
 \subsection{Biological realism of the model of shared demographic changes}
-The model of shared population-size changes we present here, and used in
-previous research \citep{Chan2014,Xue2015,Gehara2017} is quite unrealistic in
-number of respects.
-First, modeling the demographic history of a population with a single,
+The model of shared population-size changes we present above, and used in
+previous research \citep{Chan2014,Xue2015,Gehara2017,Xue2015}, is quite
+unrealistic in number of ways.
+Modeling the demographic history of a population with a single,
 instantaneous change in population size does not reflect the continuous and
 complex demographic changes most populations of organisms experience through
 time.
 However, this simple model is correct in our simulated data, and yet our method
 struggles to accurately infer the timing and sharing of these single, dramatic,
 instantaneous changes in effective population size.
-Very unrealistic.
 Incorporating more demographic realism into the model will introduce more
 variation and thus make the inference problem even more difficult.
-We expect more complicated demography.
+Thus, until inference of shared events under overly simplistic demographic
+models can be improved, it does not seem wise to introduce more complexity.
 
-Also, we expect that most processes that cause shared divergences and/or
-demographic changes across species will produce some amount of temporal
-variation in the effect among the species.
+Also, we expect most processes that cause shared divergences and/or demographic
+changes across species will effect multiple species with some amount of
+temporal variation.
 Thus, our model of simultaneous evolutionary events that affect multiple
 species at the same instant is not biologically plausible.
 If this lack of realism is problematic, it should cause the method to
-overestimate the number events by identifying the temporal variation among
-species affected by the same process as multiple events.
+overestimate the number events by misidentifying the temporal variation among
+species affected by the same process as being the result of multiple events.
 However, what we see here
-(\fig{}~\ref{fig:valsimsmodeldiffuseonly}
+(e.g., \fig{}~\ref{fig:valsimsmodeldiffuseonly}
 and what has been shown previously
 \citep{Oaks2012,Oaks2014reply,Oaks2014dpp,Oaks2018ecoevolity,Oaks2018paic}
 is the opposite;
@@ -153,7 +204,7 @@ and the posterior largely reflects the prior
 However, this is only true when the prior distributions match the true
 underlying distributions that generated the data, and these overestimates would
 be easy to identify in practice by testing for prior sensitivity and noticing
-that the posterior probabilities for models were similar to the prior
+that the posterior probabilities of models of events are similar to the prior
 probabilities (i.e., small Bayes factors).
 Previous researchers
 \citep{Overcast2017,Gehara2017,Xue2017}
@@ -162,10 +213,10 @@ temporal variation among species affected by the same event by assuming that
 processes of diversification and demographic change are temporally
 overdispersed.
 However, allowing temporal variation within events will only increase the
-tendency of these methods to underestimate the number of events.
-Also, assuming processes that cause shared evolutionary responses are somehow
-conveniently staggered over time (overdispersed) seems biologically
-implausible.
+tendency of these methods to underestimate the number of events (i.e., the
+variation makes it ``easier'' to assign comparisons to the same event).
+Also, it is difficult to imagine why processes that cause shared evolutionary
+responses would be somehow conveniently staggered over time (overdispersed).
 
 \section{Conclusions}
 
@@ -182,12 +233,12 @@ When we are careful to simulate data within this window, and the change in
 population size is large enough, we can estimate the time of the demographic
 changes reasonably well
 (e.g., see the top row of \fig{}~\ref{fig:valsimsetimesopt}).
-However, even under these condtions, the ability to correctly infer the number
-of demographic events, and the assignment of populations to those events is
-quite limited
+However, even under these favorable conditions, the ability to correctly infer
+the number of demographic events, and the assignment of populations to those
+events is quite limited
 (\fig{}~\ref{fig:valsimsmodelopt}).
-When only variable characters are analyzed (i.e., SNPs), estimates of
-the timing and sharing of demographic changes are consistently bad; we see this
+When only variable characters are analyzed (i.e., SNPs), estimates of the
+timing and sharing of demographic changes are consistently bad; we see this
 across all the conditions we simulated.
 Most alarmingly, when the priors are more diffuse than the distributions that
 generated the data, as will be true in most empirical applications, there is a
@@ -215,10 +266,12 @@ population through time.
 This is evidenced by the extensive literature on powerful 
 ``skyline plot'' and ``phylodynamic'' methods
 \citep{Pybus2000,Strimmer2001,OpgenRhein2005,Drummond2005,Heled2008,Minin2008beast,Ho2011,Palacios2012,Palacios2012UAI,Stadler2013,Gill2013,Palacios2014,Lan2015,Karcher2016,Karcher2017,Faulkner2018,Karcher2019}.
-With loci from across the genome, each with more information about the gene
-tree they evolved along,
+Obviously, the length of loci will be constrained by recombination.
+Nonetheless, with loci from across the genome, each with more information about
+the gene tree they evolved along,
 perhaps more information can be captured about temporally clustered changes in
-the rate of coalescence across populations.
+the rate of coalescence across populations \citep{Speidel2019}.
+
 Another potential source of information could be captured by modelling
 recombination along large regions of chromosomes.
 By approximating the full coalescent process, many methods have been developed

@@ -58,19 +58,19 @@ Under the ``worst-case'' scenario of very little population-size change
 (bottom row of \figs S\ref{fig:valsimsetimesinitial} and
 S\ref{fig:valsimsmodelinitial}),
 our method is unable to identify the timing or model of demographic change.
-As expected, our method returns the prior on the timing of events
+Under these conditions, our method returns the prior on the timing of events
 (bottom row of \fig{}~S\ref{fig:valsimsetimesinitial})
 and almost always prefers either a model with a single, shared demographic
 event (model "000") or independent demographic changes (model "012";
 bottom row of \fig{}~S\ref{fig:valsimsmodelinitial}).
-This is expected behavior, because there is essentially no information in the
+This behavior is expected, because there is very little information in the
 data about the timing of demographic changes, and a Dirichlet process with a
 mean of 2.0 demographic events, puts approximately 0.24 of the prior
 probability on the models with one and three events, and 0.515 prior
 probability on the three models with two events (approximately 0.17 each).
-Thus, with little information, the method samples from the prior distribution
-on the timing of events, and prefers one of the two models with larger prior
-probability.
+As a result, with little information, the method samples from the prior
+distribution on the timing of events, and prefers one of the two models with
+the largest (and equal) prior probability.
 
 Under considerable changes in population size, the method only fared
 moderately better at estimating the timing of demographic events
