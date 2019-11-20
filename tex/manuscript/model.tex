@@ -47,7 +47,6 @@ of the locus, \redallelecount of which are copies of the red allele and the
 remaining $\allelecount - \redallelecount$ are copies of the green allele.
 Thus, for each population, and for each locus, we have a count of the
 total sampled gene copies and how many of those are the red allele.
-
 Following the notation of \citet{Oaks2018ecoevolity}
 we will use \leafallelecounts and \leafredallelecounts to denote allele counts
 for a locus from either one population if we are modeling a population-size
@@ -59,7 +58,7 @@ $\leafallelecounts, \leafredallelecounts = (\allelecount[1],
 % (\fig{}~\ref{fig:modelCartoon}
 % and
 % Table~\ref{table:notation}).
-For convenience will use \comparisondata[i] to denote these allele counts
+For convenience, we will use \comparisondata[i] to denote these allele counts
 across all the loci from taxon $i$, which can be a single population
 or a pair of populations.
 Finally, we use \alldata to represent the data across all the taxa for which we
@@ -72,8 +71,8 @@ characters do not have to be orthologous across taxa, only within them.
 \subsection{The evolution of markers}
 
 We assume each character evolved along a gene tree (\genetree)
-according to a finite-sites, continuous-time Markov chain (CTMC) model.
-We assume the gene tree of each character is independent of the others,
+according to a finite-sites, continuous-time Markov chain (CTMC) model,
+and the gene tree of each character is independent of the others,
 conditional on the population history (i.e., the characters are effectively
 unlinked).
 As the marker evolves along the gene tree, forward in time, there is a relative
@@ -261,12 +260,12 @@ Following \citet{Oaks2018ecoevolity},
 we use a gamma distribution on the effective size of the ancestral population
 \emph{relative} to the size of the descendant population(s), which we
 denote as \rootrelativepopsize.
-For a taxon with two descendant populations (i.e., a divergence comparison), the
-ancestral population size is relative to the mean of the descendant
-populations.
+For a taxon with two descendant populations (i.e., a divergence comparison),
+the prior on the ancestral population size is specified as relative to the mean
+of the descendant populations.
 For a taxon with only one descendant population (i.e., a demographic
-comparison), the ancestral populations is relative to the size of that
-descendant.
+comparison), the prior on the ancestral population is relative to the size of
+that descendant.
 % The goal of this approach is to allow more informative priors on the root
 % population size; we often have stronger prior expectations for the relative
 % size of the ancestral population than the absolute size.
@@ -290,7 +289,7 @@ The decision about how to model mutation rates is extremely important for any
 comparative phylogeographic approach that models taxa as disconnected
 species trees
 \citep[\fig{}~\ref{fig:modelCartoon}; e.g.,][]{Hickerson2006,Hickerson2007,Huang2011,Chan2014,Oaks2014dpp,Xue2015,Burbrink2016,Xue2017,Gehara2017,Oaks2018ecoevolity}.
-Time (\etime) and mutation rate (\murate) are inextricably linked, and because
+Time and mutation rate are inextricably linked, and because
 the comparisons are modeled as separate species trees, the data cannot
 inform the model about relative or absolute differences in \murate among the
 comparisons.

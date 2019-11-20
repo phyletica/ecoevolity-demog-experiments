@@ -10,13 +10,14 @@ Despite our attempt to capture a mix of favorable and challenging parameter
 values in our initial simulation conditions (Table~S\ref{table:prelimsimconditions}),
 estimates of the timing and sharing of demographic events were quite poor
 across all the simulation conditions we initially explored
-(\figs{}~S\labelcref{fig:valsimsetimesinitial,fig:valsimsmodelinitial,fig:valsimsasizesinitial,fig:valsimsdsizesinitial}).
+(see Supporting Information;
+\figs{}~S\ref{fig:valsimsetimesinitial}--S\ref{fig:valsimsdsizesinitial}).
 Even after we tried selecting simulation conditions that are more favorable for
 identifying the event times, estimates of the timing and
 sharing of demographic events remain quite poor
 (\figs \ref{fig:valsimsetimesopt} and \ref{fig:valsimsmodelopt}).
 Under the recent (but not too recent) 4-fold population-size increase (on
-average) scenario, we do see better estimates of the times of the demographic
+average) scenario, we do see better estimates of the times of demographic
 change
 (\vsimfourinc; top row of \fig{}~\ref{fig:valsimsetimesopt}),
 but the ability to identify the correct number of events and the assignment of
@@ -29,13 +30,13 @@ Under the most extreme population retraction scenario
 the correct model is preferred only 40\% of the time, and the median
 posterior probability of the correct model is only 0.26
 (middle row of \fig{}~\ref{fig:valsimsmodelopt}).
-Estimates are especially poor when using only variable characters,
-so we focus on the results using all characters
+Estimates are especially poor when using only variable characters
 (second versus third column of \figs
 \ref{fig:valsimsetimesopt}
 and
-\ref{fig:valsimsmodelopt});
-we also see worse estimates of population sizes when excluding invariant
+\ref{fig:valsimsmodelopt}),
+so we focus on the results using all characters.
+We also see worse estimates of population sizes when excluding invariant
 characters
 (\figs
 S\ref{fig:valsimsasizesopt}
@@ -61,12 +62,12 @@ event (model "000") or independent demographic changes (model "012";
 bottom row of \fig{}~\ref{fig:valsimsmodelopt}).
 This is expected behavior, because there is essentially no information in the
 data about the timing of demographic changes, and a Dirichlet process with a
-mean of 2.0 demographic events, puts approximately 0.24 of the prior
+mean of two demographic events, puts approximately 0.24 of the prior
 probability on the models with one and three events, and 0.515 prior
 probability on the three models with two events (approximately 0.17 each).
 Thus, with little information, the method samples from the prior distribution
-on the timing of events, and prefers one of the two models with larger prior
-probability.
+on the timing of events, and randomly prefers one of the two models with larger
+(and equal) prior probability.
 
 Doubling the number of individuals sampled per population to 20 had very little
 affect on the results
@@ -102,14 +103,14 @@ Analyses were run on a variety of hardware configurations, but most were run on
 \subsubsection{Sensitivity to prior assumptions}
 
 Above, we observe the best estimates of the timing and sharing of demographic
-events under narrow distributions on the relative effective size of the
+events under the narrowest distribution on the relative effective size of the
 ancestral population
 (\vsimfourinc; top row of \figs
 \labelcref{fig:valsimsetimesopt,fig:valsimsmodelopt}),
-which were used to both simulate the data and as the prior
+which was used to both simulate the data and as the prior
 when those data were analyzed.
-Thus, the improved behavior could be due to these narrow prior distributions that
-are unrealistically informative for empirical studies, for which there is
+Thus, the improved behavior could be due to this narrow prior distribution that
+is unrealistically informative for most empirical studies, for which there is
 usually little \emph{a priori} information about past population sizes.
 When we analyze data under more realistic, diffuse priors, estimates of the
 timing and sharing of \emph{demographic} events deteriorate,
@@ -186,7 +187,7 @@ top two rows of \figs
 \ref{fig:valsimsmodeldiffuseonly},
 S\ref{fig:valsimsasizesdiffuseonly},
 and
-S\ref{fig:valsimsdsizesdiffuseonly})
+S\ref{fig:valsimsdsizesdiffuseonly}).
 Likewise, even when population expansions
 and contractions are 10-fold, the ability to infer
 the timing and sharing of these events remains
@@ -207,9 +208,9 @@ the change in population size.
 This reduces the information about the rate of coalescence on one side of the
 demographic change and thus the magnitude and timing of the change in effective
 population size.
-Thus, the gain in information in the data is expected to plateau (and even
-decrease as we see for Condition \msimtendec in
-\fig{}~\ref{fig:valsimsmodeldiffuseonly})
+Thus, the gain in information in the data is expected to plateau
+(and even decrease, as we see under the most severe bottleneck Condition
+\msimtendec in \fig{}~\ref{fig:valsimsmodeldiffuseonly})
 as the magnitude of the change in effective population size increases.
 
 \ifembed{

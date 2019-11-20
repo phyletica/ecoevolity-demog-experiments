@@ -8,9 +8,9 @@ across a landscape are expected to affect multiple species.
 Abiotic mechanisms include changes to the environment that can cause
 co-distributed species to contract or expand their ranges and/or become
 fragmented \citep{Wegener1966,Avise1987,Knowles2002}.
-Biotic factors include inter-specific ecological interactions such as the range
-expansion of a species causing the expansion of its symbionts and the range
-contraction and/or fragmentation of its competitors
+Biotic factors include inter-specific ecological interactions such as the
+population expansion of a species causing the expansion of its symbionts and
+the population contraction and/or fragmentation of its competitors
 \citep{Lotka1920,Volterra1926}.
 Such processes predict that evolutionary events, such as population divergences
 or demographic changes, will be temporally clustered across multiple species.
@@ -45,7 +45,7 @@ much more limited.
 There are theoretical reasons to suspect that estimating shared changes in
 effective population size is more difficult than divergence times.
 The parameter of interest (timing of a demographic change) is informed by
-differing rates at which sampled copies of a gene ``find'' their common
+differing rates at which sampled copies of a locus ``find'' their common
 ancestors (coalesce) going backward in time before and after the change in
 population size, and this can become unidentifiable in three ways.
 First, as the magnitude of a change in population becomes smaller,
@@ -63,6 +63,14 @@ from five populations of three-spine stickleback
 \citep[\spp{Gasterosteus aculeatus};][]{Hohenlohe2010}
 that were previously estimated to have co-expanded with an approximate Bayesian
 computation (ABC) approach \citep{Xue2015}.
+In stark contrast to shared divergence times, our results show that estimates
+of shared changes in population size are quite poor across a broad range of 
+simulation conditions.
+We also find strikingly different estimates of the demographic histories of the
+stickleback populations depending on whether we include invariant sites in
+analyses.
+This alarming result makes sense in light of the inference pathologies
+exhibited by our analyses of simulated data.
 
 \ifembed{
 \input{fig-model-cartoon.tex}
@@ -82,15 +90,15 @@ computation (ABC) approach \citep{Xue2015}.
 \subsection{Comparison to previous models of shared demographic changes}
 
 Our method is the first that we know of that is generalized to infer an
-arbitrary mix of times of divergence and changes in population size.
+arbitrary mix of shared times of divergence and changes in population size.
 However, if we focus only on changes in population size, the models underlying
 the ABC methods of
-\citet{Chan2014,Xue2015,Gehara2017}
+\citet{Chan2014}, \citet{Xue2015}, and \citet{Gehara2017}
 share many similarities with the model we introduced above.
 These models, like ours, allow the effective population sizes before and after
 the time of the demographic change to vary ($2\ncomparisons$ free parameters),
 however, they assume all populations experienced an expansion.
-The models of \citet{Chan2014,Xue2015,Gehara2017}
+The models of \citet{Chan2014}, \citet{Xue2015}, and \citet{Gehara2017}
 also assume there was at most one shared demographic event;
 each comparison can either be assigned to this event or have an independent
 time of demographic change.
@@ -101,29 +109,29 @@ All previous approaches, like ours, model variation in gene trees using the
 coalescent.
 They also assume an infinite-sites model of character evolution along gene
 trees, whereas our approach uses a finite-sites model.
-\citet{Gehara2017,Xue2017}
+\citet{Gehara2017} and \citet{Xue2017}
 allow the investigator to assume that the processes that cause demographic
 changes are temporally overdispersed (i.e., separated in time by ``buffers'').
 We do not explore this temporal staggering of events here due to the lack of
 biological processes that predict such temporal separation of events and the
 fact that it will exacerbate the tendency to over-cluster comparisons
-(i.e., underestimate the number of events).
+(i.e., underestimate the number of events; see next section).
 
 The biggest difference between previous approaches and ours is how the data are
 used.
-\citet{Chan2014,Gehara2017}
+\citet{Chan2014} and \citet{Gehara2017}
 reduce aligned sequences into a set of population genetic summary statistics.
-\citet{Xue2015,Xue2017}
+\citet{Xue2015} and \citet{Xue2017}
 reduce SNPs into a site-frequency spectrum (SFS) that is aggregated across the
 populations being compared.
 Both of these approaches to summarizing the data result in information about
-the model being lost.
+the model being lost
 (i.e., the summary statistics used for inference are insufficient).
 % By using the counts of allele patterns from each comparison, our approach is
 % able to use all of the information in the data about the model.
 By using the mathematical work of \citet{Bryant2012}, our method is able to
 calculate the likelihood of the population histories of the comparisons
-directly from the counts of allele patterns from each population, while
+directly from the counts of character patterns from each population, while
 integrating over all possible gene trees under a coalescent model and all
 possible mutational histories along those gene trees under a finite-sites model
 of character evolution.
@@ -132,6 +140,11 @@ data, but it does so efficiently;
 when analyzing four divergence comparisons,
 \citet{Oaks2018ecoevolity} found this approach requires approximately 9340 times
 less computing time than using ABC.
+Also, calculating the likelihood of the model from each character pattern
+naturally accommodates missing data \citep{Oaks2018ecoevolity}.
+In contrast, there is no straightforward way of accounting for missing data
+when summarizing genetic data into SFS and other population genetic summary
+statistics \citep{Hahn2018}.
 
 % \citet{Chan2014}:
 % \begin{itemize}
@@ -184,15 +197,15 @@ Thus, until inference of shared events under overly simplistic demographic
 models can be improved, it does not seem wise to introduce more complexity.
 
 Also, we expect most processes that cause shared divergences and/or demographic
-changes across species will effect multiple species with some amount of
+changes across species will affect multiple species with some amount of
 temporal variation.
 Thus, our model of simultaneous evolutionary events that affect multiple
 species at the same instant is not biologically plausible.
 If this lack of realism is problematic, it should cause the method to
-overestimate the number events by misidentifying the temporal variation among
+overestimate the number of events by misidentifying the temporal variation among
 species affected by the same process as being the result of multiple events.
 However, what we see here
-(e.g., \fig{}~\ref{fig:valsimsmodeldiffuseonly}
+(e.g., \fig{}~\ref{fig:valsimsmodeldiffuseonly})
 and what has been shown previously
 \citep{Oaks2012,Oaks2014reply,Oaks2014dpp,Oaks2018ecoevolity,Oaks2018paic}
 is the opposite;
@@ -204,12 +217,12 @@ and the posterior largely reflects the prior
 However, this is only true when the prior distributions match the true
 underlying distributions that generated the data, and these overestimates would
 be easy to identify in practice by testing for prior sensitivity and noticing
-that the posterior probabilities of models of events are similar to the prior
+that the posterior probabilities of event models are similar to the prior
 probabilities (i.e., small Bayes factors).
 Previous researchers
 \citep{Overcast2017,Gehara2017,Xue2017}
 have attempted to introduce realism into these comparative models by allowing
-temporal variation among species affected by the same event by assuming that
+temporal variation among species affected by the same event, by assuming that
 processes of diversification and demographic change are temporally
 overdispersed.
 However, allowing temporal variation within events will only increase the
@@ -251,7 +264,7 @@ stickleback RADseq data when including versus excluding constant sites
 (\fig{}~\ref{fig:sticklesummary}).
 These findings are in sharp contrast to estimating shared \emph{divergence}
 times, which is much more accurate, precise, and robust to prior assumptions
-\citep[\figs \labelcref{fig:valsimsmodeldiffuse,fig:valsimsetimesdiffuse,fig:mixsims}][]{Oaks2018ecoevolity,Oaks2018paic}.
+\citep[\figs \labelcref{fig:valsimsmodeldiffuse,fig:valsimsetimesdiffuse,fig:mixsims};][]{Oaks2018ecoevolity,Oaks2018paic}.
 
 Given the poor estimates of co-demographic changes, even when all the
 information in the data are leveraged by a full-likelihood method, any

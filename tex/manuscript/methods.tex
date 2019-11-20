@@ -24,7 +24,7 @@ Each simulated \dataset comprised 500,000 unlinked biallelic characters from 10
 diploid individuals (20 genomes) sampled per population from three demographic
 comparisons.
 We specified the concentration parameter of the Dirichlet process so that the
-mean number of demographic change events was 2 ($\concentration = 1.414216$).
+mean number of demographic change events was two ($\concentration = 1.414216$).
 We assumed the mutation rates of all three populations were equal and 1, such
 that time and effective population sizes were scaled by the mutation rate.
 When analyzing each simulated \dataset, we ran four MCMC chains for 75,000
@@ -36,7 +36,7 @@ parameters and the log likelihood using the \texttt{pyco-sumchains} tool of
 \pycoevolity (Version 0.1.2 Commit 89d90a1).
 Based on these metrics of MCMC convergence and mixing, we conservatively chose
 to summarize the last 1000 samples from each chain for a total of 4000 samples
-of parameter values to approximate the posterior distribution for ever
+of parameter values to approximate the posterior distribution for every
 simulated data set.
 When plotting results, we highlight any simulation replicates that have a
 $\textrm{PSRF} > 1.2$.
@@ -65,16 +65,20 @@ have a lower limit of the offset value, rather than zero.
 % relative root size ~ gamma(shape=5.0, scale = 0.19, offset = 0.05); mean 1
 % relative root size ~ gamma(shape=50.0, scale = 0.02, offset = 0.0); mean 1
 
+\ifembed{
+\input{table-sim-conditions.tex}
+}{}
+
 For the mutation-scaled effective size of the descendant
 population
 ($\epopsize[\descendantpopindex{}]\murate$),
 we used an offset gamma distribution with a shape of 4, offset of 0.0001, and
 mean of 0.0021 after accounting for the offset
 (Table~\ref{table:simconditions}).
-This mean corresponds to an average number of differences per base pair between
-individuals in the population (i.e., nucleotide diversity) of 0.0084,
-which is comparable to estimates from genomic data
-of populations of
+The mean of this distribution corresponds to an average number of differences
+per character between individuals in the population (i.e., nucleotide
+diversity) of 0.0084, which is comparable to estimates from genomic data of
+populations of
 zooplankton \citep{Choquet2019},
 stickleback fish \citep{Hohenlohe2010},
 and humans \citep{Auton2015}.
@@ -153,11 +157,11 @@ Accordingly, we also analyzed data under conditions where the prior
 distributions are more diffuse than those under which the data were simulated.
 This allows us to
 (1) see how sensitive the method is to prior misspecification,
-(2) determine how much the results under conditions like \vsimfourinc are
-due to the sharply informative prior on the ancestral population size,
+(2) determine to what degree the results under conditions like \vsimfourinc are
+influenced by the sharply informative prior on the ancestral population size,
 and
-(3) explore more extreme conditions of population expansions and contractions
-(conditions that would be unrealistic for a prior distribution).
+(3) explore more extreme simulation conditions of population expansions and
+contractions (conditions that would be unrealistic for a prior distribution).
 
 We used the same distribution on event times and descendant effective
 population sizes as for Conditions \valsimcondition{1}--\valsimcondition{5}
@@ -169,12 +173,12 @@ data
 that are sharply peaked on four-fold and ten-fold population
 expansions and contractions.
 We simulated 500 \datasets under each of these four conditions and then
-analyzed them under diffuse prior distributions
-We chose the prior distribution to reflect realistic amounts of prior
+analyzed them under diffuse prior distributions.
+We chose the prior distributions to reflect realistic amounts of prior
 uncertainty about the timing of demographic changes and past and present
 effective population sizes when analyzing empirical data.
 Note, Conditions \vsimfourinc and \msimfourinc share the same simulating
-distributions, which allows us to compare the results to determine how much the
+distributions, which allows us to compare results to determine how much the
 strongly informative prior on the ancestral population size affected inference.
 
 For comparison, we also repeated simulations and analyses under
@@ -272,7 +276,7 @@ and ESS \citep{Gong2014} of all continuous parameters and the log likelihood
 using the \texttt{pyco-sumchains} tool of \pycoevolity (Version 0.1.2 Commit
 89d90a1).
 We also visually inspected the sampled log likelihood and parameters values
-over generations with the program Tracer Version 1.6 \citep{Tracer16}.
+over generations with the program Tracer \citep[Version 1.6;][]{Tracer16}.
 The MCMC chains for all analyses converged almost immediately; we
 conservatively removed the first 101 samples from each chain, resulting in
 14,000 samples from the posterior (1400 samples from 10 chains) for each
