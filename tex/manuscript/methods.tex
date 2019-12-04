@@ -181,8 +181,8 @@ Note, Conditions \vsimfourinc and \msimfourinc share the same simulating
 distributions, which allows us to compare results to determine how much the
 strongly informative prior on the ancestral population size affected inference.
 
-For comparison, we also repeated simulations and analyses under
-Condition~\vsimfourinc, except with three \emph{divergence} comparisons.
+For comparison, we also repeated simulations and analyses under Conditions
+\vsimfourinc and \msimfourinc, except with three \emph{divergence} comparisons.
 For these divergence comparisons, we simulated 10 sampled genomes per
 population to match the same total number of samples per comparison (20) as the
 demographic simulations.
@@ -229,7 +229,7 @@ After downloading the reads mapped to the stickleback genome by
 \citet{Hohenlohe2010}
 from Dryad
 (doi:10.5061/dryad.b6vh6),
-We assembled reference guided alignments of loci in Stacks v1.48
+we assembled reference guided alignments of loci in Stacks v1.48
 \citet{Catchen2013} with a minimum read depth of 3 identical reads per locus
 within each individual and the bounded single-nucleotide polymorphism (SNP)
 model with error bounds between
@@ -249,11 +249,15 @@ number of three events
 ($\concentration = 2.22543$).
 We used the following prior distributions on the timing of events and effective
 sizes of populations:
-\begin{itemize}
-    \item $\etime \sim \dexponential{0.001}$
-    \item $\rootrelativepopsize \sim \dexponential{1}$
-    \item $\epopsize[\descendantpopindex{}] \sim \dgamma{2}{0.002}$
-\end{itemize}
+$\etime \sim \dexponential{0.001}$,
+$\rootrelativepopsize \sim \dexponential{1}$,
+and
+$\epopsize[\descendantpopindex{}] \sim \dgamma{2}{0.002}$.
+% \begin{itemize}
+%     \item $\etime \sim \dexponential{0.001}$
+%     \item $\rootrelativepopsize \sim \dexponential{1}$
+%     \item $\epopsize[\descendantpopindex{}] \sim \dgamma{2}{0.002}$
+% \end{itemize}
 To assess the sensitivity of the results to these prior assumptions,
 we also analyzed the data under two additional priors on
 the concentration parameter, event times, and relative
