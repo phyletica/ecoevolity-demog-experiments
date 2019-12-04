@@ -1,7 +1,8 @@
 \section{The model}
 
 We extended the model implemented in the software package \ecoevolity to
-accommodate two types of temporal comparisons:
+accommodate two types of temporal comparisons
+that are specified \emph{a priori} by the investigator:
 \begin{enumerate}
     \item A population that experienced a change from effective population size
         \epopsize[\rootpopindex]
@@ -18,9 +19,9 @@ accommodate two types of temporal comparisons:
         We will refer to this as a \emph{divergence comparison}
         (\fig{}~\ref{fig:modelCartoon}).
 \end{enumerate}
-The type of each comparison is specified by the investigator; either the input
-data specifies one (demographic comparison) or two (divergence comparison)
-populations.
+% The type of each comparison is specified by the investigator; either the input
+% data specifies one (demographic comparison) or two (divergence comparison)
+% populations.
 This allows inference of shared times of divergence and/or demographic change
 across an arbitrary mix of demographic and divergence comparisons in a
 full-likelihood, Bayesian framework.
@@ -37,19 +38,20 @@ we assume we have collected orthologous, biallelic genetic characters from taxa
 we wish to compare.
 By biallelic, we mean that each character has at most two states,
 which we refer to as ``red'' and ``green'' following \citet{Bryant2012}.
-For each taxon, we either have these data from one or more individuals from a
-single population, in which case we infer the timing and extent of a population
-size change, or one or more individuals from two populations or species,
+For each comparison, we either have these data from one or more individuals
+from a single population, in which case we infer the timing and extent of a
+population size change, or one or more individuals from two populations or
+species,
 in which case we infer the time when they diverged (\fig{}~\ref{fig:modelCartoon}).
 
 For each population and for each character we genotype \allelecount copies
 of the locus, \redallelecount of which are copies of the red allele and the
 remaining $\allelecount - \redallelecount$ are copies of the green allele.
-Thus, for each population, and for each locus, we have a count of the
+Thus, for each population, and for each character, we have a count of the
 total sampled gene copies and how many of those are the red allele.
 Following the notation of \citet{Oaks2018ecoevolity}
 we will use \leafallelecounts and \leafredallelecounts to denote allele counts
-for a locus from either one population if we are modeling a population-size
+for a character from either one population if we are modeling a population-size
 change or both populations of a pair if we are modeling a divergence; i.e., 
 $\leafallelecounts, \leafredallelecounts = (\allelecount, \redallelecount)$
 or
@@ -59,25 +61,25 @@ $\leafallelecounts, \leafredallelecounts = (\allelecount[1],
 % and
 % Table~\ref{table:notation}).
 For convenience, we will use \comparisondata[i] to denote these allele counts
-across all the loci from taxon $i$, which can be a single population
+across all the characters from comparison $i$, which can be a single population
 or a pair of populations.
 Finally, we use \alldata to represent the data across all the taxa for which we
 wish to compare times of either divergence or population-size change.
-Note, because the population history of each taxon is modeled separately
+Note, because the population history of each comparison is modeled separately
 (\fig{}~\ref{fig:modelCartoon}),
-characters do not have to be orthologous across taxa, only within them.
+characters do not have to be orthologous across comparisons, only within them.
 
 
-\subsection{The evolution of markers}
+\subsection{The evolution of characters}
 
 We assume each character evolved along a gene tree (\genetree)
 according to a finite-sites, continuous-time Markov chain (CTMC) model,
 and the gene tree of each character is independent of the others,
 conditional on the population history (i.e., the characters are effectively
 unlinked).
-As the marker evolves along the gene tree, forward in time, there is a relative
+As a character evolves along the gene tree, forward in time, there is a relative
 rate \rgmurate of mutating from the red state to the green state,
-and a corresponding relative rate \grmurate of mutation from green to red
+and a corresponding relative rate \grmurate of mutating from green to red
 \citep{Bryant2012,Oaks2018ecoevolity}.
 The stationary frequency of the green state is then
 $\gfreq = \rgmurate / (\rgmurate + \grmurate)$.
@@ -85,12 +87,12 @@ We will use \murate to denote the overall rate of mutation.
 Evolutionary change is the product of \murate and time.
 Thus, if $\murate = 1$, time is measured in
 units of expected substitutions per site.
-Alternatively, if a mutation rate per site per unit time is given, then time is
-in those units (e.g., generations or years).
+Alternatively, if a mutation rate per site per unit of time is given, then time
+is in those units (e.g., generations or years).
 
 \subsection{The evolution of gene trees}
 
-We assume that the gene tree of each locus evolved within a simple
+We assume that the gene tree of each character evolved within a simple
 ``species'' tree with one ancestral root population, which either
 left one or two descendant branches with different effective population sizes
 at time \comparisonetime
@@ -134,9 +136,9 @@ is calculated the same as in \citet{Bryant2012} and \citet{Oaks2018ecoevolity}.
 
 
 \begin{linenomath}
-For a given taxon, we can calculate the probability of all \nloci{} loci
-from which we have data given the species tree and other parameters by
-assuming independence among loci (conditional on the species tree) and
+For a given comparison, we can calculate the probability of all \nloci{}
+characters from which we have data given the species tree and other parameters
+by assuming independence among characters (conditional on the species tree) and
 taking the product over them,
 \begin{equation}
     \pr(\comparisondata \given \sptree, \murate, \gfreq)
@@ -145,14 +147,14 @@ taking the product over them,
     \pr(\leafallelecounts[i], \leafredallelecounts[i] \given \sptree, \murate, \gfreq).
     \label{eq:comparisonlikelihood}
 \end{equation}
-We assume we have sampled biallelic data from \ncomparisons{} taxa, which can
-be an arbitrary mix of
+We assume we have sampled biallelic data from \ncomparisons{} comparisons,
+which can be an arbitrary mix of
 (1) two populations or species for which \comparisonetime represents
 the time they diverged, or
 (2) one population for which \comparisonetime represents the time
 of a change in population size.
-The likelihood across all \ncomparisons{} taxa is simply the product of the
-likelihood of each taxon,
+The likelihood across all \ncomparisons{} comparisons is simply the product of the
+likelihood of each comparison,
 \begin{equation}
     \pr(
     \alldata
@@ -172,8 +174,8 @@ $\murates = \murate[1], \murate[2], \ldots, \murate[\ncomparisons]$,
 and
 $\gfreqs = \gfreq[1], \gfreq[2], \ldots, \gfreq[\ncomparisons]$.
 As described in \citet{Oaks2018ecoevolity},
-if constant characters are not sampled for a taxon, we condition the likelihood
-for that taxon on only having sampled variable characters.
+if constant characters are not sampled for a comparison, we condition the likelihood
+for that comparison on only having sampled variable characters.
 \end{linenomath}
 
 
@@ -182,14 +184,14 @@ for that taxon on only having sampled variable characters.
 \begin{linenomath}
 As described by \citet{Oaks2018ecoevolity},
 we treat the number of events (population-size changes and/or divergences)
-and the assignment of taxa to those events as
+and the assignment of comparisons to those events as
 random variables under a Dirichlet process \citep{Ferguson1973,
     Antoniak1974}.
-We use \etimesets to represent the partitioning of taxa to events,
+We use \etimesets to represent the partitioning of comparisons to events,
 which we will also refer to as the ``event model.''
 The concentration parameter, \concentration, controls how clustered the
 Dirichlet process is, and determines the probability of all possible \etimesets
-(i.e., all possible set partitions of taxa to $1, 2, \ldots, \ncomparisons$ events).
+(i.e., all possible set partitions of \ncomparisons comparisons to $1, 2, \ldots, \ncomparisons$ events).
 We use \etimes to represent the unique times of events in \etimesets.
 Using this notation, the posterior distribution of our 
 Dirichlet-process model is
@@ -235,7 +237,7 @@ Dirichlet-process model is
 where
 \collectionpopsizes
 is the collection of the effective population sizes (\comparisonpopsizes{})
-across all of the pairs.
+across all of the comparisons.
 \end{linenomath}
 
 \subsubsection{Priors}
@@ -246,24 +248,24 @@ uncertainty in the concentration parameter of the Dirichlet process
 by specifying a gamma distribution as a hyperprior on
 \concentration \citep{Escobar1995,Heath2011}.
 Alternatively, \concentration can also be fixed to a particular value,
-which is likely sufficient when the number of pairs is small.
+which is likely sufficient when the number of comparisons is small.
 
 \paragraph{Prior on the divergence times}
-Given the partitioning of taxa to events, we use a gamma
+Given the partitioning of comparisons to events, we use a gamma
 distribution for the prior on the time of each event,
 $\etime \given \etimesets \sim \distgamma(\cdot, \cdot)$.
 
 \paragraph{Prior on the effective population sizes}
 We use a gamma distribution as the prior on
-the effective size of each descendant population of each taxon.
+the effective size of each descendant population of each comparison.
 Following \citet{Oaks2018ecoevolity},
 we use a gamma distribution on the effective size of the ancestral population
 \emph{relative} to the size of the descendant population(s), which we
 denote as \rootrelativepopsize.
-For a taxon with two descendant populations (i.e., a divergence comparison),
+For a comparison with two descendant populations (i.e., a divergence comparison),
 the prior on the ancestral population size is specified as relative to the mean
 of the descendant populations.
-For a taxon with only one descendant population (i.e., a demographic
+For a comparison with only one descendant population (i.e., a demographic
 comparison), the prior on the ancestral population is relative to the size of
 that descendant.
 % The goal of this approach is to allow more informative priors on the root
@@ -284,7 +286,7 @@ that descendant.
 
 \paragraph{Prior on mutation rates}
 We follow the same approach explained by \citet{Oaks2018ecoevolity} to model
-mutation rates across taxa.
+mutation rates across comparisons.
 The decision about how to model mutation rates is extremely important for any
 comparative phylogeographic approach that models taxa as disconnected
 species trees
@@ -310,7 +312,7 @@ Because DNA is the dominant character type for genomic data, we assume that
 $\gfreq = 0.5$ in this paper.
 This makes the CTMC model of character-state substitution a two-state analog of
 the ``JC69'' model \citep{JC1969}.
-However, if the genetic markers collected for one or more taxa are naturally
+However, if the genetic markers collected for one or more comparisons are naturally
 biallelic, the frequencies of the two states can be meaningfully estimated, and
 our implementation allows for a beta prior on \gfreq in such cases.
 This makes the CTMC model of character-state substitution a two-state general

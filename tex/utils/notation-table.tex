@@ -13,24 +13,24 @@
         \midrule
         \ncomparisons{} & The number of comparisons (or taxa); can be an
         arbitrary mix of populations (comparing timing of demographic change)
-        and/or pairs of population (comparing timing of divergence).
+        and/or pairs of populations (comparing timing of divergence).
         \tn
-        \nevents{} & The number of events (unique times) across the population
-        pairs being compared.
+        \nevents{} & The number of events (unique times) across the comparisons.
         \tn
-        \comparisonetime[i] & The time in the past when either a population $i$
-        had a change in effective size or population pair $i$ diverged.
+        \comparisonetime[i] & The time in the past when comparison $i$ either
+        diverged or experienced a change in effective population size.
         \tn
-        \etime & A unique event time at which one or more comparisons
-        experienced a demographic change or divergence.
+        \etime & An event time at which one or more comparisons
+        experienced a divergence or change in effective population size.
+        % \tn
+        % \etimemodel & The event-time model, which comprises the event
+        % times and the mapping of comparisons to those times.
         \tn
-        \etimemodel & The event-time model, which comprises the event
-        times and the mapping of comparisons to those times.
+        \etimesets & The event-time model, which comprises the assignment of
+        comparisons to events.
         \tn
-        \etimes & All of the unique event times in the model
+        \etimes & All of the times of the events in the model
             ($\etimes = \etime[1], \ldots, \etime[\nevents]$).
-        \tn
-        \etimesets & The mapping of comparisons to events.
         \tn
         % \basedistribution & The base distribution of the Dirichlet process.
         % \tn
@@ -50,7 +50,7 @@
         \nloci & The number of characters collected from a taxon (comparison).
         \tn
         \alldata & All of the data being analyzed, i.e., the
-            character matrices from all population pairs.
+            character matrices from all comparisons.
         \tn
         \genetree & A gene tree with branch lengths.
         \tn
@@ -74,7 +74,7 @@
         sizes for a comparison (ancestral and one or two descendant
         populations).
         \tn
-        \sptree & The species tree for a pair of populations. This comprises
+        \sptree & The species tree for a comparison. This comprises
         the effective population sizes and the time of demographic change or
         divergence.
             \tn
