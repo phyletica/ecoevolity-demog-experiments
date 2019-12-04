@@ -1,0 +1,41 @@
+\documentclass[border=10pt,varwidth=30cm]{standalone}
+\usepackage{graphicx,capt-of}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage[cm]{sfmath}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcounter{subfloat}
+\renewcommand{\thesubfloat}{\Alph{subfloat}}
+\newcommand{\image}[2]{%
+    \stepcounter{subfloat}%
+    \begin{tabular}[t]{@{}c@{}}
+    \thesubfloat. #1 \\
+    #2
+    \end{tabular}%
+}
+\newcommand{\insertlabel}{%
+    \small
+    \stepcounter{subfloat}%
+    \thesubfloat}
+\newcommand{\trm}[1]{\ensuremath{\textrm{\sffamily #1}}}
+
+\begin{document}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{@{}ccc@{}}
+        & \multirow{1}{0.15\textwidth}{\Large\centering All sites analyzed}
+        & \multirow{1}{0.15\textwidth}{\Large\centering Only variable sites analyzed} \\[5ex]
+        \multirow{1}{*}[8em]{\begin{sideways}\large Absolute error\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/shared-v-abs-error-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-box.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-shared-v-abs-error-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-box.pdf} \\
+        \multirow{1}{*}[7.5em]{\begin{sideways}\large 95\% CI width\end{sideways}}
+        & \includegraphics[width=0.15\textwidth]{plots/shared-v-ci-width-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-box.pdf}
+        & \includegraphics[width=0.15\textwidth]{plots/var-only-shared-v-ci-width-a-5_0-0_04-0_05-t-4_0-0_000475-0_0001-06pops-box.pdf} \\
+        & \multicolumn{2}{c}{\large Number of populations sharing demographic event} \\
+    \end{tabular}
+\end{figure}
+
+\end{document}
