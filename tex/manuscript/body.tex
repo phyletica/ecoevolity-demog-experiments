@@ -92,6 +92,59 @@ spurious support for shared demographic changes across populations.
 
 \input{results.tex}
 
+\subsection{Biological realism of our model of shared demographic changes}
+The model of shared population-size changes we present above, and used in
+previous research \citep{Chan2014,Xue2015,Gehara2017,Xue2015}, is quite
+unrealistic in number of ways.
+Modeling the demographic history of a population with a single,
+instantaneous change in population size does not reflect the continuous and
+complex demographic changes most populations of organisms experience through
+time.
+However, this simple model is correct in our simulated data, and yet our method
+struggles to accurately infer the timing and sharing of these single, dramatic,
+instantaneous changes in effective population size.
+Incorporating more demographic realism into the model will introduce more
+variation and thus make the inference problem even more difficult.
+Thus, until inference of shared events under overly simplistic demographic
+models can be improved, it does not seem wise to introduce more complexity.
+
+Also, we expect most processes that cause shared divergences and/or demographic
+changes across species will affect multiple species with some amount of
+temporal variation.
+Thus, our model of simultaneous evolutionary events that affect multiple
+species at the same instant is not biologically plausible.
+If this lack of realism is problematic, it should cause the method to
+overestimate the number of events by misidentifying the temporal variation among
+species affected by the same process as being the result of multiple events.
+However, what we see here
+(e.g., \fig{}~\ref{fig:valsimsmodeldiffuseonly})
+and what has been shown previously
+\citep{Oaks2012,Oaks2014reply,Oaks2014dpp,Oaks2018ecoevolity,Oaks2018paic}
+is the opposite;
+even when we model shared events as simultaneous, methods tend to underestimate
+(and almost never overestimate) the number of events.
+We do see overestimates when there is little information in the data
+and the posterior largely reflects the prior 
+(e.g., bottom two rows of \fig{}~\ref{fig:valsimsmodelopt}).
+However, this is only true when the prior distributions match the true
+underlying distributions that generated the data, and these overestimates would
+be easy to identify in practice by testing for prior sensitivity and noticing
+that the posterior probabilities of event models are similar to the prior
+probabilities (i.e., small Bayes factors).
+Previous researchers
+\citep{Overcast2017,Gehara2017,Xue2017}
+have attempted to introduce realism into these comparative models by allowing
+temporal variation among species affected by the same event, by assuming that
+processes of diversification and demographic change are temporally
+overdispersed.
+However, allowing temporal variation within events will only increase the
+tendency of these methods to underestimate the number of events (i.e., the
+within event temporal variation makes it ``easier'' to assign comparisons to
+the same event).
+Also, it is difficult to imagine why processes that cause shared evolutionary
+responses would be somehow conveniently staggered over evolutionary timescales
+(overdispersed).
+
 \subsection{Comparison to previous models of shared demographic changes}
 
 Our method is the first that we know of that is generalized to infer an
@@ -118,9 +171,10 @@ trees, whereas our approach uses a finite-sites model.
 allow the investigator to assume that the processes that cause demographic
 changes are temporally overdispersed (i.e., separated in time by ``buffers'').
 We do not explore this temporal staggering of events here due to the lack of
-biological processes that predict such temporal separation of events and the
-fact that it will exacerbate the tendency to over-cluster comparisons
-(i.e., underestimate the number of events; see next section).
+biological processes that predict such temporal separation of events along
+evolutionary timescales and the fact that it will exacerbate the tendency to
+over-cluster comparisons
+(i.e., underestimate the number of events).
 
 The biggest difference between previous approaches and ours is how the data are
 used.
@@ -184,58 +238,6 @@ statistics \citep{Hahn2018}.
 %     \item Assumes at most one simultaneous event (taxa are either part of the
 %         event or expand independently)
 % \end{itemize}
-
-\subsection{Biological realism of the model of shared demographic changes}
-The model of shared population-size changes we present above, and used in
-previous research \citep{Chan2014,Xue2015,Gehara2017,Xue2015}, is quite
-unrealistic in number of ways.
-Modeling the demographic history of a population with a single,
-instantaneous change in population size does not reflect the continuous and
-complex demographic changes most populations of organisms experience through
-time.
-However, this simple model is correct in our simulated data, and yet our method
-struggles to accurately infer the timing and sharing of these single, dramatic,
-instantaneous changes in effective population size.
-Incorporating more demographic realism into the model will introduce more
-variation and thus make the inference problem even more difficult.
-Thus, until inference of shared events under overly simplistic demographic
-models can be improved, it does not seem wise to introduce more complexity.
-
-Also, we expect most processes that cause shared divergences and/or demographic
-changes across species will affect multiple species with some amount of
-temporal variation.
-Thus, our model of simultaneous evolutionary events that affect multiple
-species at the same instant is not biologically plausible.
-If this lack of realism is problematic, it should cause the method to
-overestimate the number of events by misidentifying the temporal variation among
-species affected by the same process as being the result of multiple events.
-However, what we see here
-(e.g., \fig{}~\ref{fig:valsimsmodeldiffuseonly})
-and what has been shown previously
-\citep{Oaks2012,Oaks2014reply,Oaks2014dpp,Oaks2018ecoevolity,Oaks2018paic}
-is the opposite;
-even when we model shared events as simultaneous, methods tend to underestimate
-(and almost never overestimate) the number of events.
-We do see overestimates when there is little information in the data
-and the posterior largely reflects the prior 
-(e.g., bottom two rows of \fig{}~\ref{fig:valsimsmodelopt}).
-However, this is only true when the prior distributions match the true
-underlying distributions that generated the data, and these overestimates would
-be easy to identify in practice by testing for prior sensitivity and noticing
-that the posterior probabilities of event models are similar to the prior
-probabilities (i.e., small Bayes factors).
-Previous researchers
-\citep{Overcast2017,Gehara2017,Xue2017}
-have attempted to introduce realism into these comparative models by allowing
-temporal variation among species affected by the same event, by assuming that
-processes of diversification and demographic change are temporally
-overdispersed.
-However, allowing temporal variation within events will only increase the
-tendency of these methods to underestimate the number of events (i.e., the
-within event temporal variation makes it ``easier'' to assign comparisons to
-the same event).
-Also, it is difficult to imagine why processes that cause shared evolutionary
-responses would be somehow conveniently staggered over time (overdispersed).
 
 \section{Conclusions}
 
