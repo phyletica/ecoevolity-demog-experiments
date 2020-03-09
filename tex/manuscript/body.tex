@@ -74,8 +74,9 @@ stickleback populations depending on whether we include invariant sites in
 analyses.
 This alarming result makes sense in light of the inference pathologies
 exhibited by our analyses of simulated data,
-where limited information in the data coupled with prior uncertainty leads to
-spurious support for shared demographic changes across populations.
+where limited information in the data coupled with limited prior knowledge
+about parameters leads to spurious support for shared demographic changes
+across populations.
 
 \ifembed{
 \input{fig-model-cartoon.tex}
@@ -131,6 +132,14 @@ underlying distributions that generated the data, and these overestimates would
 be easy to identify in practice by testing for prior sensitivity and noticing
 that the posterior probabilities of event models are similar to the prior
 probabilities (i.e., small Bayes factors).
+Furthermore, \citet{Oaks2018paic} showed that even with millions of bases of
+genomic data from pairs of gecko populations, \ecoevolity was only able to
+detect differences in divergence times between comparisons greater than several
+thousand years.
+Thus, it seems unlikely that over-estimating the number of events among taxa
+(i.e., estimating temporal independence of comparisons that shared the same
+historical process) is a real problem for these types of inferences.
+
 Previous researchers
 \citep{Overcast2017,Gehara2017,Xue2017}
 have attempted to introduce realism into these comparative models by allowing
@@ -139,11 +148,12 @@ processes of diversification and demographic change are temporally
 overdispersed.
 However, allowing temporal variation within events will only increase the
 tendency of these methods to underestimate the number of events (i.e., the
-within event temporal variation makes it ``easier'' to assign comparisons to
+within-event temporal variation makes it ``easier'' to assign comparisons to
 the same event).
-Also, it is difficult to imagine why processes that cause shared evolutionary
-responses would be somehow conveniently staggered over evolutionary timescales
-(overdispersed).
+More fundamentally, it seems odd to assume \emph{a priori} that processes that
+cause shared evolutionary responses would be somehow conveniently staggered
+over evolutionary timescales (overdispersed);
+this seems like something we would want to estimate from the data.
 
 \subsection{Comparison to previous models of shared demographic changes}
 
@@ -170,11 +180,12 @@ trees, whereas our approach uses a finite-sites model.
 \citet{Gehara2017} and \citet{Xue2017}
 allow the investigator to assume that the processes that cause demographic
 changes are temporally overdispersed (i.e., separated in time by ``buffers'').
-We do not explore this temporal staggering of events here due to the lack of
-biological processes that predict such temporal separation of events along
-evolutionary timescales and the fact that it will exacerbate the tendency to
-over-cluster comparisons
-(i.e., underestimate the number of events).
+We do not explore this temporal staggering of events here
+because this is a pattern we would like to infer from data rather than impose
+\emph{a priori}.
+Furthermore, creating temporal ``buffers'' around events will exacerbate the
+tendency to over-cluster comparisons (i.e., underestimate the number of
+events).
 
 The biggest difference between previous approaches and ours is how the data are
 used.
@@ -255,8 +266,7 @@ population size is large enough, we can estimate the time of the demographic
 changes reasonably well
 (e.g., see the top row of \fig{}~\ref{fig:valsimsetimesopt}).
 However, even under these favorable conditions, the ability to correctly infer
-the number of demographic events, and the assignment of populations to those
-events is quite limited
+the shared timing of demographic events among populations is quite limited
 (\fig{}~\ref{fig:valsimsmodelopt}).
 When only variable characters are analyzed (i.e., SNPs), estimates of the
 timing and sharing of demographic changes are consistently bad; we see this
@@ -302,8 +312,10 @@ This could potentially leverage additional information from genomic data about t
 linkage patterns among sites along chromosomes.
 
 The inference of shared evolutionary events could also stand to benefit from
-information about past environmental conditions and life history and ecological
-data about the taxa and how they interact.
+information about
+past environmental conditions,
+life history data about the taxa,
+and ecological data about how they interact.
 Modeling ecological aspects of the taxa and historical environmental conditions
 could provide important information about which comparisons are most likely to
 respond to environmental changes and when, and which taxa are likely to

@@ -92,7 +92,7 @@ is in those units (e.g., generations or years).
 
 \subsection{The evolution of gene trees}
 
-We assume the gene tree of each character evolved within a simple ``species''
+We assume the gene tree of each character coalesced within a simple ``species''
 tree with one ancestral root population that, at time \comparisonetime, either
 left one or two descendant branches with different effective population sizes
 (\fig{}~\ref{fig:modelCartoon}).
@@ -118,7 +118,8 @@ we use the work of \citet{Bryant2012}
 to analytically integrate over all possible gene trees and
 character substitution histories to compute the likelihood
 of the species tree directly from 
-a biallelic character pattern under a coalescent model;
+a biallelic character pattern under a multi-population coalescent model
+\citep{Kingman1982,Kingman1982AppliedProb,Rannala2003};
 $\pr(\leafallelecounts, \leafredallelecounts \given \sptree, \murate, \gfreq)$.
 We only need to make a small modification to accommodate population-size-change
 models that have a species tree with only one descendant population.
@@ -152,7 +153,8 @@ which can be an arbitrary mix of
 the time they diverged, or
 (2) one population for which \comparisonetime represents the time
 of a change in population size.
-The likelihood across all \ncomparisons{} comparisons is simply the product of the
+Assuming independence among comparisons,
+the likelihood across all \ncomparisons{} comparisons is simply the product of the
 likelihood of each comparison,
 \begin{equation}
     \pr(
@@ -182,6 +184,7 @@ for that comparison on only having sampled variable characters.
 
 \begin{linenomath}
 As described by \citet{Oaks2018ecoevolity},
+to relax the assumption of temporal independence among comparisons,
 we treat the number of events (population-size changes and/or divergences)
 and the assignment of comparisons to those events as
 random variables under a Dirichlet process \citep{Ferguson1973,
