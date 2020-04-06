@@ -8,7 +8,7 @@
 \usepackage[fleqn]{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage{url}
+\usepackage[hyphens]{url}
 \usepackage{verbatim}
 \usepackage[title]{appendix}
 \usepackage{indentfirst}
@@ -65,3 +65,7 @@
 \DeclareCaptionLabelFormat{noSpace}{{#1}{#2}}
 \DeclareCaptionListFormat{figList}{Figure {#2}.}
 \DeclareCaptionListFormat{sFigList}{Figure S{#2}.}
+
+\newenvironment{mytitle}
+ {\parskip=0pt\par\nopagebreak\centering\LARGE\slshape}
+ {\par\noindent\ignorespacesafterend}

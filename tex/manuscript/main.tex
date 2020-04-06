@@ -11,12 +11,14 @@
 
 \newcommand{\ifembed}[2]{#1}
 % \newcommand{\ifembed}[2]{#2}
-% \newcommand{\ifdoublespacing}[2]{#1}
-\newcommand{\ifdoublespacing}[2]{#2}
+\newcommand{\ifdoublespacing}[2]{#1}
+% \newcommand{\ifdoublespacing}[2]{#2}
 \newcommand{\iflinenumbers}[2]{#1}
 % \newcommand{\iflinenumbers}[2]{#2}
 % \newcommand{\ifragged}[2]{#1}
 \newcommand{\ifragged}[2]{#2}
+\newcommand{\ifblind}[2]{#1}
+% \newcommand{\ifblind}[2]{#2}
 
 \usepackage[round]{natbib}
 % \usepackage[natbibapa]{apacite}
@@ -46,11 +48,6 @@
 
 \begin{document}
 
-
-\ifdoublespacing{
-\doublespacing
-}{}
-
 \ifragged{
 \raggedright
 }{}
@@ -61,9 +58,41 @@
 
 \textbf{Running head}: \uppercase{Inferring shared demographic changes}
 
+\ifblind{%
+    \vspace{-1.1cm}%
+}{}
+
 {\let\newpage\relax\maketitle}
 
+\ifblind{%
+\vspace{-1.5cm}
+\section*{Author contributions}
+\vspace{-2mm}
+\input{author-contributions.tex}
+
+\vspace{-5mm}
+\section*{Acknowledgments}
+\vspace{-2mm}
+\input{acknowledgments.tex}
+
+\vspace{-5mm}
+\section*{Data Accessibility}
+\vspace{-2mm}
+\input{data-accessibility.tex}
+}{}
+
 \newpage
+
+\ifblind{
+    \resetlinenumber
+    \begin{mytitle}
+        \msTitle
+    \end{mytitle}
+}{}
+
+\ifdoublespacing{
+\doublespacing
+}{}
 
 \begin{abstract}
     \input{abstract.tex}
@@ -81,18 +110,22 @@
 \input{body.tex}
 
 
+\ifblind{}{
 \section{Acknowledgments}
 \input{acknowledgments.tex}
+}
 
-\bibliographystyle{../bib/sysbio}
+\bibliographystyle{../bib/evolution}
 % \bibliographystyle{apacite}
 \bibliography{../bib/references}
 
+\ifblind{}{
 \section{Data Accessibility}
 \input{data-accessibility.tex}
 
 \section{Author Contributions}
 \input{author-contributions.tex}
+}
 
 % \section{Appendix}
 % \begin{appendices}
@@ -152,8 +185,10 @@
 \hangindent=1cm
 \noindent Title: \msTitle
 
+\ifblind{}{%
 \bigskip
 {\noindent Authors: \msAuthor}
+}
 
 \newpage
 \singlespacing
