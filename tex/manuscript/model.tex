@@ -55,8 +55,9 @@ for a character from either one population if we are modeling a population-size
 change or both populations of a pair if we are modeling a divergence; i.e., 
 $\leafallelecounts, \leafredallelecounts = (\allelecount, \redallelecount)$
 or
-$\leafallelecounts, \leafredallelecounts = (\allelecount[1],
-\redallelecount[1]), (\allelecount[2], \redallelecount[2])$.
+\jedit{}{%
+$\leafallelecounts, \leafredallelecounts = \{ (\allelecount[1],
+\redallelecount[1]), (\allelecount[2], \redallelecount[2]) \}$.}
 % (\fig{}~\ref{fig:modelCartoon}
 % and
 % Table~\ref{table:notation}).
@@ -73,7 +74,7 @@ characters do not have to be orthologous across comparisons, only within them.
 \subsection{The evolution of characters}
 
 We assume each character evolved along a gene tree (\genetree)
-according to a finite-sites, continuous-time Markov chain (CTMC) model,
+according to a finite-\jedit{sites}{character}, continuous-time Markov chain (CTMC) model,
 and the gene tree of each character is independent of the others,
 conditional on the population history (i.e., the characters are effectively
 unlinked).
